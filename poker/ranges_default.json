@@ -1,0 +1,8 @@
+{
+  "UTG": { "open": ["AA","KK","QQ","AKs","AQs"], "call": [], "threebet": [] },
+  "HJ":  { "open": ["AA","KK","QQ","JJ","AKs","AQs","AJs","KQs"], "call": [], "threebet": [] },
+  "CO":  { "open": ["AA","KK","QQ","JJ","TT","AKs","AQs","AJs","ATs","KQs","AKo"], "call": [], "threebet": [] },
+  "BTN": { "open": ["AA","KK","QQ","JJ","TT","99","88","AKs","AQs","AJs","ATs","A9s","KQs","KJs","QJs","AKo","AQo"], "call": [], "threebet": [] },
+  "SB":  { "open": ["AA","KK","QQ","JJ","TT","AKs","AQs","AJs","KQs","KJs","AKo","AQo"], "call": [], "threebet": [] },
+  "BB":  { "open": [], "call": ["AA","KK","QQ","AKs"], "threebet": [] }
+}

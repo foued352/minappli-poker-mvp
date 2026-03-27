@@ -1,0 +1,21 @@
+{
+  "meta": { "name": "poker_table_v0_1" },
+  "scene": {
+    "nodes": [
+      {
+        "id": "table",
+        "type": "shape.oval",
+        "props": { "x": 420, "y": 260, "w": 540, "h": 320, "rotation": 0 },
+        "state": { "selected": false, "visible": true },
+        "tags": ["poker", "table"]
+      },
+
+      { "id": "seat_utg", "type": "shape.oval", "props": { "x": 420, "y": 95, "w": 120, "h": 60, "rotation": 0 }, "state": { "selected": false, "visible": true }, "tags": ["poker", "seat", "UTG"] },
+      { "id": "seat_hj",  "type": "shape.oval", "props": { "x": 660, "y": 175, "w": 120, "h": 60, "rotation": 0 }, "state": { "selected": false, "visible": true }, "tags": ["poker", "seat", "HJ"]  },
+      { "id": "seat_co",  "type": "shape.oval", "props": { "x": 660, "y": 345, "w": 120, "h": 60, "rotation": 0 }, "state": { "selected": false, "visible": true }, "tags": ["poker", "seat", "CO"]  },
+      { "id": "seat_btn", "type": "shape.oval", "props": { "x": 420, "y": 425, "w": 120, "h": 60, "rotation": 0 }, "state": { "selected": false, "visible": true }, "tags": ["poker", "seat", "BTN"] },
+      { "id": "seat_sb",  "type": "shape.oval", "props": { "x": 180, "y": 345, "w": 120, "h": 60, "rotation": 0 }, "state": { "selected": false, "visible": true }, "tags": ["poker", "seat", "SB"]  },
+      { "id": "seat_bb",  "type": "shape.oval", "props": { "x": 180, "y": 175, "w": 120, "h": 60, "rotation": 0 }, "state": { "selected": false, "visible": true }, "tags": ["poker", "seat", "BB"]  }
+    ]
+  }
+}

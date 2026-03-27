@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Minappli Poker — Range Builder</title>
+  <style>
+
+body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; margin: 16px; }
+.row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+select, input, button { padding: 8px 10px; font-size: 14px; }
+button { cursor: pointer; }
+.gridWrap { overflow: auto; max-width: 100%; border: 1px solid #ddd; border-radius: 10px; padding: 10px; }
+table { border-collapse: collapse; }
+th, td { border: 1px solid #e6e6e6; text-align: center; width: 36px; height: 30px; user-select: none; }
+th { background: #fafafa; position: sticky; top: 0; z-index: 2; }
+th.left { left: 0; z-index: 3; position: sticky; }
+td { cursor: pointer; background: #fff; }
+td.green { background: #bff0c2; }
+td.yellow { background: #ffeaa7; }
+.muted { color: #666; font-size: 13px; }
+textarea { width: 100%; height: 180px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
+.panel { border: 1px solid #ddd; border-radius: 10px; padding: 10px; margin-top: 12px; }
+</style>
+
+
+</head>
+<body>
+  <h2>Minappli Poker — Range Builder (MVP)</h2>
+  <div class="row">
+    <label>Pack name <input id="packName" value="Mon pack MTT" /></label>
+
+    <label>Spot
+      <select id="spot">
+        <option value="open">open</option>
+        <option value="call_vs_open">call_vs_open</option>
+      </select>
+    </label>
+
+    <label>Depth
+      <select id="depth">
+        <option value="25">25</option>
+        <option value="40" selected>40</option>
+        <option value="60">60</option>
+      </select>
+    </label>
+
+    <label>Hero
+      <select id="hero">
+        <option value="HJ">HJ</option>
+        <option value="CO">CO</option>
+        <option value="BTN" selected>BTN</option>
+      </select>
+    </label>
+
+    <label>Field
+      <select id="field">
+        <option value="reg" selected>reg</option>
+        <option value="nit">nit</option>
+        <option value="fish">fish</option>
+      </select>
+    </label>
+
+    <button id="fillActive">Fill active</button>
+    <button id="clear">Clear</button>
+    <button id="save">Save spot</button>
+    <button id="load">Load spot</button>
+    <button id="toggleMode">Mode: CONSULT</button>
+    <span id="saveState" class="muted">—</span>
+  </div>
+
+  <div class="muted">
+    Clique une case : <b>vide → vert → jaune → vide</b>. (Fold = implicite si vide)
+    <span id="paintIndicator" style="display:none; margin-left:14px;">Touche <b>1</b>=🟢 <b>2</b>=🟡 <b>3</b>=✖ &nbsp;|&nbsp; Paint actif : <b id="paintActiveLabel">🟢 Green</b></span>
+  </div>
+
+  <div class="row" id="quickCats" style="margin-top:8px; display:none;">
+    <span class="muted">Sélection rapide :</span>
+    <button id="catPairs">Pocket pairs</button>
+    <button id="catBroadways">Broadways</button>
+    <button id="catAxSuited">Ax suited</button>
+  </div>
+
+  <div class="gridWrap" style="margin-top:10px;">
+    <table id="grid"></table>
+  </div>
+    <div class="panel" id="liveQuick">
+    <h3 style="margin:0 0 8px 0;">Live Quick</h3>
+    <div class="row">
+      <label>Main
+        <select id="handPick"></select>
+      </label>
+      <label>Action faite
+        <select id="actionDone">
+          <option value="green">Open/Call</option>
+          <option value="yellow">Borderline</option>
+          <option value="red">Fold</option>
+        </select>
+      </label>
+      <button id="validateHand">Valider ma main</button>
+    </div>
+
+    <div class="row">
+      <div class="panel" style="flex:1; min-width:240px;">
+        <b>🟢 Green (OK)</b>
+        <div id="listGreen" class="muted"></div>
+      </div>
+      <div class="panel" style="flex:1; min-width:240px;">
+        <b>🟡 Yellow (Borderline)</b>
+        <div id="listYellow" class="muted"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <b>Résultat :</b> <span id="resultText" class="muted">—</span>
+    </div>
+  </div>
+
+
+  <div class="panel">
+    <div class="row">
+      <button id="export">Export JSON</button>
+      <button id="import">Import JSON</button>
+      <button id="wipe">Wipe localStorage</button>
+    </div>
+    <textarea id="io" placeholder="JSON ici (export/import)"></textarea>
+    <div class="muted">Stockage local : clé <code>minappli.poker.pack.v1</code></div>
+  </div>
+
+  <script src="./range_builder.js"></script>
+</body>
+</html>

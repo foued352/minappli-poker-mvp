@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Minappli · Grid</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box; margin: 0; padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: #070a0e; color: #fff;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    button { background: none; border: none; color: inherit; cursor: pointer; font-family: inherit; touch-action: manipulation; }
+
+    #app {
+      width: 100%; height: 100%;
+      max-width: 430px; margin: 0 auto;
+      display: flex; flex-direction: column;
+      padding: 6px 0 6px;
+      gap: 6px;
+    }
+
+    /* ── Stack selector (smallest / secondary) ── */
+    #stack-bar {
+      display: flex; gap: 4px; flex-shrink: 0;
+      justify-content: center; padding: 0 8px;
+    }
+    .stack-btn {
+      padding: 2px 10px;
+      border-radius: 5px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: transparent;
+      color: rgba(255,255,255,0.24);
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 0.05em;
+      transition: all 0.09s;
+    }
+    .stack-btn.active {
+      background: rgba(255,255,255,0.07);
+      color: rgba(255,255,255,0.65);
+      border-color: rgba(255,255,255,0.20);
+    }
+
+    /* ── Mode selector (medium / important) ── */
+    #mode-bar {
+      display: flex; gap: 6px; flex-shrink: 0;
+      justify-content: center; padding: 0 8px;
+    }
+    #mode-bar .stack-btn {
+      padding: 4px 14px;
+      border-radius: 7px;
+      border: 1px solid rgba(255,255,255,0.11);
+      font-size: 11px;
+      color: rgba(255,255,255,0.38);
+    }
+    #mode-bar .stack-btn.active {
+      background: rgba(255,255,255,0.11);
+      color: rgba(255,255,255,0.92);
+      border-color: rgba(255,255,255,0.32);
+    }
+
+    /* ── Hero selector (primary / full-width) ── */
+    #hero-bar {
+      display: flex; gap: 4px; flex-shrink: 0;
+      padding: 0 8px;
+    }
+    .pos-btn {
+      flex: 1;
+      padding: 7px 2px;
+      border-radius: 7px;
+      border: 1px solid rgba(255,255,255,0.13);
+      background: transparent;
+      color: rgba(255,255,255,0.42);
+      font-size: 12px; font-weight: 700;
+      letter-spacing: 0.03em;
+      transition: all 0.09s;
+    }
+    .pos-btn.active {
+      background: rgba(255,255,255,0.11);
+      color: #fff;
+      border-color: rgba(255,255,255,0.42);
+    }
+
+    /* ── Opener selector (contextual / lighter) ── */
+    #opener-bar {
+      display: flex; gap: 4px; flex-shrink: 0;
+      padding: 0 16px;
+    }
+    #opener-bar .pos-btn {
+      padding: 4px 2px;
+      border-radius: 5px;
+      border: 1px solid rgba(255,255,255,0.07);
+      font-size: 10px;
+      color: rgba(255,255,255,0.28);
+    }
+    #opener-bar .pos-btn.active {
+      background: rgba(255,255,255,0.07);
+      color: rgba(255,255,255,0.75);
+      border-color: rgba(255,255,255,0.22);
+    }
+
+    /* ── Grid container ── */
+    #grid-wrap {
+      flex: 1; min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* #grid sized by JS to exact square */
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(13, 1fr);
+      grid-template-rows: repeat(13, 1fr);
+      gap: 1px;
+      background: #04080c;   /* gap color */
+      border: 1px solid #04080c;
+      border-radius: 5px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    /* ── Cells ── */
+    .cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #060b13;
+      color: rgba(255,255,255,0.10);
+      font-family: system-ui, -apple-system, Arial, sans-serif;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      user-select: none;
+      touch-action: manipulation;
+      /* font-size set by JS after layout */
+    }
+    /* Pair cells (diagonal) — slightly brighter base */
+    .cell.pair {
+      background: #0c1624;
+      color: rgba(255,255,255,0.18);
+    }
+    /* Suited cells (upper-right triangle) */
+    .cell.suited {
+      background: #080f1c;
+    }
+    /* OPEN state */
+    .cell.open {
+      background: #14532d;
+      color: rgba(255,255,255,0.90);
+    }
+    .cell.open.pair   { background: #166534; color: rgba(255,255,255,0.95); }
+    .cell.open.suited { background: #145c2e; }
+    /* CALL state */
+    .cell.call        { background: #0f2a4a; color: rgba(255,255,255,0.90); }
+    .cell.call.pair   { background: #133460; color: rgba(255,255,255,0.95); }
+    .cell.call.suited { background: #112e52; }
+    /* 3BET state */
+    .cell.threebet        { background: #3b0f0f; color: rgba(255,255,255,0.90); }
+    .cell.threebet.pair   { background: #4a1212; color: rgba(255,255,255,0.95); }
+    .cell.threebet.suited { background: #3f1010; }
+    /* multi-action state (hand appears in 2+ buckets) */
+    .cell.multi        { background: #3d2a06; color: rgba(255,255,255,0.90); }
+    .cell.multi.pair   { background: #4a3308; color: rgba(255,255,255,0.95); }
+    .cell.multi.suited { background: #3a2805; }
+    /* tap feedback */
+    .cell:active { filter: brightness(1.3); }
+    /* row / column crosshair — subtle fill overlay, never touches background-color */
+    .cell.hl-row:not(.selected),
+    .cell.hl-col:not(.selected) {
+      box-shadow: inset 0 0 0 100px rgba(255,255,255,0.05);
+    }
+    /* selected hand — dominant, overrides crosshair */
+    .cell.selected {
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,0.92);
+      position: relative; z-index: 1;
+    }
+
+    /* ── Action strip ── */
+    #action-strip {
+      flex-shrink: 0;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 8px;
+    }
+    /* empty state — invisible placeholder */
+    #action-strip.empty { opacity: 0; pointer-events: none; }
+    /* result card */
+    #action-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 64px;
+      border-radius: 12px;
+      gap: 1px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    #action-hand  { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.38); letter-spacing: 0.04em; }
+    #action-label { font-size: 30px; font-weight: 900; letter-spacing: 0.12em; line-height: 1; }
+    /* chips (multi-action) */
+    #action-chips { display: flex; gap: 8px; align-items: center; }
+    .action-chip {
+      padding: 5px 16px;
+      border-radius: 20px;
+      font-size: 17px; font-weight: 900;
+      letter-spacing: 0.10em;
+      border: 1px solid transparent;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div id="stack-bar"></div>
+  <div id="mode-bar"></div>
+  <div id="hero-bar"></div>
+  <div id="opener-bar" style="display:none;"></div>
+  <div id="grid-wrap">
+    <div id="grid"></div>
+  </div>
+  <div id="action-strip" class="empty">
+    <div id="action-card">
+      <span id="action-hand"></span>
+      <span id="action-label"></span>
+      <div id="action-chips" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+<script src="./ranges.js"></script>
+<script>
+"use strict";
+
+/* RANGES_RAW loaded from ranges.js — edit that file to update decisions. */
+
+/* Build Sets for O(1) lookup */
+const RANGES = {};
+for (const [stack, positions] of Object.entries(RANGES_RAW)) {
+  RANGES[stack] = {};
+  for (const [pos, buckets] of Object.entries(positions)) {
+    RANGES[stack][pos] = {
+      open:     new Set(buckets.open),
+      call:     new Set(buckets.call),
+      threebet: new Set(buckets.threebet)
+    };
+  }
+}
+
+/* ── Constants ── */
+const RANKS = ["A","K","Q","J","T","9","8","7","6","5","4","3","2"];
+
+const OPEN_HEROES   = ["UTG","HJ","CO","BTN","SB"];
+const VSOPEN_HEROES = ["HJ","CO","BTN","SB","BB"];
+const VALID_OPENERS = {
+  HJ:  ["UTG"],
+  CO:  ["UTG","HJ"],
+  BTN: ["UTG","HJ","CO"],
+  SB:  ["UTG","HJ","CO","BTN"],
+  BB:  ["UTG","HJ","CO","BTN","SB"]
+};
+
+/* ── Action colors ── */
+const ACTION_COLOR = { OPEN: "#22c55e", CALL: "#3b82f6", "3BET": "#ef4444", FOLD: "#6b7280" };
+
+/* ── State ── */
+let activeStack  = localStorage.getItem("minappli_stack") || "40bb";
+let activeMode   = "open";    /* "open" | "vsopen" */
+let activeHero   = "BTN";
+let activeOpener = null;      /* used in vsopen mode */
+let selectedHand = null;
+let selectedCell = null;      /* direct DOM ref to selected cell */
+let selRow = -1, selCol = -1; /* row/col crosshair indices */
+
+/* ── DOM caches (populated in init) ── */
+const CELLS       = [];   /* CELLS[i*13+j] = cell element */
+const HAND_LABELS = [];   /* HAND_LABELS[i*13+j] = hand string */
+let EL = {};              /* action card refs */
+
+/* ── Compute current spot key ── */
+function getSpotKey() {
+  return activeMode === "open"
+    ? activeHero
+    : activeHero + "_vs_" + activeOpener;
+}
+
+/* ── Hand label for cell (row i, col j) ── */
+function handLabel(i, j) {
+  if (i === j) return RANKS[i] + RANKS[i];                                           // pair
+  if (i < j)  return RANKS[i] + RANKS[j] + "s";                                     // suited (upper-right)
+  return RANKS[j] + RANKS[i] + "o";                                                  // offsuit (lower-left)
+}
+
+/* ── Resolve all actions for a hand at the current spot ── */
+function getActions(hand) {
+  const r = RANGES[activeStack]?.[getSpotKey()];
+  if (!r) return ["FOLD"];
+  const result = [];
+  if (r.threebet.has(hand)) result.push("3BET");
+  if (r.open.has(hand))     result.push("OPEN");
+  if (r.call.has(hand))     result.push("CALL");
+  if (result.length === 0)  result.push("FOLD");
+  return result;
+}
+
+/* ── Card background / border per action ── */
+const CARD_BG = {
+  OPEN:  "rgba(34,197,94,0.09)",  CALL: "rgba(59,130,246,0.09)",
+  "3BET":"rgba(239,68,68,0.09)",  FOLD: "rgba(255,255,255,0.03)"
+};
+const CARD_BD = {
+  OPEN:  "rgba(34,197,94,0.28)",  CALL: "rgba(59,130,246,0.28)",
+  "3BET":"rgba(239,68,68,0.28)",  FOLD: "rgba(255,255,255,0.07)"
+};
+
+/* ── Update action card for selected hand ── */
+function updateAction() {
+  if (!selectedHand) { EL.strip.classList.add("empty"); return; }
+
+  const actions = getActions(selectedHand);
+  EL.handEl.textContent = selectedHand;
+
+  if (actions.length === 1) {
+    /* single action — large centered text */
+    const action = actions[0];
+    EL.labelEl.textContent      = action;
+    EL.labelEl.style.color      = ACTION_COLOR[action];
+    EL.labelEl.style.display    = "";
+    if (EL.chipsEl.style.display !== "none") {
+      EL.chipsEl.style.display  = "none";
+      EL.chipsEl.innerHTML      = "";
+    }
+    EL.cardEl.style.background  = CARD_BG[action];
+    EL.cardEl.style.borderColor = CARD_BD[action];
+  } else {
+    /* multiple actions — chips row */
+    EL.labelEl.style.display = "none";
+    EL.chipsEl.style.display = "flex";
+    EL.chipsEl.innerHTML = "";
+    actions.forEach(action => {
+      const chip = document.createElement("span");
+      chip.className        = "action-chip";
+      chip.textContent      = action;
+      chip.style.color      = ACTION_COLOR[action];
+      chip.style.background = ACTION_COLOR[action] + "22";
+      chip.style.borderColor= ACTION_COLOR[action] + "66";
+      EL.chipsEl.appendChild(chip);
+    });
+    EL.cardEl.style.background  = "rgba(255,255,255,0.04)";
+    EL.cardEl.style.borderColor = "rgba(255,255,255,0.12)";
+  }
+  EL.strip.classList.remove("empty");
+}
+
+/* ── Update cell states (open / call / threebet) ── */
+function updateGrid() {
+  const r = RANGES[activeStack]?.[getSpotKey()];
+  for (let k = 0; k < 169; k++) {
+    const label   = HAND_LABELS[k];
+    const inOpen  = r ? r.open.has(label)     : false;
+    const inCall  = r ? r.call.has(label)     : false;
+    const in3bet  = r ? r.threebet.has(label) : false;
+    const isMulti = (inOpen ? 1 : 0) + (inCall ? 1 : 0) + (in3bet ? 1 : 0) > 1;
+    const cl = CELLS[k].classList;
+    cl.toggle("multi",    isMulti);
+    cl.toggle("open",     inOpen  && !isMulti);
+    cl.toggle("call",     inCall  && !isMulti);
+    cl.toggle("threebet", in3bet  && !isMulti);
+  }
+  updateAction();
+}
+
+/* ── Size the grid to fill available square ── */
+function sizeGrid() {
+  const wrap = document.getElementById("grid-wrap");
+  const r    = wrap.getBoundingClientRect();
+  const size = Math.floor(Math.min(r.width, r.height)) - 2;  /* -2 for border */
+  const grid = document.getElementById("grid");
+  grid.style.width  = size + "px";
+  grid.style.height = size + "px";
+  /* Font size proportional to cell size */
+  const cellPx = Math.floor(size / 13);
+  const fs = Math.max(6, Math.floor(cellPx * 0.35)) + "px";
+  grid.style.fontSize = fs;
+}
+
+/* ── Build mode bar (OPEN / vs OPEN) ── */
+function buildModeBar() {
+  const bar = document.getElementById("mode-bar");
+  bar.innerHTML = "";
+  [["open", "OPEN (RFI)"], ["vsopen", "vs OPEN"]].forEach(([mode, label]) => {
+    const btn = document.createElement("button");
+    btn.className     = "stack-btn" + (mode === activeMode ? " active" : "");
+    btn.dataset.mode  = mode;
+    btn.textContent   = label;
+    btn.onclick = () => {
+      activeMode = mode;
+      if (mode === "open") {
+        if (!OPEN_HEROES.includes(activeHero)) activeHero = "BTN";
+        activeOpener = null;
+      } else {
+        if (!VSOPEN_HEROES.includes(activeHero)) activeHero = "BB";
+        activeOpener = VALID_OPENERS[activeHero][0];
+      }
+      document.querySelectorAll(".stack-btn[data-mode]").forEach(b =>
+        b.classList.toggle("active", b.dataset.mode === mode));
+      document.getElementById("opener-bar").style.display = mode === "vsopen" ? "" : "none";
+      buildHeroBar();
+      buildOpenerBar();
+      updateGrid();
+    };
+    bar.appendChild(btn);
+  });
+}
+
+/* ── Build hero bar ── */
+function buildHeroBar() {
+  const bar = document.getElementById("hero-bar");
+  bar.innerHTML = "";
+  const heroes = activeMode === "open" ? OPEN_HEROES : VSOPEN_HEROES;
+  heroes.forEach(pos => {
+    const btn = document.createElement("button");
+    btn.className   = "pos-btn" + (pos === activeHero ? " active" : "");
+    btn.dataset.pos = pos;
+    btn.textContent = pos;
+    btn.onclick = () => {
+      activeHero = pos;
+      if (activeMode === "vsopen") {
+        activeOpener = VALID_OPENERS[pos][0];
+        buildOpenerBar();
+      }
+      document.querySelectorAll("#hero-bar .pos-btn").forEach(b =>
+        b.classList.toggle("active", b.dataset.pos === pos));
+      updateGrid();
+    };
+    bar.appendChild(btn);
+  });
+}
+
+/* ── Build opener bar ── */
+function buildOpenerBar() {
+  const bar = document.getElementById("opener-bar");
+  bar.innerHTML = "";
+  if (activeMode !== "vsopen") { bar.style.display = "none"; return; }
+  bar.style.display = "";
+  const openers = VALID_OPENERS[activeHero] || [];
+  openers.forEach(pos => {
+    const btn = document.createElement("button");
+    btn.className   = "pos-btn" + (pos === activeOpener ? " active" : "");
+    btn.dataset.pos = pos;
+    btn.textContent = pos;
+    btn.onclick = () => {
+      activeOpener = pos;
+      document.querySelectorAll("#opener-bar .pos-btn").forEach(b =>
+        b.classList.toggle("active", b.dataset.pos === pos));
+      updateGrid();
+    };
+    bar.appendChild(btn);
+  });
+}
+
+/* ── Build DOM ── */
+function init() {
+  /* Stack bar */
+  const stackBar = document.getElementById("stack-bar");
+  ["20bb", "40bb"].forEach(s => {
+    const btn = document.createElement("button");
+    btn.className     = "stack-btn" + (s === activeStack ? " active" : "");
+    btn.dataset.stack = s;
+    btn.textContent   = s;
+    btn.onclick = () => {
+      activeStack = s;
+      localStorage.setItem("minappli_stack", s);
+      document.querySelectorAll(".stack-btn").forEach(b =>
+        b.classList.toggle("active", b.dataset.stack === s));
+      updateGrid();
+    };
+    stackBar.appendChild(btn);
+  });
+
+  /* Mode bar */
+  buildModeBar();
+  /* Hero bar */
+  buildHeroBar();
+  /* Opener bar (hidden until vsopen mode) */
+  buildOpenerBar();
+
+  /* Action card refs */
+  EL.strip   = document.getElementById("action-strip");
+  EL.handEl  = document.getElementById("action-hand");
+  EL.labelEl = document.getElementById("action-label");
+  EL.chipsEl = document.getElementById("action-chips");
+  EL.cardEl  = document.getElementById("action-card");
+
+  /* Grid cells */
+  const grid = document.getElementById("grid");
+  for (let i = 0; i < 13; i++) {
+    for (let j = 0; j < 13; j++) {
+      const k    = i * 13 + j;
+      const hand = handLabel(i, j);
+      HAND_LABELS[k] = hand;
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      if (i === j) cell.classList.add("pair");
+      else if (i < j) cell.classList.add("suited");
+      cell.textContent = hand;
+      cell.onclick = () => {
+        if (selectedHand !== hand) {
+          /* clear previous crosshair */
+          if (selRow >= 0) {
+            for (let k = 0; k < 13; k++) {
+              CELLS[selRow * 13 + k].classList.remove("hl-row");
+              CELLS[k * 13 + selCol].classList.remove("hl-col");
+            }
+          }
+          /* clear previous selection */
+          if (selectedCell) selectedCell.classList.remove("selected");
+          /* apply new crosshair */
+          selRow = i; selCol = j;
+          for (let k = 0; k < 13; k++) {
+            CELLS[i * 13 + k].classList.add("hl-row");
+            CELLS[k * 13 + j].classList.add("hl-col");
+          }
+          /* apply new selection */
+          selectedHand = hand;
+          selectedCell = cell;
+          cell.classList.add("selected");
+          updateAction();
+        }
+      };
+      CELLS[k] = cell;
+      grid.appendChild(cell);
+    }
+  }
+
+  sizeGrid();
+  updateGrid();
+}
+
+window.addEventListener("resize", sizeGrid);
+document.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>

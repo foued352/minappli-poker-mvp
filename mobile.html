@@ -1,0 +1,587 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Minappli · Decision</title>
+  <style>
+    /* ── Reset ── */
+    *, *::before, *::after {
+      box-sizing: border-box; margin: 0; padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: #070a0e; color: #fff;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    button { background: none; border: none; color: inherit; cursor: pointer; font-family: inherit; }
+
+    /* ── App shell ── */
+    #app {
+      width: 100%; height: 100%;
+      max-width: 430px; margin: 0 auto;
+      position: relative; overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+
+    /* ── Screen management ── */
+    .screen {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.12s ease;
+    }
+    .screen.active { opacity: 1; pointer-events: all; }
+
+    /* ════════════════════════════════
+       TABLE SCREEN
+       ════════════════════════════════ */
+    #screen-table { padding: 14px 14px 0; gap: 10px; }
+
+    /* Top row: stack pills + reset */
+    #top-bar {
+      display: flex; align-items: center;
+      gap: 6px; flex-shrink: 0;
+    }
+    #stack-bar {
+      display: flex; gap: 5px; flex: 1;
+    }
+    .stack-btn {
+      padding: 7px 13px; border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.13);
+      background: transparent;
+      color: rgba(255,255,255,0.42);
+      font-size: 13px; font-weight: 600;
+      transition: all 0.10s;
+    }
+    .stack-btn.active {
+      background: rgba(255,255,255,0.11);
+      color: #fff;
+      border-color: rgba(255,255,255,0.42);
+    }
+    #reset-btn {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: transparent;
+      color: rgba(255,255,255,0.38);
+      font-size: 16px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Table area */
+    #table-wrap {
+      flex: 1; position: relative; min-height: 0;
+    }
+
+    /* Felt oval */
+    #table-felt {
+      position: absolute;
+      width: 50%; aspect-ratio: 100 / 172;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background:
+        radial-gradient(ellipse 75% 55% at 50% 35%,
+          #2e5438 0%, #1e3d26 28%, #0e2016 62%, #040c07 100%);
+      border: 4px solid rgba(0,0,0,0.72);
+      box-shadow:
+        0 0 0 2px rgba(125,88,12,0.28),
+        inset 0 0 50px rgba(0,0,0,0.55),
+        0 10px 40px rgba(0,0,0,0.85);
+    }
+
+    /* Center hand display — inside the felt */
+    #hand-center {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+      padding: 12px 8px;
+      min-width: 100px;
+    }
+    #hand-name {
+      font-size: 34px; font-weight: 800;
+      letter-spacing: 0.03em; line-height: 1;
+    }
+    #action-badge {
+      display: inline-block;
+      margin-top: 7px;
+      padding: 5px 16px; border-radius: 16px;
+      font-size: 13px; font-weight: 700;
+      letter-spacing: 0.09em;
+    }
+    #hand-hint {
+      font-size: 11px; color: rgba(255,255,255,0.30);
+      margin-top: 4px; line-height: 1.55;
+    }
+    /* Suited/offsuit pill */
+    #suit-row {
+      display: flex; justify-content: center;
+      margin-top: 9px;
+    }
+    #suit-toggle {
+      display: inline-flex; border-radius: 10px; overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.16);
+    }
+    .suit-opt {
+      padding: 5px 12px; font-size: 11px; font-weight: 600;
+      background: transparent; color: rgba(255,255,255,0.36);
+      transition: all 0.10s;
+    }
+    .suit-opt.active { background: rgba(255,255,255,0.14); color: #fff; }
+
+    /* Seat nodes — positioned absolute in #table-wrap */
+    .seat {
+      position: absolute;
+      width: 54px; height: 54px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.13);
+      background: rgba(255,255,255,0.04);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 0.04em;
+      color: rgba(255,255,255,0.46);
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      transition: all 0.11s;
+      user-select: none;
+    }
+    .seat.active {
+      background: rgba(255,255,255,0.15);
+      border-color: rgba(255,255,255,0.62);
+      color: #fff;
+      box-shadow: 0 0 16px rgba(255,255,255,0.16);
+    }
+    .seat.hero { border-color: rgba(251,191,36,0.35); }
+    .seat.hero.active { border-color: #fbbf24; box-shadow: 0 0 16px rgba(251,191,36,0.28); }
+
+    /* ════════════════════════════════
+       CARD SCREENS
+       ════════════════════════════════ */
+    .card-screen { padding: 0; }
+
+    .card-top {
+      display: flex; align-items: center; gap: 14px;
+      padding: 18px 16px 12px; flex-shrink: 0;
+    }
+    .back-btn {
+      width: 42px; height: 42px; border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.07);
+      color: rgba(255,255,255,0.70);
+      font-size: 22px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .card-title { font-size: 17px; font-weight: 700; color: rgba(255,255,255,0.84); }
+    .card-sub   { font-size: 12px; color: rgba(255,255,255,0.35); margin-top: 2px; }
+    .card-sub span { color: #fbbf24; font-weight: 700; }
+
+    /* Rank picker — 13 ranks, 4 per row, no dead-cell confusion */
+    .rank-grid {
+      display: flex; flex-wrap: wrap;
+      gap: 8px; padding: 0 12px 16px;
+      align-content: flex-start;
+    }
+    .rank-grid .rank-btn {
+      flex: 0 0 calc(25% - 6px);  /* exactly 4 per row */
+    }
+    .rank-btn {
+      border-radius: 12px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.10);
+      color: rgba(255,255,255,0.80);
+      font-size: 26px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: background 0.08s;
+      user-select: none;
+    }
+    .rank-btn:active { background: rgba(255,255,255,0.20); }
+    .rank-btn.is-c1 {
+      background: rgba(255,255,255,0.13);
+      border-color: rgba(255,255,255,0.38);
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ── TABLE SCREEN ── -->
+  <div id="screen-table" class="screen active">
+    <div id="top-bar">
+      <div id="stack-bar"></div>
+      <button id="reset-btn" title="Clear hand">↺</button>
+    </div>
+    <div id="table-wrap">
+      <div id="table-felt">
+        <div id="hand-center">
+          <div id="hand-name"></div>
+          <div id="action-badge" style="display:none;"></div>
+          <div id="hand-hint">Tap position<br>then tap here</div>
+          <div id="suit-row" style="display:none;">
+            <div id="suit-toggle">
+              <button class="suit-opt" data-suit="o">offsuit</button>
+              <button class="suit-opt active" data-suit="s">suited</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- seats injected by JS -->
+    </div>
+  </div>
+
+  <!-- ── CARD 1 SCREEN ── -->
+  <div id="screen-card1" class="screen card-screen">
+    <div class="card-top">
+      <button class="back-btn" id="back-card1">‹</button>
+      <div>
+        <div class="card-title">First card</div>
+        <div class="card-sub">Select a rank</div>
+      </div>
+    </div>
+    <div class="rank-grid" id="grid-card1"></div>
+  </div>
+
+  <!-- ── CARD 2 SCREEN ── -->
+  <div id="screen-card2" class="screen card-screen">
+    <div class="card-top">
+      <button class="back-btn" id="back-card2">‹</button>
+      <div>
+        <div class="card-title">Second card</div>
+        <div class="card-sub">First: <span id="c1-show">—</span></div>
+      </div>
+    </div>
+    <div class="rank-grid" id="grid-card2"></div>
+  </div>
+
+</div>
+<script>
+"use strict";
+
+/* ══════════════════════════════════════════════════════════════
+   TEMP DATASET — Isolated, NOT wired to desktop viewer ranges
+   ─────────────────────────────────────────────────────────────
+   Context:  Raise First In (RFI), 6-max, Unopened pot
+   Decision: OPEN (raise) or FOLD
+
+   Structure:
+     TEMP_DATA[stack][position] = Set of hand codes → OPEN
+     Everything outside the set → FOLD
+
+   Hand code format:
+     Pair:    "AA"  "KK"  "22"
+     Suited:  "AKs" "T9s" "54s"   (higher rank first)
+     Offsuit: "AKo" "T9o" "54o"   (higher rank first)
+
+   HOW TO REPLACE THIS DATASET LATER:
+   ─────────────────────────────────────
+   1. Obtain real data (GTO solver, custom study, etc.)
+   2. Express it as: for each stack/position, a list of hand codes to OPEN
+   3. Replace the arrays inside OPEN_HANDS_RAW below
+   4. Keep the same structure: stack → position → array of strings
+   5. run() and decide() need no changes — lookup is in getDecision()
+   ══════════════════════════════════════════════════════════════ */
+
+const OPEN_HANDS_RAW = {
+
+  "40bb": {
+    UTG: [
+      "AA","KK","QQ","JJ","TT","99","88","77","66","55","44","33","22",
+      "AKs","AQs","AJs","ATs","A9s","A8s","A7s","A6s","A5s","A4s","A3s","A2s",
+      "KQs","KJs","KTs","K9s","K8s",
+      "QJs","QTs","Q9s",
+      "JTs","J9s","T9s","T8s","98s","87s","76s",
+      "AKo","AQo","AJo","ATo","KQo","KJo"
+    ],
+    HJ: [
+      "AA","KK","QQ","JJ","TT","99","88","77","66","55","44","33","22",
+      "AKs","AQs","AJs","ATs","A9s","A8s","A7s","A6s","A5s","A4s","A3s","A2s",
+      "KQs","KJs","KTs","K9s","K8s","K7s",
+      "QJs","QTs","Q9s","Q8s",
+      "JTs","J9s","J8s","T9s","T8s","98s","97s","87s","76s","65s","54s",
+      "AKo","AQo","AJo","ATo","A9o",
+      "KQo","KJo","KTo","QJo"
+    ],
+    CO: [
+      "AA","KK","QQ","JJ","TT","99","88","77","66","55","44","33","22",
+      "AKs","AQs","AJs","ATs","A9s","A8s","A7s","A6s","A5s","A4s","A3s","A2s",
+      "KQs","KJs","KTs","K9s","K8s","K7s","K6s","K5s",
+      "QJs","QTs","Q9s","Q8s","Q7s",
+      "JTs","J9s","J8s","J7s","T9s","T8s","T7s","98s","97s","87s","86s","76s","75s","65s","64s","54s","53s","43s",
+      "AKo","AQo","AJo","ATo","A9o","A8o",
+      "KQo","KJo","KTo","K9o",
+      "QJo","QTo","JTo"
+    ],
+    BTN: [
+      "AA","KK","QQ","JJ","TT","99","88","77","66","55","44","33","22",
+      "AKs","AQs","AJs","ATs","A9s","A8s","A7s","A6s","A5s","A4s","A3s","A2s",
+      "KQs","KJs","KTs","K9s","K8s","K7s","K6s","K5s","K4s","K3s","K2s",
+      "QJs","QTs","Q9s","Q8s","Q7s","Q6s","Q5s",
+      "JTs","J9s","J8s","J7s","J6s",
+      "T9s","T8s","T7s","T6s","98s","97s","96s","87s","86s","85s","76s","75s","74s","65s","64s","54s","53s","43s","42s","32s",
+      "AKo","AQo","AJo","ATo","A9o","A8o","A7o","A6o","A5o","A4o","A3o",
+      "KQo","KJo","KTo","K9o","K8o","K7o",
+      "QJo","QTo","Q9o","JTo","J9o","T9o","98o","87o","76o"
+    ],
+    SB: [
+      "AA","KK","QQ","JJ","TT","99","88","77","66","55","44","33","22",
+      "AKs","AQs","AJs","ATs","A9s","A8s","A7s","A6s","A5s","A4s","A3s","A2s",
+      "KQs","KJs","KTs","K9s","K8s","K7s","K6s","K5s","K4s",
+      "QJs","QTs","Q9s","Q8s","Q7s",
+      "JTs","J9s","J8s","J7s","T9s","T8s","T7s","98s","97s","87s","86s","76s","75s","65s","54s","43s","32s",
+      "AKo","AQo","AJo","ATo","A9o","A8o","A7o","A6o","A5o",
+      "KQo","KJo","KTo","K9o","K8o",
+      "QJo","QTo","Q9o","JTo","J9o","T9o","98o"
+    ],
+    BB: null
+  },
+
+  "20bb": {
+    UTG: [
+      "AA","KK","QQ","JJ","TT","99","88","77","66","55","44","33","22",
+      "AKs","AQs","AJs","ATs","A9s","A8s","A7s","A6s","A5s",
+      "KQs","KJs","KTs",
+      "QJs","JTs","T9s",
+      "AKo","AQo","AJo","ATo",
+      "KQo"
+    ],
+    HJ: [
+      "AA","KK","QQ","JJ","TT","99","88","77","66","55","44","33","22",
+      "AKs","AQs","AJs","ATs","A9s","A8s","A7s","A6s","A5s","A4s","A3s",
+      "KQs","KJs","KTs","K9s",
+      "QJs","QTs","JTs","T9s","98s",
+      "AKo","AQo","AJo","ATo","A9o",
+      "KQo","KJo"
+    ],
+    CO: [
+      "AA","KK","QQ","JJ","TT","99","88","77","66","55","44","33","22",
+      "AKs","AQs","AJs","ATs","A9s","A8s","A7s","A6s","A5s","A4s","A3s","A2s",
+      "KQs","KJs","KTs","K9s","K8s",
+      "QJs","QTs","Q9s","JTs","J9s","T9s","98s","87s","76s",
+      "AKo","AQo","AJo","ATo","A9o","A8o",
+      "KQo","KJo","KTo","QJo"
+    ],
+    BTN: [
+      "AA","KK","QQ","JJ","TT","99","88","77","66","55","44","33","22",
+      "AKs","AQs","AJs","ATs","A9s","A8s","A7s","A6s","A5s","A4s","A3s","A2s",
+      "KQs","KJs","KTs","K9s","K8s","K7s","K6s","K5s",
+      "QJs","QTs","Q9s","Q8s","JTs","J9s","J8s","T9s","T8s","98s","97s","87s","76s","65s","54s",
+      "AKo","AQo","AJo","ATo","A9o","A8o","A7o","A6o","A5o",
+      "KQo","KJo","KTo","K9o",
+      "QJo","QTo","JTo","T9o"
+    ],
+    SB: [
+      "AA","KK","QQ","JJ","TT","99","88","77","66","55","44","33","22",
+      "AKs","AQs","AJs","ATs","A9s","A8s","A7s","A6s","A5s","A4s","A3s","A2s",
+      "KQs","KJs","KTs","K9s","K8s","K7s",
+      "QJs","QTs","Q9s","JTs","J9s","T9s","98s","87s","76s","65s",
+      "AKo","AQo","AJo","ATo","A9o","A8o","A7o","A6o",
+      "KQo","KJo","KTo",
+      "QJo","JTo"
+    ],
+    BB: null
+  }
+};
+
+/* Convert arrays to Sets for O(1) lookup */
+const TEMP_DATA = {};
+for (const [stack, positions] of Object.entries(OPEN_HANDS_RAW)) {
+  TEMP_DATA[stack] = {};
+  for (const [pos, arr] of Object.entries(positions)) {
+    TEMP_DATA[stack][pos] = arr ? new Set(arr) : null;
+  }
+}
+
+/* ─── Constants ─── */
+const RANKS     = ["A","K","Q","J","T","9","8","7","6","5","4","3","2"];
+const POSITIONS = ["UTG","HJ","CO","BTN","SB","BB"];
+const STACKS    = ["20bb","40bb"];
+
+/* Seat layout — % of #table-wrap (top, left)
+   Hero seat at bottom center. Default selected position: BTN. */
+const SEAT_POS = {
+  UTG: { top: "10%", left: "50%" },
+  HJ:  { top: "30%", left: "84%" },
+  CO:  { top: "58%", left: "82%" },
+  BTN: { top: "80%", left: "50%" },
+  SB:  { top: "58%", left: "18%" },
+  BB:  { top: "30%", left: "16%" },
+};
+
+/* ─── State ─── */
+let S = {
+  stack:  "40bb",
+  pos:    "BTN",
+  card1:  null,
+  card2:  null,
+  suited: false,
+};
+
+/* ─── Logic ─── */
+function getHandCode() {
+  if (!S.card1 || !S.card2) return null;
+  const ri = RANKS.indexOf(S.card1);
+  const rj = RANKS.indexOf(S.card2);
+  if (ri === rj) return S.card1 + S.card2;                            // pair
+  const [hi, lo] = ri < rj ? [S.card1, S.card2] : [S.card2, S.card1];
+  return S.suited ? hi + lo + "s" : hi + lo + "o";
+}
+
+const ACTION_STYLE = {
+  open:  { label: "OPEN", color: "#22c55e", bg: "rgba(34,197,94,0.16)",   border: "rgba(34,197,94,0.40)"  },
+  fold:  { label: "FOLD", color: "#6b7280", bg: "rgba(107,114,128,0.14)", border: "rgba(107,114,128,0.30)" },
+};
+
+function getDecision(code) {
+  if (!code) return null;
+  const set = TEMP_DATA[S.stack]?.[S.pos];
+  if (!set) return ACTION_STYLE.fold;
+  return set.has(code) ? ACTION_STYLE.open : ACTION_STYLE.fold;
+}
+
+/* ─── Render ─── */
+function render() {
+  /* Stack bar */
+  document.querySelectorAll(".stack-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.stack === S.stack);
+  });
+
+  /* Seats */
+  POSITIONS.forEach(p => {
+    document.getElementById("seat-" + p)?.classList.toggle("active", p === S.pos);
+  });
+
+  /* Hand center */
+  const code = getHandCode();
+  const dec  = getDecision(code);
+  const nameEl   = document.getElementById("hand-name");
+  const badgeEl  = document.getElementById("action-badge");
+  const hintEl   = document.getElementById("hand-hint");
+  const suitRow  = document.getElementById("suit-row");
+
+  if (code && dec) {
+    nameEl.textContent  = code;
+    nameEl.style.color  = dec.color;
+    badgeEl.style.display    = "inline-block";
+    badgeEl.textContent      = dec.label;
+    badgeEl.style.color      = dec.color;
+    badgeEl.style.background = dec.bg;
+    badgeEl.style.border     = "1px solid " + dec.border;
+    hintEl.style.display = "none";
+    const isPair = S.card1 === S.card2;
+    suitRow.style.display = isPair ? "none" : "";
+    document.querySelectorAll(".suit-opt").forEach(b => {
+      b.classList.toggle("active", (b.dataset.suit === "s") === S.suited);
+    });
+  } else if (S.card1 && !S.card2) {
+    nameEl.textContent = S.card1 + " ?";
+    nameEl.style.color = "rgba(255,255,255,0.52)";
+    badgeEl.style.display = "none";
+    hintEl.style.display  = "none";
+    suitRow.style.display = "none";
+  } else {
+    nameEl.textContent = "";
+    badgeEl.style.display = "none";
+    hintEl.style.display  = "";
+    suitRow.style.display = "none";
+  }
+}
+
+/* ─── Screen transitions ─── */
+function showScreen(name) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById("screen-" + name).classList.add("active");
+  if (name === "card2") {
+    document.getElementById("c1-show").textContent = S.card1 || "—";
+    document.querySelectorAll("#grid-card2 .rank-btn").forEach(btn => {
+      btn.classList.toggle("is-c1", btn.dataset.rank === S.card1);
+    });
+  }
+  render();
+}
+
+/* ─── Init ─── */
+function init() {
+  /* Stack buttons */
+  const stackBar = document.getElementById("stack-bar");
+  STACKS.forEach(s => {
+    const btn = document.createElement("button");
+    btn.className  = "stack-btn" + (s === S.stack ? " active" : "");
+    btn.dataset.stack = s;
+    btn.textContent = s.toUpperCase();
+    btn.onclick = () => { S.stack = s; render(); };
+    stackBar.appendChild(btn);
+  });
+
+  /* Seat nodes */
+  const wrap = document.getElementById("table-wrap");
+  POSITIONS.forEach(pos => {
+    const el = document.createElement("div");
+    el.className = "seat" + (pos === "BTN" ? " hero" : "") + (pos === S.pos ? " active" : "");
+    el.id = "seat-" + pos;
+    el.textContent = pos;
+    const p = SEAT_POS[pos];
+    el.style.top  = p.top;
+    el.style.left = p.left;
+    el.onclick = () => { S.pos = pos; render(); };
+    wrap.appendChild(el);
+  });
+
+  /* Hand center tap → open card1 */
+  document.getElementById("hand-center").onclick = () => {
+    if (S.pos) { S.card2 = null; showScreen("card1"); }
+  };
+
+  /* Suited toggle */
+  document.querySelectorAll(".suit-opt").forEach(btn => {
+    btn.onclick = e => {
+      e.stopPropagation();
+      S.suited = btn.dataset.suit === "s";
+      render();
+    };
+  });
+
+  /* Reset button */
+  document.getElementById("reset-btn").onclick = () => {
+    S.card1 = null; S.card2 = null; S.suited = false;
+    render();
+  };
+
+  /* Back buttons */
+  document.getElementById("back-card1").onclick = () => showScreen("table");
+  document.getElementById("back-card2").onclick = () => { S.card2 = null; showScreen("card1"); };
+
+  /* Rank grids */
+  buildRankGrid("grid-card1", rank => {
+    S.card1 = rank; S.card2 = null; S.suited = false;
+    showScreen("card2");
+  });
+  buildRankGrid("grid-card2", rank => {
+    S.card2 = rank;
+    if (rank === S.card1) S.suited = false;  // pair: force offsuit
+    showScreen("table");
+  });
+
+  render();
+}
+
+function buildRankGrid(gridId, onPick) {
+  const grid = document.getElementById(gridId);
+  RANKS.forEach(r => {
+    const btn = document.createElement("button");
+    btn.className      = "rank-btn";
+    btn.dataset.rank   = r;
+    btn.textContent    = r;
+    btn.onclick = () => onPick(r);
+    grid.appendChild(btn);
+  });
+}
+
+init();
+</script>
+</body>
+</html>
