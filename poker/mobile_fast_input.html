@@ -10,18 +10,14 @@
     /* ══ VISUAL MARKER ══ */
     #test-marker {
       position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
-      background: #4c0099;
-      color: #fff; font-size: 13px; font-weight: 900;
-      text-align: center; padding: 7px;
-      letter-spacing: 0.08em;
+      background: #4c0099; color: #fff; font-size: 13px; font-weight: 900;
+      text-align: center; padding: 7px; letter-spacing: 0.08em;
       font-family: system-ui, sans-serif;
     }
 
     html, body {
-      width: 100%; height: 100%;
-      overflow: hidden;
-      background: #070c15;
-      color: #e2e8f0;
+      width: 100%; height: 100%; overflow: hidden;
+      background: #070c15; color: #e2e8f0;
       font-family: system-ui, -apple-system, sans-serif;
       -webkit-tap-highlight-color: transparent;
       -webkit-touch-callout: none;
@@ -35,40 +31,51 @@
     }
 
     /* ══════════════════════════════════════════
-       CONTEXT
+       CONTEXT — calmed down, clearly secondary
     ══════════════════════════════════════════ */
     #ctx {
       flex-shrink: 0;
       display: flex; flex-direction: column;
-      gap: 4px; padding-bottom: 7px;
-      border-bottom: 1px solid rgba(255,255,255,0.07);
+      gap: 3px; padding-bottom: 6px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
     }
-    .ctx-row { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+    .ctx-row { display: flex; gap: 3px; align-items: center; flex-wrap: wrap; }
     .ctx-btn {
-      padding: 4px 9px; border-radius: 6px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.05);
-      color: rgba(255,255,255,0.48);
-      font-size: 11px; font-weight: 700;
+      padding: 3px 8px; border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.09);
+      background: transparent;
+      color: rgba(255,255,255,0.38);
+      font-size: 10px; font-weight: 600;
       cursor: pointer; letter-spacing: 0.02em;
       transition: background 0.07s, color 0.07s, border-color 0.07s;
       user-select: none;
     }
-    .ctx-btn.active { background: rgba(255,255,255,0.16); color: #fff; border-color: rgba(255,255,255,0.38); }
-    .ctx-btn:disabled { opacity: 0.20; pointer-events: none; }
-    #mode-row { align-items: center; gap: 6px; }
+    .ctx-btn.active {
+      background: rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.86);
+      border-color: rgba(255,255,255,0.28);
+    }
+    .ctx-btn:disabled { opacity: 0.18; pointer-events: none; }
+    #mode-row { align-items: center; gap: 5px; }
     #vs-bar { display: flex; align-items: center; gap: 3px; margin-left: 4px; }
-    .vs-lbl { font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.34); letter-spacing: 0.08em; padding-right: 2px; }
+    .vs-lbl {
+      font-size: 9px; font-weight: 600;
+      color: rgba(255,255,255,0.26); letter-spacing: 0.07em; padding-right: 2px;
+    }
     .opener-btn {
       padding: 3px 7px; border-radius: 5px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.04);
-      color: rgba(255,255,255,0.44);
-      font-size: 10px; font-weight: 700;
+      border: 1px solid rgba(255,255,255,0.09);
+      background: transparent;
+      color: rgba(255,255,255,0.36);
+      font-size: 10px; font-weight: 600;
       cursor: pointer; user-select: none;
       transition: background 0.07s, color 0.07s;
     }
-    .opener-btn.active { background: rgba(255,255,255,0.14); color: #fff; border-color: rgba(255,255,255,0.32); }
+    .opener-btn.active {
+      background: rgba(255,255,255,0.11);
+      color: rgba(255,255,255,0.82);
+      border-color: rgba(255,255,255,0.26);
+    }
 
     /* ══════════════════════════════════════════
        HAND ZONE
@@ -77,14 +84,13 @@
       flex: 1; min-height: 0;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      gap: 20px;
-      padding: 14px 0 8px;
+      gap: 14px;
+      padding: 12px 0 0;
     }
 
     #cards-zone {
       display: flex; flex-direction: column;
-      align-items: center;
-      width: 100%;
+      align-items: center; width: 100%;
     }
 
     /* ══════════════════════════════════════════
@@ -103,9 +109,10 @@
       display: flex; align-items: center; justify-content: center;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
-      touch-action: none; /* prevents scroll during drag */
-      transition: transform 0.14s cubic-bezier(0.34, 1.4, 0.64, 1),
-                  box-shadow 0.14s, border-color 0.12s;
+      touch-action: none;
+      transition: transform 0.16s cubic-bezier(0.34, 1.4, 0.64, 1),
+                  box-shadow 0.14s, border-color 0.12s,
+                  opacity 0.14s;
     }
     .card:active { transform: scale(0.93) !important; }
 
@@ -114,6 +121,9 @@
     #hand-zone.idle #cards-row .card:last-child  { transform: rotate(5deg);  }
     #hand-zone.idle #cards-row .card:first-child:active { transform: rotate(-5deg) scale(0.93) !important; }
     #hand-zone.idle #cards-row .card:last-child:active  { transform: rotate(5deg)  scale(0.93) !important; }
+
+    /* Passive (inactive card during picking) */
+    .card.passive { opacity: 0.44; transform: scale(0.94); }
 
     /* Face down */
     .card[data-state="down"] {
@@ -132,8 +142,8 @@
       );
     }
     .card[data-state="down"]::after {
-      content: "◆"; position: absolute; font-size: 22px;
-      color: rgba(255,255,255,0.04);
+      content: "◆"; position: absolute;
+      font-size: 22px; color: rgba(255,255,255,0.04);
     }
     .card[data-state="down"] .card-rank-center { display: none; }
     .card[data-state="down"] .card-corner-tl,
@@ -142,14 +152,23 @@
     /* Selecting */
     .card[data-state="selecting"] {
       background: linear-gradient(155deg, #1e2840 0%, #141d32 100%);
-      border: 2px solid rgba(255,255,255,0.68);
-      box-shadow: 0 0 0 5px rgba(255,255,255,0.055),
-                  0 0 28px rgba(255,255,255,0.07),
+      border: 2px solid rgba(255,255,255,0.70);
+      box-shadow: 0 0 0 5px rgba(255,255,255,0.06),
+                  0 0 32px rgba(255,255,255,0.08),
                   0 12px 40px rgba(0,0,0,0.56);
     }
     .card[data-state="selecting"]::before {
       content: ""; position: absolute; inset: 8px;
-      border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.14); border-radius: 8px;
+    }
+    /* Downward triangle — visual continuity to picker below */
+    .card[data-state="selecting"]::after {
+      content: "";
+      position: absolute; bottom: -9px; left: 50%;
+      transform: translateX(-50%);
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-top: 8px solid rgba(255,255,255,0.44);
     }
     .card[data-state="selecting"] .card-rank-center { display: none; }
     .card[data-state="selecting"] .card-corner-tl,
@@ -175,37 +194,37 @@
     .card[data-state="up"] .card-corner-tl {
       position: absolute; top: 10px; left: 12px;
       font-size: 16px; font-weight: 800;
-      color: rgba(255,255,255,0.50); line-height: 1;
+      color: rgba(255,255,255,0.48); line-height: 1;
     }
     .card[data-state="up"] .card-corner-br {
       position: absolute; bottom: 10px; right: 12px;
       font-size: 16px; font-weight: 800;
-      color: rgba(255,255,255,0.50); line-height: 1;
+      color: rgba(255,255,255,0.48); line-height: 1;
       transform: rotate(180deg);
     }
 
     /* ══════════════════════════════════════════
-       RANK PICKER — inline, below cards
+       RANK PICKER — inline, attached to cards
     ══════════════════════════════════════════ */
     #rank-picker {
       display: none;
       width: 100%;
-      margin-top: 18px;
+      margin-top: 12px; /* tight to card, visually attached */
     }
     @keyframes picker-appear {
-      from { opacity: 0; transform: translateY(-6px); }
+      from { opacity: 0; transform: translateY(-5px); }
       to   { opacity: 1; transform: translateY(0);    }
     }
     #rank-picker.active {
       display: block;
-      animation: picker-appear 0.13s ease-out forwards;
+      animation: picker-appear 0.12s ease-out forwards;
     }
 
     #picking-label {
       font-size: 10px; font-weight: 700;
-      color: rgba(255,255,255,0.30);
+      color: rgba(255,255,255,0.28);
       letter-spacing: 0.12em; text-transform: uppercase;
-      text-align: center; margin-bottom: 10px;
+      text-align: center; margin-bottom: 9px;
     }
 
     #rank-grid {
@@ -214,59 +233,78 @@
     }
     .rank-btn {
       width: calc((100% - 48px) / 7);
-      aspect-ratio: 1;
-      border-radius: 12px;
-      border: 1.5px solid rgba(255,255,255,0.14);
-      background: rgba(255,255,255,0.08);
-      color: rgba(255,255,255,0.90);
+      aspect-ratio: 1; border-radius: 12px;
+      border: 1.5px solid rgba(255,255,255,0.13);
+      background: rgba(255,255,255,0.07);
+      color: rgba(255,255,255,0.88);
       font-size: clamp(16px, 5vw, 22px); font-weight: 900;
       cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       user-select: none;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.22);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.20);
       transition: background 0.05s, transform 0.05s, border-color 0.05s;
     }
-    .rank-btn:active {
-      transform: scale(0.86);
-      background: rgba(255,255,255,0.22);
-      border-color: rgba(255,255,255,0.36);
-    }
-    /* Drag-over highlight — instant, very visible */
+    .rank-btn:active { transform: scale(0.86); background: rgba(255,255,255,0.22); border-color: rgba(255,255,255,0.36); }
+    /* Drag-over — very obvious, instant */
     .rank-btn.drag-over {
-      background: rgba(255,255,255,0.30) !important;
-      border-color: rgba(255,255,255,0.66) !important;
-      transform: scale(1.12) !important;
-      box-shadow: 0 0 16px rgba(255,255,255,0.16) !important;
+      background: rgba(255,255,255,0.34) !important;
+      border-color: rgba(255,255,255,1.0) !important;
+      transform: scale(1.16) !important;
+      box-shadow: 0 0 18px rgba(255,255,255,0.18) !important;
+      color: #fff !important;
       transition: none !important;
     }
 
-    /* Idle hint */
+    /* ── Idle hint ── */
     #idle-hint {
-      margin-top: 16px;
+      margin-top: 14px;
       font-size: 11px; font-weight: 600;
-      color: rgba(255,255,255,0.14);
-      letter-spacing: 0.12em; text-transform: uppercase;
+      color: rgba(255,255,255,0.13);
+      letter-spacing: 0.10em; text-transform: uppercase;
     }
 
     /* ══════════════════════════════════════════
-       RESULT
+       SUITED CHIP — between cards and result
+    ══════════════════════════════════════════ */
+    #suited-row {
+      min-height: 22px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #btn-suited {
+      padding: 4px 14px; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: transparent;
+      color: rgba(255,255,255,0.32);
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.06em;
+      cursor: pointer; user-select: none;
+      transition: background 0.07s, color 0.07s, border-color 0.07s;
+    }
+    #btn-suited.on {
+      background: rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.80);
+      border-color: rgba(255,255,255,0.38);
+    }
+    #btn-suited.hidden { display: none; }
+
+    /* ══════════════════════════════════════════
+       RESULT — compact, central, clean
     ══════════════════════════════════════════ */
     #hand-result {
-      display: none;
-      flex-direction: column;
-      align-items: center; gap: 6px;
+      display: none; flex-direction: column;
+      align-items: center; gap: 5px;
       text-align: center;
     }
     #hand-result.active { display: flex; }
 
+    /* Mini cards */
     #hand-display {
       display: flex; gap: 6px;
       align-items: center; justify-content: center;
-      margin-bottom: 2px;
     }
     .mini-card {
       width: 40px; height: 56px;
-      border-radius: 5px; background: #eef0f5;
+      border-radius: 6px; background: #eef0f5;
       box-shadow: 0 3px 10px rgba(0,0,0,0.50);
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
@@ -277,6 +315,7 @@
     .mini-card.red .mc-rank,
     .mini-card.red .mc-suit { color: #c92a2a; }
 
+    /* Action */
     #result-text {
       font-size: clamp(52px, 15vw, 68px);
       font-weight: 900; letter-spacing: 0.04em; line-height: 1;
@@ -284,12 +323,13 @@
     }
     #result-reason {
       font-size: 12px; font-weight: 500;
-      color: rgba(255,255,255,0.34); letter-spacing: 0.01em;
+      color: rgba(255,255,255,0.32);
+      letter-spacing: 0.01em;
     }
     #result-tap-hint {
-      font-size: 9px; font-weight: 600;
-      color: rgba(255,255,255,0.12);
-      letter-spacing: 0.06em; text-transform: uppercase; margin-top: 2px;
+      font-size: 9px; font-weight: 500;
+      color: rgba(255,255,255,0.10);
+      letter-spacing: 0.04em; margin-top: 1px;
     }
 
     @keyframes pop-in {
@@ -299,42 +339,23 @@
     .pop-in { animation: pop-in 0.18s cubic-bezier(0.28, 1.7, 0.58, 1); }
 
     /* ══════════════════════════════════════════
-       SUITED CHIP
-    ══════════════════════════════════════════ */
-    #suited-row {
-      min-height: 26px;
-      display: flex; align-items: center; justify-content: center;
-    }
-    #btn-suited {
-      padding: 5px 20px; border-radius: 20px;
-      border: 1px solid rgba(255,255,255,0.15);
-      background: rgba(255,255,255,0.05);
-      color: rgba(255,255,255,0.36);
-      font-size: 11px; font-weight: 700;
-      letter-spacing: 0.08em; text-transform: uppercase;
-      cursor: pointer; user-select: none;
-      transition: background 0.07s, color 0.07s, border-color 0.07s;
-    }
-    #btn-suited.on { background: rgba(255,255,255,0.16); color: #fff; border-color: rgba(255,255,255,0.44); }
-    #btn-suited.hidden { visibility: hidden; pointer-events: none; }
-
-    /* ══════════════════════════════════════════
        FOOTER
     ══════════════════════════════════════════ */
     #link-grid {
       display: block; text-align: center;
-      font-size: 10px; font-weight: 600;
+      font-size: 10px; font-weight: 500;
       color: rgba(255,255,255,0.13); text-decoration: none;
       letter-spacing: 0.04em;
-      padding: 9px 0 max(12px, env(safe-area-inset-bottom));
+      border-top: 1px solid rgba(255,255,255,0.05);
+      padding: 10px 0 max(12px, env(safe-area-inset-bottom));
       flex-shrink: 0; transition: color 0.10s;
     }
-    #link-grid:hover { color: rgba(255,255,255,0.32); }
+    #link-grid:hover { color: rgba(255,255,255,0.30); }
   </style>
 </head>
 <body>
 
-<div id="test-marker">DRAG SELECT v1</div>
+<div id="test-marker">DRAG CLARITY v1</div>
 
 <div id="app">
 
@@ -342,7 +363,7 @@
     <div class="ctx-row" id="stack-row"></div>
     <div class="ctx-row" id="pos-row"></div>
     <div class="ctx-row" id="mode-row">
-      <div id="mode-grp" style="display:flex;gap:4px;"></div>
+      <div id="mode-grp" style="display:flex;gap:3px;"></div>
       <div id="vs-bar" style="display:none;">
         <span class="vs-lbl">vs</span>
         <div id="opener-grp" style="display:flex;gap:3px;"></div>
@@ -371,7 +392,12 @@
         <div id="rank-grid"></div>
       </div>
 
-      <div id="idle-hint">Touchez une carte</div>
+      <div id="idle-hint">Touchez · glissez</div>
+    </div>
+
+    <!-- Suited chip — between cards zone and result, natural hand property -->
+    <div id="suited-row">
+      <button id="btn-suited" class="hidden">Suited</button>
     </div>
 
     <div id="hand-result">
@@ -385,11 +411,7 @@
       </div>
       <div id="result-text"></div>
       <div id="result-reason"></div>
-      <div id="result-tap-hint">Tap pour recommencer</div>
-    </div>
-
-    <div id="suited-row">
-      <button id="btn-suited" class="hidden">suited</button>
+      <div id="result-tap-hint">tap pour recommencer</div>
     </div>
 
   </div>
@@ -471,15 +493,14 @@ let step = "idle";
    DRAG STATE
 ══════════════════════════════════════════ */
 let dragActive  = false;
-let dragHovered = null; /* currently highlighted .rank-btn */
+let dragHovered = null;
 
 function beginDrag() {
   dragActive  = true;
   dragHovered = null;
-  /* Prevent scroll during drag gesture */
   document.body.style.overflow = "hidden";
-  document.addEventListener("pointermove",  onDragMove,   { passive: false });
-  document.addEventListener("pointerup",    onDragEnd);
+  document.addEventListener("pointermove",   onDragMove,   { passive: false });
+  document.addEventListener("pointerup",     onDragEnd);
   document.addEventListener("pointercancel", onDragCancel);
 }
 
@@ -487,8 +508,8 @@ function cleanupDrag() {
   dragActive = false;
   document.body.style.overflow = "";
   if (dragHovered) { dragHovered.classList.remove("drag-over"); dragHovered = null; }
-  document.removeEventListener("pointermove",  onDragMove);
-  document.removeEventListener("pointerup",    onDragEnd);
+  document.removeEventListener("pointermove",   onDragMove);
+  document.removeEventListener("pointerup",     onDragEnd);
   document.removeEventListener("pointercancel", onDragCancel);
 }
 
@@ -505,19 +526,13 @@ function onDragMove(e) {
 
 function onDragEnd(e) {
   if (!dragActive) { cleanupDrag(); return; }
-  /* Also check element under finger in case pointermove didn't fire */
   const btn = rankBtnAt(e.clientX, e.clientY) || dragHovered;
   cleanupDrag();
-  if (btn) {
-    pickRank(btn.textContent.trim());
-  }
-  /* If no rank reached: picker stays visible — fallback tap still works */
+  if (btn) pickRank(btn.textContent.trim());
+  /* No rank reached: picker stays open for fallback tap */
 }
 
-function onDragCancel() {
-  cleanupDrag();
-  /* Leave picker open for fallback tap */
-}
+function onDragCancel() { cleanupDrag(); }
 
 function rankBtnAt(x, y) {
   const el = document.elementFromPoint(x, y);
@@ -557,55 +572,48 @@ function init() {
   buildModes();
   buildRankGrid();
 
-  /* Cards use pointerdown for instant drag activation */
   function bindCard(cardEl, n) {
     cardEl.addEventListener("pointerdown", (e) => {
-      /* Release implicit browser capture so pointermove reaches document */
       if (cardEl.releasePointerCapture) cardEl.releasePointerCapture(e.pointerId);
       e.preventDefault();
       onCardPointerDown(e, n);
     });
-    /* Prevent long-press context menu on mobile */
     cardEl.addEventListener("contextmenu", e => e.preventDefault());
   }
   bindCard(EL.card1, 1);
   bindCard(EL.card2, 2);
-
   EL.btnSuited.addEventListener("click", onSuitedToggle);
 
   showView("idle");
 }
 
 /* ══════════════════════════════════════════
-   CARD POINTER DOWN — entry point for drag
+   CARD POINTER DOWN
 ══════════════════════════════════════════ */
 function onCardPointerDown(e, n) {
-  if (step === "done") {
-    resetCards();
-    return;
-  }
+  if (step === "done") { resetCards(); return; }
+
   if (step === "idle") {
     startPicking1();
     beginDrag();
     return;
   }
+
   if (step === "picking1") {
     if (n === 1) { resetCards(); return; }
-    /* card2 press during picking1 → re-activate drag with picker visible */
+    /* card2 during picking1 — re-activate drag */
     beginDrag();
     return;
   }
+
   if (step === "picking2") {
-    if (n === 2) {
-      /* activate drag for card2 selection */
-      beginDrag();
-      return;
-    }
-    /* card1 press during picking2 → back to picking1 */
-    rank2 = null;
-    step = "picking1";
+    if (n === 2) { beginDrag(); return; }
+    /* card1 during picking2 — back to picking1 */
+    rank2 = null; step = "picking1";
     setCard(EL.card2, "down", null);
     setCard(EL.card1, "selecting", null);
+    EL.card2.classList.add("passive");
+    EL.card1.classList.remove("passive");
     EL.btnSuited.classList.add("hidden");
     EL.pickingLabel.textContent = "Carte 1";
     beginDrag();
@@ -656,7 +664,6 @@ function buildModes() {
 function buildRankGrid() {
   EL.rankGrid.querySelectorAll(".rank-btn").forEach(b => b.remove());
   RANKS.forEach(r => {
-    /* Click listener = fallback tap (works when drag wasn't used) */
     const b = mkBtn(r, "rank-btn", () => pickRank(r));
     EL.rankGrid.appendChild(b);
   });
@@ -730,6 +737,9 @@ function startPicking1() {
   step = "picking1";
   setCard(EL.card1, "selecting", null);
   setCard(EL.card2, "down", null);
+  /* card2 visually dims — not the active card */
+  EL.card1.classList.remove("passive");
+  EL.card2.classList.add("passive");
   EL.btnSuited.classList.add("hidden");
   EL.btnSuited.classList.remove("on");
   EL.pickingLabel.textContent = "Carte 1";
@@ -742,6 +752,9 @@ function pickRank(rank) {
     setCard(EL.card1, "up", rank);
     step = "picking2";
     setCard(EL.card2, "selecting", null);
+    /* card2 now active — remove passive */
+    EL.card1.classList.remove("passive");
+    EL.card2.classList.remove("passive");
     EL.pickingLabel.textContent = "Carte 2";
     EL.btnSuited.classList.remove("hidden");
     if (suited) EL.btnSuited.classList.add("on");
@@ -796,6 +809,8 @@ function resetCards() {
   step = "idle";
   setCard(EL.card1, "down", null);
   setCard(EL.card2, "down", null);
+  EL.card1.classList.remove("passive");
+  EL.card2.classList.remove("passive");
   EL.btnSuited.classList.remove("on");
   EL.btnSuited.classList.add("hidden");
   showView("idle");
