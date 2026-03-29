@@ -7,7 +7,7 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ══ VISUAL MARKER — remove after test ══ */
+    /* ══ VISUAL MARKER ══ */
     #test-marker {
       position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
       background: #4c0099;
@@ -31,11 +31,11 @@
       width: 100%; height: 100%;
       display: flex; flex-direction: column;
       max-width: 420px; margin: 0 auto;
-      padding: 36px 16px 0; /* top padding accounts for marker */
+      padding: 36px 16px 0;
     }
 
     /* ══════════════════════════════════════════
-       CONTEXT — compact top bar
+       CONTEXT
     ══════════════════════════════════════════ */
     #ctx {
       flex-shrink: 0;
@@ -71,7 +71,7 @@
     .opener-btn.active { background: rgba(255,255,255,0.14); color: #fff; border-color: rgba(255,255,255,0.32); }
 
     /* ══════════════════════════════════════════
-       HAND ZONE — center of screen
+       HAND ZONE
     ══════════════════════════════════════════ */
     #hand-zone {
       flex: 1; min-height: 0;
@@ -81,16 +81,15 @@
       padding: 14px 0 8px;
     }
 
-    /* ══════════════════════════════════════════
-       CARDS ZONE — cards + inline picker
-    ══════════════════════════════════════════ */
     #cards-zone {
       display: flex; flex-direction: column;
       align-items: center;
       width: 100%;
     }
 
-    /* ── Cards row ── */
+    /* ══════════════════════════════════════════
+       CARDS
+    ══════════════════════════════════════════ */
     #cards-row {
       display: flex; gap: 22px;
       align-items: flex-end; justify-content: center;
@@ -102,7 +101,9 @@
       border-radius: 14px; cursor: pointer;
       position: relative;
       display: flex; align-items: center; justify-content: center;
-      user-select: none; -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: none; /* prevents scroll during drag */
       transition: transform 0.14s cubic-bezier(0.34, 1.4, 0.64, 1),
                   box-shadow 0.14s, border-color 0.12s;
     }
@@ -122,8 +123,7 @@
                   inset 0 1px 0 rgba(255,255,255,0.06);
     }
     .card[data-state="down"]::before {
-      content: "";
-      position: absolute; inset: 8px;
+      content: ""; position: absolute; inset: 8px;
       border: 1px solid rgba(255,255,255,0.07); border-radius: 8px;
       background: repeating-linear-gradient(
         45deg,
@@ -132,8 +132,7 @@
       );
     }
     .card[data-state="down"]::after {
-      content: "◆";
-      position: absolute; font-size: 22px;
+      content: "◆"; position: absolute; font-size: 22px;
       color: rgba(255,255,255,0.04);
     }
     .card[data-state="down"] .card-rank-center { display: none; }
@@ -149,8 +148,7 @@
                   0 12px 40px rgba(0,0,0,0.56);
     }
     .card[data-state="selecting"]::before {
-      content: "";
-      position: absolute; inset: 8px;
+      content: ""; position: absolute; inset: 8px;
       border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;
     }
     .card[data-state="selecting"] .card-rank-center { display: none; }
@@ -187,7 +185,7 @@
     }
 
     /* ══════════════════════════════════════════
-       RANK PICKER — inline, directly below cards
+       RANK PICKER — inline, below cards
     ══════════════════════════════════════════ */
     #rank-picker {
       display: none;
@@ -200,7 +198,7 @@
     }
     #rank-picker.active {
       display: block;
-      animation: picker-appear 0.15s ease-out forwards;
+      animation: picker-appear 0.13s ease-out forwards;
     }
 
     #picking-label {
@@ -233,8 +231,16 @@
       background: rgba(255,255,255,0.22);
       border-color: rgba(255,255,255,0.36);
     }
+    /* Drag-over highlight — instant, very visible */
+    .rank-btn.drag-over {
+      background: rgba(255,255,255,0.30) !important;
+      border-color: rgba(255,255,255,0.66) !important;
+      transform: scale(1.12) !important;
+      box-shadow: 0 0 16px rgba(255,255,255,0.16) !important;
+      transition: none !important;
+    }
 
-    /* ── Idle hint ── */
+    /* Idle hint */
     #idle-hint {
       margin-top: 16px;
       font-size: 11px; font-weight: 600;
@@ -243,7 +249,7 @@
     }
 
     /* ══════════════════════════════════════════
-       RESULT — compact inline
+       RESULT
     ══════════════════════════════════════════ */
     #hand-result {
       display: none;
@@ -253,7 +259,6 @@
     }
     #hand-result.active { display: flex; }
 
-    /* Mini cards */
     #hand-display {
       display: flex; gap: 6px;
       align-items: center; justify-content: center;
@@ -261,8 +266,7 @@
     }
     .mini-card {
       width: 40px; height: 56px;
-      border-radius: 5px;
-      background: #eef0f5;
+      border-radius: 5px; background: #eef0f5;
       box-shadow: 0 3px 10px rgba(0,0,0,0.50);
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
@@ -273,7 +277,6 @@
     .mini-card.red .mc-rank,
     .mini-card.red .mc-suit { color: #c92a2a; }
 
-    /* Action */
     #result-text {
       font-size: clamp(52px, 15vw, 68px);
       font-weight: 900; letter-spacing: 0.04em; line-height: 1;
@@ -324,20 +327,17 @@
       color: rgba(255,255,255,0.13); text-decoration: none;
       letter-spacing: 0.04em;
       padding: 9px 0 max(12px, env(safe-area-inset-bottom));
-      flex-shrink: 0;
-      transition: color 0.10s;
+      flex-shrink: 0; transition: color 0.10s;
     }
     #link-grid:hover { color: rgba(255,255,255,0.32); }
   </style>
 </head>
 <body>
 
-<!-- VISUAL MARKER — remove after confirmed -->
-<div id="test-marker">INLINE PICKER TEST — v3</div>
+<div id="test-marker">DRAG SELECT v1</div>
 
 <div id="app">
 
-  <!-- ── Context ── -->
   <div id="ctx">
     <div class="ctx-row" id="stack-row"></div>
     <div class="ctx-row" id="pos-row"></div>
@@ -350,11 +350,9 @@
     </div>
   </div>
 
-  <!-- ── Hand zone ── -->
   <div id="hand-zone" class="idle">
 
     <div id="cards-zone">
-
       <div id="cards-row">
         <div class="card" id="card1" data-state="down">
           <span class="card-corner-tl"></span>
@@ -368,26 +366,21 @@
         </div>
       </div>
 
-      <!-- Rank picker inline — hidden at rest -->
       <div id="rank-picker">
         <div id="picking-label"></div>
         <div id="rank-grid"></div>
       </div>
 
       <div id="idle-hint">Touchez une carte</div>
-
     </div>
 
-    <!-- Result -->
     <div id="hand-result">
       <div id="hand-display">
         <div class="mini-card" id="mc1">
-          <span class="mc-rank"></span>
-          <span class="mc-suit"></span>
+          <span class="mc-rank"></span><span class="mc-suit"></span>
         </div>
         <div class="mini-card" id="mc2">
-          <span class="mc-rank"></span>
-          <span class="mc-suit"></span>
+          <span class="mc-rank"></span><span class="mc-suit"></span>
         </div>
       </div>
       <div id="result-text"></div>
@@ -409,6 +402,9 @@
 <script>
 "use strict";
 
+/* ══════════════════════════════════════════
+   RANGES
+══════════════════════════════════════════ */
 const RANGES = {};
 for (const [stack, positions] of Object.entries(MFI_RANGES_RAW)) {
   RANGES[stack] = {};
@@ -431,6 +427,9 @@ for (const [stack, positions] of Object.entries(MFI_VSOPEN_RAW)) {
   }
 }
 
+/* ══════════════════════════════════════════
+   CONSTANTS
+══════════════════════════════════════════ */
 const STACKS    = ["20bb","25bb","40bb"];
 const POSITIONS = ["UTG","HJ","CO","BTN","SB","BB"];
 const RANKS     = ["A","K","Q","J","T","9","8","7","6","5","4","3","2"];
@@ -457,6 +456,9 @@ const REASON = {
   "3BET": "Main forte — pression maximale",
 };
 
+/* ══════════════════════════════════════════
+   STATE
+══════════════════════════════════════════ */
 let activeStack  = "40bb";
 let activePos    = "BTN";
 let activeMode   = "open";
@@ -465,8 +467,71 @@ let rank1 = null, rank2 = null;
 let suited = false;
 let step = "idle";
 
+/* ══════════════════════════════════════════
+   DRAG STATE
+══════════════════════════════════════════ */
+let dragActive  = false;
+let dragHovered = null; /* currently highlighted .rank-btn */
+
+function beginDrag() {
+  dragActive  = true;
+  dragHovered = null;
+  /* Prevent scroll during drag gesture */
+  document.body.style.overflow = "hidden";
+  document.addEventListener("pointermove",  onDragMove,   { passive: false });
+  document.addEventListener("pointerup",    onDragEnd);
+  document.addEventListener("pointercancel", onDragCancel);
+}
+
+function cleanupDrag() {
+  dragActive = false;
+  document.body.style.overflow = "";
+  if (dragHovered) { dragHovered.classList.remove("drag-over"); dragHovered = null; }
+  document.removeEventListener("pointermove",  onDragMove);
+  document.removeEventListener("pointerup",    onDragEnd);
+  document.removeEventListener("pointercancel", onDragCancel);
+}
+
+function onDragMove(e) {
+  if (!dragActive) return;
+  e.preventDefault();
+  const btn = rankBtnAt(e.clientX, e.clientY);
+  if (btn !== dragHovered) {
+    if (dragHovered) dragHovered.classList.remove("drag-over");
+    dragHovered = btn;
+    if (dragHovered) dragHovered.classList.add("drag-over");
+  }
+}
+
+function onDragEnd(e) {
+  if (!dragActive) { cleanupDrag(); return; }
+  /* Also check element under finger in case pointermove didn't fire */
+  const btn = rankBtnAt(e.clientX, e.clientY) || dragHovered;
+  cleanupDrag();
+  if (btn) {
+    pickRank(btn.textContent.trim());
+  }
+  /* If no rank reached: picker stays visible — fallback tap still works */
+}
+
+function onDragCancel() {
+  cleanupDrag();
+  /* Leave picker open for fallback tap */
+}
+
+function rankBtnAt(x, y) {
+  const el = document.elementFromPoint(x, y);
+  return el ? el.closest(".rank-btn") : null;
+}
+
+/* ══════════════════════════════════════════
+   DOM REFS
+══════════════════════════════════════════ */
 const EL = {};
 
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
 function init() {
   EL.stackRow     = document.getElementById("stack-row");
   EL.posRow       = document.getElementById("pos-row");
@@ -492,13 +557,65 @@ function init() {
   buildModes();
   buildRankGrid();
 
-  EL.card1.addEventListener("click", () => onCardTap(1));
-  EL.card2.addEventListener("click", () => onCardTap(2));
+  /* Cards use pointerdown for instant drag activation */
+  function bindCard(cardEl, n) {
+    cardEl.addEventListener("pointerdown", (e) => {
+      /* Release implicit browser capture so pointermove reaches document */
+      if (cardEl.releasePointerCapture) cardEl.releasePointerCapture(e.pointerId);
+      e.preventDefault();
+      onCardPointerDown(e, n);
+    });
+    /* Prevent long-press context menu on mobile */
+    cardEl.addEventListener("contextmenu", e => e.preventDefault());
+  }
+  bindCard(EL.card1, 1);
+  bindCard(EL.card2, 2);
+
   EL.btnSuited.addEventListener("click", onSuitedToggle);
 
   showView("idle");
 }
 
+/* ══════════════════════════════════════════
+   CARD POINTER DOWN — entry point for drag
+══════════════════════════════════════════ */
+function onCardPointerDown(e, n) {
+  if (step === "done") {
+    resetCards();
+    return;
+  }
+  if (step === "idle") {
+    startPicking1();
+    beginDrag();
+    return;
+  }
+  if (step === "picking1") {
+    if (n === 1) { resetCards(); return; }
+    /* card2 press during picking1 → re-activate drag with picker visible */
+    beginDrag();
+    return;
+  }
+  if (step === "picking2") {
+    if (n === 2) {
+      /* activate drag for card2 selection */
+      beginDrag();
+      return;
+    }
+    /* card1 press during picking2 → back to picking1 */
+    rank2 = null;
+    step = "picking1";
+    setCard(EL.card2, "down", null);
+    setCard(EL.card1, "selecting", null);
+    EL.btnSuited.classList.add("hidden");
+    EL.pickingLabel.textContent = "Carte 1";
+    beginDrag();
+    return;
+  }
+}
+
+/* ══════════════════════════════════════════
+   BUILD CONTEXT
+══════════════════════════════════════════ */
 function buildStacks() {
   EL.stackRow.innerHTML = "";
   STACKS.forEach(s => {
@@ -539,6 +656,7 @@ function buildModes() {
 function buildRankGrid() {
   EL.rankGrid.querySelectorAll(".rank-btn").forEach(b => b.remove());
   RANKS.forEach(r => {
+    /* Click listener = fallback tap (works when drag wasn't used) */
     const b = mkBtn(r, "rank-btn", () => pickRank(r));
     EL.rankGrid.appendChild(b);
   });
@@ -590,6 +708,9 @@ function updateVsBar() {
   });
 }
 
+/* ══════════════════════════════════════════
+   VIEWS
+══════════════════════════════════════════ */
 function showView(view) {
   EL.handZone.classList.toggle("idle", view === "idle");
   EL.idleHint.style.display = view === "idle" ? "" : "none";
@@ -601,20 +722,9 @@ function showView(view) {
   EL.handResult.classList.toggle("active", view === "result");
 }
 
-function onCardTap(n) {
-  if (step === "done")    { resetCards(); return; }
-  if (step === "idle")    { startPicking1(); return; }
-  if (step === "picking1" && n === 1) { resetCards(); return; }
-  if (step === "picking2" && n === 2) {
-    rank2 = null; step = "picking1";
-    setCard(EL.card2, "down", null);
-    setCard(EL.card1, "selecting", null);
-    EL.btnSuited.classList.add("hidden");
-    EL.pickingLabel.textContent = "Carte 1";
-    return;
-  }
-}
-
+/* ══════════════════════════════════════════
+   PICKING FLOW
+══════════════════════════════════════════ */
 function startPicking1() {
   rank1 = null; rank2 = null; suited = false;
   step = "picking1";
@@ -691,6 +801,9 @@ function resetCards() {
   showView("idle");
 }
 
+/* ══════════════════════════════════════════
+   RANGE LOOKUP
+══════════════════════════════════════════ */
 function handKey(r1, r2, isSuited) {
   if (r1 === r2) return r1 + r2;
   const i1 = RANKS.indexOf(r1), i2 = RANKS.indexOf(r2);
@@ -717,6 +830,9 @@ function getActions(key) {
   return out.length ? out : ["FOLD"];
 }
 
+/* ══════════════════════════════════════════
+   MINI CARDS
+══════════════════════════════════════════ */
 function getMiniCardData(r1, r2, isSuited) {
   if (r1 === r2) return [
     { rank: r1, suit: "\u2660", red: false },
@@ -741,6 +857,9 @@ function updateMiniCards(r1, r2, isSuited) {
   });
 }
 
+/* ══════════════════════════════════════════
+   RESULT
+══════════════════════════════════════════ */
 function recompute() {
   const key     = handKey(rank1, rank2, suited);
   const actions = getActions(key);
