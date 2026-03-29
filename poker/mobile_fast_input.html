@@ -132,8 +132,7 @@
       );
     }
     .card[data-state="down"]::after {
-      content: "◆"; position: absolute;
-      font-size: 30px; color: rgba(255,255,255,0.16);
+      display: none;
     }
     .card[data-state="down"] .card-rank-center { display: none; }
     .card[data-state="down"] .card-corner-tl,
@@ -293,19 +292,26 @@
     }
     #hand-result.active { display: flex; }
 
-    /* Mini cards — neutral style, suit symbols kept for hand-type info */
+    /* Mini cards — rank outline + color dot, no symbols */
     #hand-display { display: flex; gap: 6px; align-items: center; justify-content: center; }
     .mini-card {
       width: 40px; height: 56px; border-radius: 6px;
       background: #f4f5f7;
       box-shadow: 0 3px 10px rgba(0,0,0,0.50);
       display: flex; flex-direction: column;
-      align-items: center; justify-content: center; flex-shrink: 0;
+      align-items: center; justify-content: center; gap: 4px; flex-shrink: 0;
     }
-    .mc-rank { font-size: 18px; font-weight: 900; line-height: 1.1; color: #111827; }
-    .mc-suit { font-size: 12px; line-height: 1; color: #111827; }
-    .mini-card.red .mc-rank,
-    .mini-card.red .mc-suit { color: #c92a2a; }
+    .mc-rank {
+      font-size: 20px; font-weight: 900; line-height: 1;
+      color: transparent;
+      -webkit-text-stroke: 1.8px #111827;
+    }
+    .mc-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #111827; flex-shrink: 0;
+    }
+    .mini-card.red .mc-rank { -webkit-text-stroke: 1.8px #c92a2a; }
+    .mini-card.red .mc-dot  { background: #c92a2a; }
 
     #result-text {
       font-size: clamp(52px, 15vw, 68px);
@@ -391,10 +397,10 @@
     <div id="hand-result">
       <div id="hand-display">
         <div class="mini-card" id="mc1">
-          <span class="mc-rank"></span><span class="mc-suit"></span>
+          <span class="mc-rank"></span><span class="mc-dot"></span>
         </div>
         <div class="mini-card" id="mc2">
-          <span class="mc-rank"></span><span class="mc-suit"></span>
+          <span class="mc-rank"></span><span class="mc-dot"></span>
         </div>
       </div>
       <div id="result-text"></div>
@@ -818,16 +824,16 @@ function getActions(key) {
 
 function getMiniCardData(r1, r2, isSuited) {
   if (r1 === r2) return [
-    { rank: r1, suit: "\u2660", red: false },
-    { rank: r2, suit: "\u2665", red: true  },
+    { rank: r1, red: false },
+    { rank: r2, red: true  },
   ];
   if (isSuited) return [
-    { rank: r1, suit: "\u2660", red: false },
-    { rank: r2, suit: "\u2660", red: false },
+    { rank: r1, red: false },
+    { rank: r2, red: false },
   ];
   return [
-    { rank: r1, suit: "\u2660", red: false },
-    { rank: r2, suit: "\u2666", red: true  },
+    { rank: r1, red: false },
+    { rank: r2, red: true  },
   ];
 }
 
@@ -835,7 +841,6 @@ function updateMiniCards(r1, r2, isSuited) {
   const data = getMiniCardData(r1, r2, isSuited);
   [EL.mc1, EL.mc2].forEach((mc, i) => {
     mc.querySelector(".mc-rank").textContent = data[i].rank;
-    mc.querySelector(".mc-suit").textContent = data[i].suit;
     mc.classList.toggle("red", data[i].red);
   });
 }
