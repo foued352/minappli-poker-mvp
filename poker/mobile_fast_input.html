@@ -3,738 +3,770 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>Minappli · Fast Input</title>
+  <title>Fast Input</title>
   <style>
-    *, *::before, *::after {
-      box-sizing: border-box; margin: 0; padding: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
-    html, body {
-      width: 100%; height: 100%; overflow: hidden;
-      background: radial-gradient(ellipse at 50% 0%, rgba(22,163,74,0.05) 0%, transparent 55%), #05090d;
-      color: #fff;
-      font-family: system-ui, -apple-system, sans-serif;
-    }
-    button {
-      background: none; border: none; color: inherit;
-      cursor: pointer; font-family: inherit;
-      touch-action: manipulation;
-    }
-    button:focus         { outline: none; }
-    button:focus-visible { outline: 2px solid rgba(134,239,172,0.28); outline-offset: 2px; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ═══════════════════════════════════════════════
-       APP SHELL
-    ═══════════════════════════════════════════════ */
+    /* ══ VISUAL MARKER — remove after test ══ */
+    #test-marker {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+      background: #4c0099;
+      color: #fff; font-size: 13px; font-weight: 900;
+      text-align: center; padding: 7px;
+      letter-spacing: 0.08em;
+      font-family: system-ui, sans-serif;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: #070c15;
+      color: #e2e8f0;
+      font-family: system-ui, -apple-system, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+
     #app {
       width: 100%; height: 100%;
-      max-width: 430px; margin: 0 auto;
       display: flex; flex-direction: column;
-      padding: 10px 10px 12px;
+      max-width: 420px; margin: 0 auto;
+      padding: 36px 16px 0; /* top padding accounts for marker */
     }
 
-    /* ═══════════════════════════════════════════════
-       BLOCK 1 — STACK
-    ═══════════════════════════════════════════════ */
-    #stack-bar {
-      display: flex; gap: 6px; flex-shrink: 0;
-      justify-content: center;
-      margin-bottom: 6px;
+    /* ══════════════════════════════════════════
+       CONTEXT — compact top bar
+    ══════════════════════════════════════════ */
+    #ctx {
+      flex-shrink: 0;
+      display: flex; flex-direction: column;
+      gap: 4px; padding-bottom: 7px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
     }
-    .stack-btn {
-      padding: 4px 18px;
-      border-radius: 6px;
-      border: 1px solid rgba(255,255,255,0.08);
-      color: rgba(255,255,255,0.22);
-      font-size: 10px; font-weight: 700;
-      letter-spacing: 0.06em;
-      background: linear-gradient(180deg, rgba(255,255,255,0.055) 0%, rgba(255,255,255,0.025) 100%);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.22);
-      transition: background 0.08s, color 0.08s, border-color 0.08s;
-    }
-    .stack-btn.active {
-      background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.07) 100%);
-      color: rgba(255,255,255,0.88);
-      border-color: rgba(255,255,255,0.22);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.08);
-    }
-
-    /* ═══════════════════════════════════════════════
-       BLOCK 2 — POSITION
-    ═══════════════════════════════════════════════ */
-    #pos-bar {
-      display: flex; gap: 5px; flex-shrink: 0;
-      margin-bottom: 5px;
-    }
-    .pos-btn {
-      flex: 1;
-      padding: 9px 2px;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.08);
-      color: rgba(255,255,255,0.26);
+    .ctx-row { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+    .ctx-btn {
+      padding: 4px 9px; border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.48);
       font-size: 11px; font-weight: 700;
-      letter-spacing: 0.02em;
-      background: linear-gradient(180deg, rgba(255,255,255,0.055) 0%, rgba(255,255,255,0.025) 100%);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.20);
-      transition: background 0.08s, color 0.08s, border-color 0.08s;
+      cursor: pointer; letter-spacing: 0.02em;
+      transition: background 0.07s, color 0.07s, border-color 0.07s;
+      user-select: none;
     }
-    .pos-btn.active {
-      background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.09) 100%);
-      color: #fff;
-      border-color: rgba(255,255,255,0.36);
-      box-shadow: 0 1px 5px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.10);
-    }
-
-    /* ═══════════════════════════════════════════════
-       BLOCK 3 — MODE (OPEN / VS OPEN)
-    ═══════════════════════════════════════════════ */
-    #mode-bar {
-      display: flex;
-      flex-shrink: 0;
-      margin-bottom: 6px;
-      background: rgba(255,255,255,0.035);
-      border-radius: 9px;
-      padding: 2px;
-    }
-    .mode-btn {
-      flex: 1;
-      padding: 5px 4px;
-      border-radius: 7px;
-      border: 1px solid transparent;
-      color: rgba(255,255,255,0.26);
-      font-size: 10px; font-weight: 700;
-      letter-spacing: 0.06em;
-      transition: background 0.09s, color 0.09s, border-color 0.09s, opacity 0.09s;
-    }
-    .mode-btn.active {
-      background: rgba(255,255,255,0.10);
-      color: #fff;
-      border-color: rgba(255,255,255,0.28);
-    }
-    .mode-btn.disabled {
-      opacity: 0.22;
-      filter: grayscale(0.5);
-      pointer-events: none;
-    }
-
-    /* ── VS-bar (opener selector, shown only in VS OPEN mode) ── */
-    #vs-bar {
-      display: flex;
-      gap: 5px;
-      flex-shrink: 0;
-      align-items: center;
-      height: 28px;
-      margin-bottom: 6px;
-      opacity: 1;
-      transition: opacity 0.15s;
-    }
-    #vs-bar::before {
-      content: "vs";
-      font-size: 9px; font-weight: 700;
-      color: rgba(255,255,255,0.32);
-      letter-spacing: 0.08em;
-      flex-shrink: 0;
-      align-self: center;
-      padding: 0 1px;
-    }
-    #vs-bar.vs-collapsed {
-      opacity: 0;
-      pointer-events: none;
-    }
+    .ctx-btn.active { background: rgba(255,255,255,0.16); color: #fff; border-color: rgba(255,255,255,0.38); }
+    .ctx-btn:disabled { opacity: 0.20; pointer-events: none; }
+    #mode-row { align-items: center; gap: 6px; }
+    #vs-bar { display: flex; align-items: center; gap: 3px; margin-left: 4px; }
+    .vs-lbl { font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.34); letter-spacing: 0.08em; padding-right: 2px; }
     .opener-btn {
-      flex: 1;
-      padding: 4px 2px;
-      border-radius: 7px;
-      border: 1px solid rgba(255,255,255,0.08);
-      color: rgba(255,255,255,0.26);
-      font-size: 10px; font-weight: 700;
-      letter-spacing: 0.02em;
-      background: linear-gradient(180deg, rgba(255,255,255,0.055) 0%, rgba(255,255,255,0.025) 100%);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.20);
-      transition: background 0.08s, color 0.08s, border-color 0.08s;
-    }
-    .opener-btn.active {
-      background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.09) 100%);
-      color: #fff;
-      border-color: rgba(255,255,255,0.36);
-      box-shadow: 0 1px 5px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.10);
-    }
-
-    /* ═══════════════════════════════════════════════
-       BLOCK 4 — HAND
-    ═══════════════════════════════════════════════ */
-    #hand-block {
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-
-    #cards-row {
-      display: flex;
-      gap: 14px;
-      align-items: center;
-      justify-content: center;
-    }
-    .card-slot {
-      width: 72px; height: 66px;
-      border-radius: 13px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 32px; font-weight: 900;
-      letter-spacing: -0.02em;
-      border: 1.5px solid rgba(255,255,255,0.16);
+      padding: 3px 7px; border-radius: 5px;
+      border: 1px solid rgba(255,255,255,0.12);
       background: rgba(255,255,255,0.04);
-      color: rgba(255,255,255,0.22);
-      box-shadow: 0 2px 10px rgba(0,0,0,0.26);
-      transition: border-color 0.09s, background 0.09s, color 0.09s, box-shadow 0.09s;
+      color: rgba(255,255,255,0.44);
+      font-size: 10px; font-weight: 700;
+      cursor: pointer; user-select: none;
+      transition: background 0.07s, color 0.07s;
     }
-    .card-slot.active-pick {
-      border-color: rgba(255,255,255,0.55);
-      background: rgba(255,255,255,0.08);
-      color: rgba(255,255,255,0.50);
-      box-shadow: 0 0 0 3px rgba(255,255,255,0.06);
-    }
-    .card-slot.filled {
-      border-color: rgba(255,255,255,0.56);
-      background: rgba(255,255,255,0.12);
-      color: #fff;
-      box-shadow: 0 6px 30px rgba(0,0,0,0.48), 0 2px 6px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.16);
+    .opener-btn.active { background: rgba(255,255,255,0.14); color: #fff; border-color: rgba(255,255,255,0.32); }
+
+    /* ══════════════════════════════════════════
+       HAND ZONE — center of screen
+    ══════════════════════════════════════════ */
+    #hand-zone {
+      flex: 1; min-height: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 20px;
+      padding: 14px 0 8px;
     }
 
-    /* Single suit button — height always reserved, neutral style */
-    #btn-suit {
-      height: 34px;
-      padding: 0 28px;
-      border-radius: 17px;
-      border: 1px solid rgba(255,255,255,0.22);
-      background: rgba(255,255,255,0.07);
-      color: rgba(255,255,255,0.65);
-      font-size: 13px; font-weight: 700;
-      letter-spacing: 0.04em;
-      transition: opacity 0.12s, background 0.08s, border-color 0.08s, color 0.08s, box-shadow 0.08s, transform 0.07s;
-    }
-    #btn-suit.hidden    { opacity: 0; pointer-events: none; }
-    #btn-suit.suited-on { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.44); color: #fff; box-shadow: 0 0 12px rgba(255,255,255,0.10), inset 0 1px 0 rgba(255,255,255,0.14); }
-    #btn-suit:active    { background: rgba(255,255,255,0.26); border-color: rgba(255,255,255,0.50); transform: scale(0.93); }
-
-    /* ═══════════════════════════════════════════════
-       STEP HINT
-    ═══════════════════════════════════════════════ */
-    #step-label {
-      flex-shrink: 0;
-      text-align: center;
-      font-size: 10px; font-weight: 600;
-      letter-spacing: 0.06em;
-      color: rgba(255,255,255,0.18);
-      text-transform: uppercase;
-      min-height: 13px;
-      margin-bottom: 8px;
+    /* ══════════════════════════════════════════
+       CARDS ZONE — cards + inline picker
+    ══════════════════════════════════════════ */
+    #cards-zone {
+      display: flex; flex-direction: column;
+      align-items: center;
+      width: 100%;
     }
 
-    /* ═══════════════════════════════════════════════
-       BLOCK 5 — RANK PICKER
-    ═══════════════════════════════════════════════ */
+    /* ── Cards row ── */
+    #cards-row {
+      display: flex; gap: 22px;
+      align-items: flex-end; justify-content: center;
+      perspective: 700px;
+    }
+
+    .card {
+      width: 138px; height: 193px;
+      border-radius: 14px; cursor: pointer;
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+      user-select: none; -webkit-tap-highlight-color: transparent;
+      transition: transform 0.14s cubic-bezier(0.34, 1.4, 0.64, 1),
+                  box-shadow 0.14s, border-color 0.12s;
+    }
+    .card:active { transform: scale(0.93) !important; }
+
+    /* Idle fan */
+    #hand-zone.idle #cards-row .card:first-child { transform: rotate(-5deg); }
+    #hand-zone.idle #cards-row .card:last-child  { transform: rotate(5deg);  }
+    #hand-zone.idle #cards-row .card:first-child:active { transform: rotate(-5deg) scale(0.93) !important; }
+    #hand-zone.idle #cards-row .card:last-child:active  { transform: rotate(5deg)  scale(0.93) !important; }
+
+    /* Face down */
+    .card[data-state="down"] {
+      background: linear-gradient(155deg, #1a2336 0%, #0f1622 55%, #0c1220 100%);
+      border: 1.5px solid rgba(255,255,255,0.09);
+      box-shadow: 0 10px 36px rgba(0,0,0,0.60), 0 3px 8px rgba(0,0,0,0.32),
+                  inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+    .card[data-state="down"]::before {
+      content: "";
+      position: absolute; inset: 8px;
+      border: 1px solid rgba(255,255,255,0.07); border-radius: 8px;
+      background: repeating-linear-gradient(
+        45deg,
+        rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px,
+        transparent 1px, transparent 8px
+      );
+    }
+    .card[data-state="down"]::after {
+      content: "◆";
+      position: absolute; font-size: 22px;
+      color: rgba(255,255,255,0.04);
+    }
+    .card[data-state="down"] .card-rank-center { display: none; }
+    .card[data-state="down"] .card-corner-tl,
+    .card[data-state="down"] .card-corner-br  { display: none; }
+
+    /* Selecting */
+    .card[data-state="selecting"] {
+      background: linear-gradient(155deg, #1e2840 0%, #141d32 100%);
+      border: 2px solid rgba(255,255,255,0.68);
+      box-shadow: 0 0 0 5px rgba(255,255,255,0.055),
+                  0 0 28px rgba(255,255,255,0.07),
+                  0 12px 40px rgba(0,0,0,0.56);
+    }
+    .card[data-state="selecting"]::before {
+      content: "";
+      position: absolute; inset: 8px;
+      border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;
+    }
+    .card[data-state="selecting"] .card-rank-center { display: none; }
+    .card[data-state="selecting"] .card-corner-tl,
+    .card[data-state="selecting"] .card-corner-br  { display: none; }
+
+    /* Face up */
+    .card[data-state="up"] {
+      background: rgba(255,255,255,0.085);
+      border: 1.5px solid rgba(255,255,255,0.34);
+      box-shadow: 0 10px 32px rgba(0,0,0,0.48), 0 3px 10px rgba(0,0,0,0.26),
+                  inset 0 1px 0 rgba(255,255,255,0.10);
+    }
+    @keyframes card-flip {
+      0%   { transform: rotateY(80deg) scale(0.95); opacity: 0.4; }
+      60%  { transform: rotateY(-6deg) scale(1.02); opacity: 1;   }
+      100% { transform: rotateY(0deg)  scale(1);    opacity: 1;   }
+    }
+    .card.flipping { animation: card-flip 0.20s cubic-bezier(0.22, 1, 0.36, 1); }
+    .card[data-state="up"] .card-rank-center {
+      font-size: 52px; font-weight: 900; color: #fff;
+      line-height: 1; letter-spacing: -0.02em;
+    }
+    .card[data-state="up"] .card-corner-tl {
+      position: absolute; top: 10px; left: 12px;
+      font-size: 16px; font-weight: 800;
+      color: rgba(255,255,255,0.50); line-height: 1;
+    }
+    .card[data-state="up"] .card-corner-br {
+      position: absolute; bottom: 10px; right: 12px;
+      font-size: 16px; font-weight: 800;
+      color: rgba(255,255,255,0.50); line-height: 1;
+      transform: rotate(180deg);
+    }
+
+    /* ══════════════════════════════════════════
+       RANK PICKER — inline, directly below cards
+    ══════════════════════════════════════════ */
     #rank-picker {
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-      margin-bottom: 12px;
+      display: none;
+      width: 100%;
+      margin-top: 18px;
     }
-    .rank-row {
-      display: flex;
-      gap: 5px;
+    @keyframes picker-appear {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0);    }
+    }
+    #rank-picker.active {
+      display: block;
+      animation: picker-appear 0.15s ease-out forwards;
+    }
+
+    #picking-label {
+      font-size: 10px; font-weight: 700;
+      color: rgba(255,255,255,0.30);
+      letter-spacing: 0.12em; text-transform: uppercase;
+      text-align: center; margin-bottom: 10px;
+    }
+
+    #rank-grid {
+      display: flex; flex-wrap: wrap; gap: 8px;
       justify-content: center;
     }
     .rank-btn {
-      flex: 0 0 calc((100% - 6 * 5px) / 7);
-      height: 48px;
-      border-radius: 9px;
-      border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(255,255,255,0.055);
-      color: rgba(255,255,255,0.76);
-      font-size: 18px; font-weight: 800;
-      letter-spacing: -0.01em;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.09), 0 1px 3px rgba(0,0,0,0.28);
-      transition: background 0.06s, transform 0.06s;
+      width: calc((100% - 48px) / 7);
+      aspect-ratio: 1;
+      border-radius: 12px;
+      border: 1.5px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.90);
+      font-size: clamp(16px, 5vw, 22px); font-weight: 900;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      user-select: none;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.22);
+      transition: background 0.05s, transform 0.05s, border-color 0.05s;
     }
     .rank-btn:active {
-      transform: scale(0.92);
-      background: rgba(255,255,255,0.15);
-    }
-    /* Base picked state (card1 selected, waiting for card2) */
-    .rank-btn.picked {
-      background: rgba(255,255,255,0.12);
-      border-color: rgba(255,255,255,0.34);
-      color: #fff;
+      transform: scale(0.86);
+      background: rgba(255,255,255,0.22);
+      border-color: rgba(255,255,255,0.36);
     }
 
-    /* ── Action-based coloring (card slots + rank buttons) ── */
-    body.action-threebet .card-slot.filled { border-color: rgba(239,68,68,0.58);  background: rgba(239,68,68,0.12);  color: #fca5a5; box-shadow: 0 4px 20px rgba(0,0,0,0.28), 0 0 20px rgba(239,68,68,0.26), 0 0 7px rgba(239,68,68,0.16), inset 0 0 0 1px rgba(239,68,68,0.13); }
-    body.action-call     .card-slot.filled { border-color: rgba(59,130,246,0.66); background: rgba(59,130,246,0.14); color: #93c5fd; box-shadow: 0 4px 20px rgba(0,0,0,0.28), 0 0 20px rgba(59,130,246,0.26), 0 0 7px rgba(59,130,246,0.16), inset 0 0 0 1px rgba(59,130,246,0.14); }
-    body.action-open     .card-slot.filled { border-color: rgba(34,197,94,0.46);  background: rgba(34,197,94,0.10);  color: #86efac; box-shadow: 0 4px 18px rgba(0,0,0,0.28), 0 0 14px rgba(34,197,94,0.14), inset 0 0 0 1px rgba(34,197,94,0.10); }
-    body.action-fold     .card-slot.filled { border-color: rgba(255,255,255,0.14); background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.36); box-shadow: 0 4px 14px rgba(0,0,0,0.28), inset 0 0 0 1px rgba(255,255,255,0.05); }
-
-    body.action-open     .rank-btn.picked { background: rgba(34,197,94,0.13);   border-color: rgba(34,197,94,0.30);   color: #86efac; }
-    body.action-call     .rank-btn.picked { background: rgba(59,130,246,0.14);  border-color: rgba(59,130,246,0.32);  color: #93c5fd; }
-    body.action-threebet .rank-btn.picked { background: rgba(239,68,68,0.11);   border-color: rgba(239,68,68,0.24);   color: #fca5a5; }
-    body.action-fold     .rank-btn.picked { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.16); color: rgba(255,255,255,0.46); }
-
-    /* ═══════════════════════════════════════════════
-       BLOCK 6 — RESULT
-    ═══════════════════════════════════════════════ */
-    #action-display {
-      flex: 1; min-height: 110px; max-height: 175px;
-      display: flex; align-items: stretch;
+    /* ── Idle hint ── */
+    #idle-hint {
+      margin-top: 16px;
+      font-size: 11px; font-weight: 600;
+      color: rgba(255,255,255,0.14);
+      letter-spacing: 0.12em; text-transform: uppercase;
     }
-    #action-card {
-      flex: 1;
-      border-radius: 16px;
+
+    /* ══════════════════════════════════════════
+       RESULT — compact inline
+    ══════════════════════════════════════════ */
+    #hand-result {
+      display: none;
+      flex-direction: column;
+      align-items: center; gap: 6px;
+      text-align: center;
+    }
+    #hand-result.active { display: flex; }
+
+    /* Mini cards */
+    #hand-display {
+      display: flex; gap: 6px;
+      align-items: center; justify-content: center;
+      margin-bottom: 2px;
+    }
+    .mini-card {
+      width: 40px; height: 56px;
+      border-radius: 5px;
+      background: #eef0f5;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.50);
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      gap: 5px; padding: 16px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.055) 0%, rgba(255,255,255,0.020) 40%, rgba(255,255,255,0.008) 100%);
-      border: 1px solid rgba(255,255,255,0.10);
-      box-shadow: 0 4px 24px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.07);
-      transition: background 0.14s, border-color 0.14s, box-shadow 0.18s;
+      flex-shrink: 0;
     }
-    body.action-threebet #action-card { background: linear-gradient(180deg, rgba(239,68,68,0.10) 0%, rgba(239,68,68,0.042) 50%, rgba(239,68,68,0.013) 100%); border-color: rgba(239,68,68,0.18); box-shadow: 0 4px 26px rgba(239,68,68,0.16), 0 0 10px rgba(239,68,68,0.08), 0 1px 6px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.06); }
-    body.action-call     #action-card { background: linear-gradient(180deg, rgba(59,130,246,0.11) 0%, rgba(59,130,246,0.045) 50%, rgba(59,130,246,0.014) 100%); border-color: rgba(59,130,246,0.20); box-shadow: 0 4px 28px rgba(59,130,246,0.18), 0 0 12px rgba(59,130,246,0.09), 0 1px 6px rgba(0,0,0,0.20), inset 0 1px 0 rgba(255,255,255,0.06); }
-    body.action-open     #action-card { background: linear-gradient(180deg, rgba(34,197,94,0.11) 0%, rgba(34,197,94,0.044) 50%, rgba(34,197,94,0.013) 100%); border-color: rgba(34,197,94,0.17); box-shadow: 0 4px 20px rgba(34,197,94,0.12), 0 1px 4px rgba(0,0,0,0.16), inset 0 1px 0 rgba(255,255,255,0.06); }
-    body.action-fold     #action-card { border-color: rgba(255,255,255,0.07); box-shadow: 0 2px 14px rgba(0,0,0,0.20), inset 0 1px 0 rgba(255,255,255,0.04); }
-    body.action-threebet #action-result { text-shadow: 0 0 20px rgba(239,68,68,0.42); }
-    body.action-call     #action-result { text-shadow: 0 0 22px rgba(59,130,246,0.50); }
-    body.action-open     #action-result { text-shadow: 0 0 20px rgba(34,197,94,0.44); }
-    #action-prompt {
-      font-size: 13px; font-weight: 500;
-      color: rgba(255,255,255,0.16);
-      letter-spacing: 0.02em;
+    .mc-rank { font-size: 18px; font-weight: 900; line-height: 1.1; color: #111827; }
+    .mc-suit { font-size: 12px; line-height: 1; color: #111827; }
+    .mini-card.red .mc-rank,
+    .mini-card.red .mc-suit { color: #c92a2a; }
+
+    /* Action */
+    #result-text {
+      font-size: clamp(52px, 15vw, 68px);
+      font-weight: 900; letter-spacing: 0.04em; line-height: 1;
+      transition: color 0.12s;
     }
-    #action-hand-label {
-      font-size: 16px; font-weight: 700;
-      color: rgba(255,255,255,0.60);
-      letter-spacing: 0.06em;
+    #result-reason {
+      font-size: 12px; font-weight: 500;
+      color: rgba(255,255,255,0.34); letter-spacing: 0.01em;
     }
-    #action-result {
-      font-size: 50px; font-weight: 900;
-      letter-spacing: 0.10em; line-height: 1;
-      transition: color 0.10s;
-    }
-    #action-chips { display: flex; gap: 10px; }
-    .action-chip {
-      padding: 7px 20px;
-      border-radius: 24px;
-      font-size: 18px; font-weight: 900;
-      letter-spacing: 0.08em;
-      border: 1px solid transparent;
+    #result-tap-hint {
+      font-size: 9px; font-weight: 600;
+      color: rgba(255,255,255,0.12);
+      letter-spacing: 0.06em; text-transform: uppercase; margin-top: 2px;
     }
 
     @keyframes pop-in {
-      from { transform: scale(0.78); opacity: 0.15; }
-      to   { transform: scale(1);    opacity: 1;    }
+      from { transform: scale(0.76); opacity: 0; }
+      to   { transform: scale(1);    opacity: 1; }
     }
-    .pop-in { animation: pop-in 0.22s cubic-bezier(0.28, 1.8, 0.58, 1); }
+    .pop-in { animation: pop-in 0.18s cubic-bezier(0.28, 1.7, 0.58, 1); }
+
+    /* ══════════════════════════════════════════
+       SUITED CHIP
+    ══════════════════════════════════════════ */
+    #suited-row {
+      min-height: 26px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #btn-suited {
+      padding: 5px 20px; border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.36);
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      cursor: pointer; user-select: none;
+      transition: background 0.07s, color 0.07s, border-color 0.07s;
+    }
+    #btn-suited.on { background: rgba(255,255,255,0.16); color: #fff; border-color: rgba(255,255,255,0.44); }
+    #btn-suited.hidden { visibility: hidden; pointer-events: none; }
+
+    /* ══════════════════════════════════════════
+       FOOTER
+    ══════════════════════════════════════════ */
+    #link-grid {
+      display: block; text-align: center;
+      font-size: 10px; font-weight: 600;
+      color: rgba(255,255,255,0.13); text-decoration: none;
+      letter-spacing: 0.04em;
+      padding: 9px 0 max(12px, env(safe-area-inset-bottom));
+      flex-shrink: 0;
+      transition: color 0.10s;
+    }
+    #link-grid:hover { color: rgba(255,255,255,0.32); }
   </style>
 </head>
 <body>
+
+<!-- VISUAL MARKER — remove after confirmed -->
+<div id="test-marker">INLINE PICKER TEST — v3</div>
+
 <div id="app">
 
-  <div id="stack-bar"></div>
-  <div id="pos-bar"></div>
-
-  <div id="mode-bar">
-    <button class="mode-btn" data-mode="open">OPEN</button>
-    <button class="mode-btn" data-mode="vsopen">VS OPEN</button>
-  </div>
-
-  <div id="vs-bar" class="vs-collapsed"></div>
-
-  <div id="hand-block">
-    <div id="cards-row">
-      <div class="card-slot active-pick" id="slot1">?</div>
-      <div class="card-slot"             id="slot2">?</div>
-    </div>
-    <button id="btn-suit" class="hidden"></button>
-  </div>
-
-  <div id="step-label">1ère carte</div>
-
-  <div id="rank-picker">
-    <div class="rank-row" id="rank-row-1"></div>
-    <div class="rank-row" id="rank-row-2"></div>
-  </div>
-
-  <div id="action-display">
-    <div id="action-card">
-      <span id="action-prompt">Choisissez une main</span>
-      <span id="action-hand-label" style="display:none;"></span>
-      <span id="action-result"     style="display:none;"></span>
-      <div  id="action-chips"      style="display:none;"></div>
+  <!-- ── Context ── -->
+  <div id="ctx">
+    <div class="ctx-row" id="stack-row"></div>
+    <div class="ctx-row" id="pos-row"></div>
+    <div class="ctx-row" id="mode-row">
+      <div id="mode-grp" style="display:flex;gap:4px;"></div>
+      <div id="vs-bar" style="display:none;">
+        <span class="vs-lbl">vs</span>
+        <div id="opener-grp" style="display:flex;gap:3px;"></div>
+      </div>
     </div>
   </div>
+
+  <!-- ── Hand zone ── -->
+  <div id="hand-zone" class="idle">
+
+    <div id="cards-zone">
+
+      <div id="cards-row">
+        <div class="card" id="card1" data-state="down">
+          <span class="card-corner-tl"></span>
+          <span class="card-rank-center"></span>
+          <span class="card-corner-br"></span>
+        </div>
+        <div class="card" id="card2" data-state="down">
+          <span class="card-corner-tl"></span>
+          <span class="card-rank-center"></span>
+          <span class="card-corner-br"></span>
+        </div>
+      </div>
+
+      <!-- Rank picker inline — hidden at rest -->
+      <div id="rank-picker">
+        <div id="picking-label"></div>
+        <div id="rank-grid"></div>
+      </div>
+
+      <div id="idle-hint">Touchez une carte</div>
+
+    </div>
+
+    <!-- Result -->
+    <div id="hand-result">
+      <div id="hand-display">
+        <div class="mini-card" id="mc1">
+          <span class="mc-rank"></span>
+          <span class="mc-suit"></span>
+        </div>
+        <div class="mini-card" id="mc2">
+          <span class="mc-rank"></span>
+          <span class="mc-suit"></span>
+        </div>
+      </div>
+      <div id="result-text"></div>
+      <div id="result-reason"></div>
+      <div id="result-tap-hint">Tap pour recommencer</div>
+    </div>
+
+    <div id="suited-row">
+      <button id="btn-suited" class="hidden">suited</button>
+    </div>
+
+  </div>
+
+  <a id="link-grid" href="../range_editor.html">Voir la grille</a>
 
 </div>
-<script src="./mobile_fast_input_ranges.js"></script>
+
+<script src="../mobile_fast_input_ranges.js"></script>
 <script>
 "use strict";
 
-/* ── Build Sets — OPEN ranges ── */
 const RANGES = {};
 for (const [stack, positions] of Object.entries(MFI_RANGES_RAW)) {
   RANGES[stack] = {};
   for (const [pos, buckets] of Object.entries(positions)) {
     RANGES[stack][pos] = {
-      open:     new Set(buckets.open),
-      call:     new Set(buckets.call),
-      threebet: new Set(buckets.threebet)
+      open:     new Set(buckets.open     || []),
+      call:     new Set(buckets.call     || []),
+      threebet: new Set(buckets.threebet || []),
     };
   }
 }
-
-/* ── Build Sets — VS OPEN ranges ── */
-const VSOPEN_RANGES = {};
+const VSOPEN = {};
 for (const [stack, positions] of Object.entries(MFI_VSOPEN_RAW)) {
-  VSOPEN_RANGES[stack] = {};
+  VSOPEN[stack] = {};
   for (const [pos, buckets] of Object.entries(positions)) {
-    VSOPEN_RANGES[stack][pos] = {
-      open:     new Set([]),
-      call:     new Set(buckets.call),
-      threebet: new Set(buckets.threebet)
+    VSOPEN[stack][pos] = {
+      call:     new Set(buckets.call     || []),
+      threebet: new Set(buckets.threebet || []),
     };
   }
 }
 
-/* ── Constants ── */
-const RANKS     = ["A","K","Q","J","T","9","8","7","6","5","4","3","2"];
-const POSITIONS = ["UTG","HJ","CO","BTN","SB","BB"];
 const STACKS    = ["20bb","25bb","40bb"];
+const POSITIONS = ["UTG","HJ","CO","BTN","SB","BB"];
+const RANKS     = ["A","K","Q","J","T","9","8","7","6","5","4","3","2"];
 
-/* Poker logic: which modes are valid per position */
-const MODE_ALLOWED = {
-  UTG: ["open"],
-  HJ:  ["open","vsopen"],
-  CO:  ["open","vsopen"],
-  BTN: ["open","vsopen"],
-  SB:  ["open","vsopen"],
-  BB:  ["vsopen"]
-};
-
-/* Valid openers per hero position (nearest/most common last = default) */
 const OPENER_OPTIONS = {
-  UTG: [],
-  HJ:  ["UTG"],
-  CO:  ["UTG","HJ"],
-  BTN: ["UTG","HJ","CO"],
-  SB:  ["CO","BTN"],
-  BB:  ["UTG","HJ","CO","BTN","SB"]
+  UTG: [], HJ: ["UTG"], CO: ["UTG","HJ"], BTN: ["UTG","HJ","CO"],
+  SB:  ["CO","BTN"], BB: ["UTG","HJ","CO","BTN","SB"],
+};
+const MODE_ALLOWED = {
+  UTG: ["open"], HJ: ["open","vsopen"], CO: ["open","vsopen"],
+  BTN: ["open","vsopen"], SB: ["open","vsopen"], BB: ["vsopen"],
 };
 
-const ACTION_COLOR = { OPEN:"#22c55e", CALL:"#3b82f6", "3BET":"#ef4444", FOLD:"#6b7280" };
+const DISPLAY = {
+  FOLD:   { label: "FOLD",  color: "#8090b8" },
+  CALL:   { label: "CALL",  color: "#f5a623" },
+  OPEN:   { label: "RAISE", color: "#22c55e" },
+  "3BET": { label: "RAISE", color: "#22c55e" },
+};
+const REASON = {
+  FOLD:   "Hors de la range simplifiee",
+  CALL:   "Main correcte dans ce spot",
+  OPEN:   "Spot standard — premiere mise",
+  "3BET": "Main forte — pression maximale",
+};
 
-/* ── State ── */
-let activeStack  = localStorage.getItem("mfi_stack")  || "40bb";
-let activePos    = localStorage.getItem("mfi_pos")    || "BTN";
-let activeMode   = localStorage.getItem("mfi_mode")   || "open";
-let activeOpener = localStorage.getItem("mfi_opener") || null;
-let card1 = null, card2 = null, suited = true;
-let step  = "card1"; /* "card1" | "card2" | "done" */
+let activeStack  = "40bb";
+let activePos    = "BTN";
+let activeMode   = "open";
+let activeOpener = null;
+let rank1 = null, rank2 = null;
+let suited = false;
+let step = "idle";
 
-/* ── Cached DOM refs ── */
 const EL = {};
-const RANK_BTNS = {};
 
-/* ── Enforce mode valid for current position ── */
-function enforceValidMode() {
-  const allowed = MODE_ALLOWED[activePos];
-  if (!allowed.includes(activeMode)) {
-    activeMode = allowed[0];
-    localStorage.setItem("mfi_mode", activeMode);
-  }
+function init() {
+  EL.stackRow     = document.getElementById("stack-row");
+  EL.posRow       = document.getElementById("pos-row");
+  EL.modeGrp      = document.getElementById("mode-grp");
+  EL.vsBar        = document.getElementById("vs-bar");
+  EL.openerGrp    = document.getElementById("opener-grp");
+  EL.handZone     = document.getElementById("hand-zone");
+  EL.idleHint     = document.getElementById("idle-hint");
+  EL.rankPicker   = document.getElementById("rank-picker");
+  EL.rankGrid     = document.getElementById("rank-grid");
+  EL.pickingLabel = document.getElementById("picking-label");
+  EL.handResult   = document.getElementById("hand-result");
+  EL.resultText   = document.getElementById("result-text");
+  EL.resultReason = document.getElementById("result-reason");
+  EL.mc1          = document.getElementById("mc1");
+  EL.mc2          = document.getElementById("mc2");
+  EL.card1        = document.getElementById("card1");
+  EL.card2        = document.getElementById("card2");
+  EL.btnSuited    = document.getElementById("btn-suited");
+
+  buildStacks();
+  buildPositions();
+  buildModes();
+  buildRankGrid();
+
+  EL.card1.addEventListener("click", () => onCardTap(1));
+  EL.card2.addEventListener("click", () => onCardTap(2));
+  EL.btnSuited.addEventListener("click", onSuitedToggle);
+
+  showView("idle");
 }
 
-/* ── Enforce opener valid for current position in vsopen mode ── */
-function enforceValidOpener() {
-  const opts = OPENER_OPTIONS[activePos];
-  if (!opts.length) { activeOpener = null; return; }
-  if (!opts.includes(activeOpener)) {
-    activeOpener = opts[opts.length - 1]; /* default: nearest opener */
-    localStorage.setItem("mfi_opener", activeOpener);
-  }
-}
-
-/* ── Build / show / hide vs-bar ── */
-function updateVsBar() {
-  const show = activeMode === "vsopen" && OPENER_OPTIONS[activePos].length > 0;
-  EL.vsBar.classList.toggle("vs-collapsed", !show);
-  if (!show) return;
-  EL.vsBar.innerHTML = '';
-  OPENER_OPTIONS[activePos].forEach(opener => {
-    const btn = document.createElement("button");
-    btn.className   = "opener-btn" + (opener === activeOpener ? " active" : "");
-    btn.textContent = opener;
-    btn.onclick = () => {
-      activeOpener = opener;
-      localStorage.setItem("mfi_opener", opener);
-      EL.vsBar.querySelectorAll(".opener-btn").forEach(b =>
-        b.classList.toggle("active", b.textContent === opener));
-      updateHandDisplay();
-      updateActionCard();
-    };
-    EL.vsBar.appendChild(btn);
+function buildStacks() {
+  EL.stackRow.innerHTML = "";
+  STACKS.forEach(s => {
+    const b = mkBtn(s, "ctx-btn" + (s === activeStack ? " active" : ""), () => {
+      activeStack = s; setActive(EL.stackRow, s);
+      if (step === "done") recompute();
+    });
+    EL.stackRow.appendChild(b);
   });
 }
 
-/* ── Reset hand to initial state ── */
-function resetHand() {
-  card1 = null; card2 = null; suited = true; step = "card1";
+function buildPositions() {
+  EL.posRow.innerHTML = "";
+  POSITIONS.forEach(p => {
+    const b = mkBtn(p, "ctx-btn" + (p === activePos ? " active" : ""), () => {
+      activePos = p; setActive(EL.posRow, p);
+      fixMode(); updateVsBar();
+      if (step === "done") recompute();
+    });
+    EL.posRow.appendChild(b);
+  });
 }
 
-/* ── Hand string ── */
-function buildHand(r1, r2, isSuited) {
+function buildModes() {
+  EL.modeGrp.innerHTML = "";
+  [["open","OPEN"],["vsopen","VS OPEN"]].forEach(([m, label]) => {
+    const b = mkBtn(label, "ctx-btn" + (m === activeMode ? " active" : ""), () => {
+      activeMode = m; setActive(EL.modeGrp, label);
+      updateVsBar();
+      if (step === "done") recompute();
+    });
+    b.dataset.mode = m;
+    EL.modeGrp.appendChild(b);
+  });
+  fixMode();
+}
+
+function buildRankGrid() {
+  EL.rankGrid.querySelectorAll(".rank-btn").forEach(b => b.remove());
+  RANKS.forEach(r => {
+    const b = mkBtn(r, "rank-btn", () => pickRank(r));
+    EL.rankGrid.appendChild(b);
+  });
+}
+
+function mkBtn(text, className, onClick) {
+  const b = document.createElement("button");
+  b.className = className; b.textContent = text;
+  b.addEventListener("click", onClick);
+  return b;
+}
+
+function setActive(container, text) {
+  container.querySelectorAll(".ctx-btn").forEach(b => {
+    b.classList.toggle("active", b.textContent === text);
+  });
+}
+
+function fixMode() {
+  const allowed = MODE_ALLOWED[activePos] || ["open"];
+  EL.modeGrp.querySelectorAll(".ctx-btn").forEach(b => {
+    const m = b.dataset.mode;
+    b.disabled = !allowed.includes(m);
+    if (b.disabled && b.classList.contains("active")) {
+      const fallback = allowed[0];
+      activeMode = fallback;
+      setActive(EL.modeGrp, fallback === "open" ? "OPEN" : "VS OPEN");
+    }
+  });
+}
+
+function updateVsBar() {
+  const opts = OPENER_OPTIONS[activePos] || [];
+  if (activeMode !== "vsopen" || opts.length === 0) {
+    EL.vsBar.style.display = "none"; return;
+  }
+  EL.vsBar.style.display = "flex";
+  if (!opts.includes(activeOpener)) activeOpener = opts[opts.length - 1];
+  EL.openerGrp.innerHTML = "";
+  opts.forEach(op => {
+    const b = mkBtn(op, "opener-btn" + (op === activeOpener ? " active" : ""), () => {
+      activeOpener = op;
+      EL.openerGrp.querySelectorAll(".opener-btn").forEach(x => {
+        x.classList.toggle("active", x.textContent === op);
+      });
+      if (step === "done") recompute();
+    });
+    EL.openerGrp.appendChild(b);
+  });
+}
+
+function showView(view) {
+  EL.handZone.classList.toggle("idle", view === "idle");
+  EL.idleHint.style.display = view === "idle" ? "" : "none";
+  if (view === "picking") {
+    EL.rankPicker.classList.add("active");
+  } else {
+    EL.rankPicker.classList.remove("active");
+  }
+  EL.handResult.classList.toggle("active", view === "result");
+}
+
+function onCardTap(n) {
+  if (step === "done")    { resetCards(); return; }
+  if (step === "idle")    { startPicking1(); return; }
+  if (step === "picking1" && n === 1) { resetCards(); return; }
+  if (step === "picking2" && n === 2) {
+    rank2 = null; step = "picking1";
+    setCard(EL.card2, "down", null);
+    setCard(EL.card1, "selecting", null);
+    EL.btnSuited.classList.add("hidden");
+    EL.pickingLabel.textContent = "Carte 1";
+    return;
+  }
+}
+
+function startPicking1() {
+  rank1 = null; rank2 = null; suited = false;
+  step = "picking1";
+  setCard(EL.card1, "selecting", null);
+  setCard(EL.card2, "down", null);
+  EL.btnSuited.classList.add("hidden");
+  EL.btnSuited.classList.remove("on");
+  EL.pickingLabel.textContent = "Carte 1";
+  showView("picking");
+}
+
+function pickRank(rank) {
+  if (step === "picking1") {
+    rank1 = rank;
+    setCard(EL.card1, "up", rank);
+    step = "picking2";
+    setCard(EL.card2, "selecting", null);
+    EL.pickingLabel.textContent = "Carte 2";
+    EL.btnSuited.classList.remove("hidden");
+    if (suited) EL.btnSuited.classList.add("on");
+    return;
+  }
+  if (step === "picking2") {
+    rank2 = rank;
+    if (rank1 === rank2) {
+      suited = false;
+      EL.btnSuited.classList.remove("on");
+      EL.btnSuited.classList.add("hidden");
+    }
+    setCard(EL.card2, "up", rank);
+    step = "done";
+    recompute();
+    return;
+  }
+}
+
+function setCard(el, state, rank) {
+  const wasDown = el.dataset.state !== "up";
+  el.dataset.state = state;
+  const rankEl = el.querySelector(".card-rank-center");
+  const tlEl   = el.querySelector(".card-corner-tl");
+  const brEl   = el.querySelector(".card-corner-br");
+  if (state === "up" && rank) {
+    rankEl.textContent = rank;
+    tlEl.textContent   = rank;
+    brEl.textContent   = rank;
+    if (wasDown) {
+      el.classList.remove("flipping");
+      void el.offsetWidth;
+      el.classList.add("flipping");
+    }
+  } else {
+    rankEl.textContent = "";
+    tlEl.textContent   = "";
+    brEl.textContent   = "";
+    el.classList.remove("flipping");
+  }
+}
+
+function onSuitedToggle() {
+  if (rank1 === rank2 && rank1 !== null) return;
+  suited = !suited;
+  EL.btnSuited.classList.toggle("on", suited);
+  if (step === "done") recompute();
+}
+
+function resetCards() {
+  rank1 = null; rank2 = null; suited = false;
+  step = "idle";
+  setCard(EL.card1, "down", null);
+  setCard(EL.card2, "down", null);
+  EL.btnSuited.classList.remove("on");
+  EL.btnSuited.classList.add("hidden");
+  showView("idle");
+}
+
+function handKey(r1, r2, isSuited) {
   if (r1 === r2) return r1 + r2;
   const i1 = RANKS.indexOf(r1), i2 = RANKS.indexOf(r2);
-  const [hi, lo] = i1 < i2 ? [r1, r2] : [r2, r1];
+  const hi = i1 < i2 ? r1 : r2;
+  const lo = i1 < i2 ? r2 : r1;
   return hi + lo + (isSuited ? "s" : "o");
 }
 
-/* ── Resolve actions ── */
-function getActions() {
-  if (!card1 || !card2) return [];
-  const hand = buildHand(card1, card2, suited);
-  const rangeSet = activeMode === "open"
-    ? RANGES[activeStack]?.[activePos]
-    : VSOPEN_RANGES[activeStack]?.[activePos];
-  if (!rangeSet) return ["FOLD"];
-  const result = [];
-  if (rangeSet.threebet.has(hand)) result.push("3BET");
-  if (rangeSet.open.has(hand))     result.push("OPEN");
-  if (rangeSet.call.has(hand))     result.push("CALL");
-  if (result.length === 0)         result.push("FOLD");
-  return result;
-}
-
-/* ── Dominant action color (3BET > CALL > OPEN > FOLD) ── */
-const ACTION_BODY_CLASSES = ["action-open","action-call","action-threebet","action-fold"];
-
-function getActionColor() {
-  if (step !== "done") return null;
-  const actions = getActions();
-  if (actions.includes("3BET")) return "threebet";
-  if (actions.includes("CALL")) return "call";
-  if (actions.includes("OPEN")) return "open";
-  return "fold";
-}
-
-/* ── Update mode bar (enabled/active state) ── */
-function updateModeBar() {
-  const allowed = MODE_ALLOWED[activePos];
-  EL.modeBtns.forEach(btn => {
-    const mode = btn.dataset.mode;
-    btn.classList.toggle("active",   mode === activeMode);
-    btn.classList.toggle("disabled", !allowed.includes(mode));
-  });
-}
-
-/* ── Update hand display ── */
-function updateHandDisplay() {
-  /* body action class */
-  const dominant = getActionColor();
-  ACTION_BODY_CLASSES.forEach(c => document.body.classList.remove(c));
-  if (dominant) document.body.classList.add("action-" + dominant);
-
-  /* slot1 / slot2 — highest card always displayed first */
-  let d1 = card1, d2 = card2;
-  if (card1 && card2 && card1 !== card2) {
-    if (RANKS.indexOf(card1) > RANKS.indexOf(card2)) { d1 = card2; d2 = card1; }
+function getActions(key) {
+  if (activeMode === "open") {
+    const rng = RANGES[activeStack]?.[activePos];
+    if (!rng) return ["FOLD"];
+    const out = [];
+    if (rng.open.has(key))     out.push("OPEN");
+    if (rng.call.has(key))     out.push("CALL");
+    if (rng.threebet.has(key)) out.push("3BET");
+    return out.length ? out : ["FOLD"];
   }
+  const rng = VSOPEN[activeStack]?.[activePos];
+  if (!rng) return ["FOLD"];
+  const out = [];
+  if (rng.call.has(key))     out.push("CALL");
+  if (rng.threebet.has(key)) out.push("3BET");
+  return out.length ? out : ["FOLD"];
+}
 
-  EL.slot1.textContent = d1 || "?";
-  EL.slot1.className   = d1 ? "card-slot filled" : "card-slot active-pick";
+function getMiniCardData(r1, r2, isSuited) {
+  if (r1 === r2) return [
+    { rank: r1, suit: "\u2660", red: false },
+    { rank: r2, suit: "\u2665", red: true  },
+  ];
+  if (isSuited) return [
+    { rank: r1, suit: "\u2660", red: false },
+    { rank: r2, suit: "\u2660", red: false },
+  ];
+  return [
+    { rank: r1, suit: "\u2660", red: false },
+    { rank: r2, suit: "\u2666", red: true  },
+  ];
+}
 
-  EL.slot2.textContent = d2 || "?";
-  EL.slot2.className   = d2
-    ? "card-slot filled"
-    : "card-slot" + (step === "card2" ? " active-pick" : "");
-
-  /* suit button */
-  const isPair    = card1 && card2 && card1 === card2;
-  const showSuit  = step === "done" && !isPair;
-  EL.btnSuit.classList.toggle("hidden", !showSuit);
-  EL.btnSuit.classList.toggle("suited-on", showSuit && suited);
-  if (showSuit) EL.btnSuit.textContent = suited ? "Suited" : "Off";
-
-  /* step label */
-  EL.stepLabel.textContent =
-    step === "card1" ? "1ère carte" :
-    step === "card2" ? "2ème carte" : "";
-
-  /* rank highlights */
-  RANKS.forEach(r => {
-    const picked = (r === card1 && step !== "card1") || (r === card2 && step === "done");
-    RANK_BTNS[r].classList.toggle("picked", picked);
+function updateMiniCards(r1, r2, isSuited) {
+  const data = getMiniCardData(r1, r2, isSuited);
+  [EL.mc1, EL.mc2].forEach((mc, i) => {
+    mc.querySelector(".mc-rank").textContent = data[i].rank;
+    mc.querySelector(".mc-suit").textContent = data[i].suit;
+    mc.classList.toggle("red", data[i].red);
   });
 }
 
-/* ── Update result card ── */
-function updateActionCard() {
-  if (step !== "done") {
-    EL.actionHandLabel.style.display = "none";
-    EL.actionResult.style.display    = "none";
-    EL.actionChips.style.display     = "none";
-    EL.actionPrompt.style.display    = "";
-    EL.actionCard.style.background   = "";
-    EL.actionCard.style.borderColor  = "";
-    return;
-  }
+function recompute() {
+  const key     = handKey(rank1, rank2, suited);
+  const actions = getActions(key);
 
-  const actions = getActions();
-  const hand    = buildHand(card1, card2, suited);
+  updateMiniCards(rank1, rank2, suited);
 
-  EL.actionPrompt.style.display    = "none";
-  EL.actionHandLabel.style.display = "";
-  EL.actionHandLabel.textContent   = hand;
-  EL.actionHandLabel.classList.remove("pop-in");
-  void EL.actionHandLabel.offsetWidth;
-  EL.actionHandLabel.classList.add("pop-in");
+  const PRIORITY = ["3BET","OPEN","CALL","FOLD"];
+  const main = PRIORITY.find(p => actions.includes(p)) || "FOLD";
+  const d = DISPLAY[main] || DISPLAY.FOLD;
 
-  if (actions.length === 1) {
-    const action = actions[0];
-    EL.actionResult.style.display   = "";
-    EL.actionResult.textContent     = action;
-    EL.actionResult.style.color     = ACTION_COLOR[action];
-    EL.actionChips.style.display    = "none";
-    EL.actionChips.innerHTML        = "";
-    EL.actionCard.style.background  = "";
-    EL.actionCard.style.borderColor = "";
-    EL.actionResult.classList.remove("pop-in");
-    void EL.actionResult.offsetWidth;
-    EL.actionResult.classList.add("pop-in");
-  } else {
-    EL.actionResult.style.display = "none";
-    EL.actionChips.style.display  = "flex";
-    EL.actionChips.innerHTML      = "";
-    actions.forEach(action => {
-      const chip = document.createElement("span");
-      chip.className         = "action-chip";
-      chip.textContent       = action;
-      chip.style.color       = ACTION_COLOR[action];
-      chip.style.background  = ACTION_COLOR[action] + "1e";
-      chip.style.borderColor = ACTION_COLOR[action] + "55";
-      EL.actionChips.appendChild(chip);
-    });
-    EL.actionCard.style.background  = "";
-    EL.actionCard.style.borderColor = "";
-    EL.actionChips.classList.remove("pop-in");
-    void EL.actionChips.offsetWidth;
-    EL.actionChips.classList.add("pop-in");
-  }
+  const labels = [...new Set(actions.map(a => DISPLAY[a]?.label || a))];
+  EL.resultText.textContent = labels.join(" / ");
+  EL.resultText.style.color = d.color;
+
+  EL.resultReason.textContent = actions.length === 1
+    ? (REASON[main] || "")
+    : "Plusieurs options jouables";
+
+  EL.handResult.classList.remove("pop-in");
+  void EL.handResult.offsetWidth;
+  EL.handResult.classList.add("pop-in");
+
+  showView("result");
 }
 
-/* ── Rank tap ── */
-function onRankTap(rank) {
-  if      (step === "card1") { card1 = rank; card2 = null; suited = true; step = "card2"; }
-  else if (step === "card2") { card2 = rank; suited = true; step = "done"; }
-  else                       { card1 = rank; card2 = null; suited = true; step = "card2"; }
-  updateHandDisplay();
-  updateActionCard();
-}
-
-/* ── Init ── */
-function init() {
-  EL.slot1           = document.getElementById("slot1");
-  EL.slot2           = document.getElementById("slot2");
-  EL.btnSuit         = document.getElementById("btn-suit");
-  EL.stepLabel       = document.getElementById("step-label");
-  EL.actionCard      = document.getElementById("action-card");
-  EL.actionPrompt    = document.getElementById("action-prompt");
-  EL.actionHandLabel = document.getElementById("action-hand-label");
-  EL.actionResult    = document.getElementById("action-result");
-  EL.actionChips     = document.getElementById("action-chips");
-  EL.modeBtns        = document.querySelectorAll(".mode-btn");
-  EL.vsBar           = document.getElementById("vs-bar");
-
-  /* Suit button — single tap toggles */
-  EL.btnSuit.onclick = () => {
-    if (step !== "done" || !card1 || !card2 || card1 === card2) return;
-    suited = !suited;
-    updateHandDisplay();
-    updateActionCard();
-  };
-
-  /* Stack bar */
-  const stackBar = document.getElementById("stack-bar");
-  STACKS.forEach(s => {
-    const btn = document.createElement("button");
-    btn.className   = "stack-btn" + (s === activeStack ? " active" : "");
-    btn.textContent = s;
-    btn.onclick = () => {
-      activeStack = s;
-      localStorage.setItem("mfi_stack", s);
-      stackBar.querySelectorAll(".stack-btn").forEach(b =>
-        b.classList.toggle("active", b.textContent === s));
-      updateHandDisplay();
-      updateActionCard();
-    };
-    stackBar.appendChild(btn);
-  });
-
-  /* Position bar */
-  const posBar = document.getElementById("pos-bar");
-  POSITIONS.forEach(pos => {
-    const btn = document.createElement("button");
-    btn.className   = "pos-btn" + (pos === activePos ? " active" : "");
-    btn.textContent = pos;
-    btn.onclick = () => {
-      activePos = pos;
-      localStorage.setItem("mfi_pos", pos);
-      posBar.querySelectorAll(".pos-btn").forEach(b =>
-        b.classList.toggle("active", b.textContent === pos));
-      enforceValidMode();
-      enforceValidOpener();
-      updateModeBar();
-      updateVsBar();
-      updateHandDisplay();
-      updateActionCard();
-    };
-    posBar.appendChild(btn);
-  });
-
-  /* Mode bar */
-  enforceValidMode();
-  enforceValidOpener();
-  updateModeBar();
-  updateVsBar();
-  EL.modeBtns.forEach(btn => {
-    btn.onclick = () => {
-      if (btn.classList.contains("disabled")) return;
-      activeMode = btn.dataset.mode;
-      localStorage.setItem("mfi_mode", activeMode);
-      enforceValidOpener();
-      updateModeBar();
-      updateVsBar();
-      updateHandDisplay();
-      updateActionCard();
-    };
-  });
-
-  /* Rank picker */
-  const row1 = document.getElementById("rank-row-1");
-  const row2 = document.getElementById("rank-row-2");
-  RANKS.forEach((rank, idx) => {
-    const btn = document.createElement("button");
-    btn.className   = "rank-btn";
-    btn.textContent = rank;
-    btn.onclick     = () => onRankTap(rank);
-    RANK_BTNS[rank] = btn;
-    (idx < 7 ? row1 : row2).appendChild(btn);
-  });
-}
-
-document.addEventListener("DOMContentLoaded", init);
+window.addEventListener("DOMContentLoaded", init);
 </script>
 </body>
 </html>
