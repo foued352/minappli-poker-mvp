@@ -219,8 +219,9 @@ const MFI_RANGES_RAW = {
       ],
       call: [], threebet: []
     },
-    "BB": { open: [], call: [], threebet: [] }
-  };
+        "BB": { open: [], call: [], threebet: [] }
+  }
+};
 
 /* ─────────────────────────────────────────────────────────────────────────
    VS OPEN ranges — facing a raise, what do I do?
