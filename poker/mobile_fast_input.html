@@ -186,11 +186,10 @@
     }
     .card.flipping { animation: card-flip 0.22s cubic-bezier(0.22, 1, 0.36, 1); }
 
-    /* Outlined rank — no fill, stroke only */
+    /* Filled rank — solid, instantly readable */
     .card[data-state="up"] .card-rank-center {
       font-size: 58px; font-weight: 900;
-      color: transparent;
-      -webkit-text-stroke: 2.5px #1a1f2e;
+      color: #1a1f2e;
       line-height: 1; letter-spacing: -0.02em;
     }
     .card[data-state="up"] .card-corner-tl {
@@ -225,7 +224,7 @@
 
     #picking-label {
       font-size: 10px; font-weight: 700;
-      color: rgba(255,255,255,0.28);
+      color: rgba(255,255,255,0.55);
       letter-spacing: 0.12em; text-transform: uppercase;
       text-align: center; margin-bottom: 9px;
     }
@@ -273,14 +272,14 @@
       display: flex; align-items: center; justify-content: center;
     }
     #btn-suited {
-      padding: 4px 14px; border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.14);
-      background: transparent; color: rgba(255,255,255,0.32);
-      font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
+      padding: 5px 16px; border-radius: 10px;
+      border: 1.5px solid rgba(255,255,255,0.30);
+      background: transparent; color: rgba(255,255,255,0.60);
+      font-size: 11px; font-weight: 700; letter-spacing: 0.07em;
       cursor: pointer; user-select: none;
       transition: background 0.07s, color 0.07s, border-color 0.07s;
     }
-    #btn-suited.on { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.80); border-color: rgba(255,255,255,0.38); }
+    #btn-suited.on { background: rgba(255,255,255,0.18); color: rgba(255,255,255,0.90); border-color: rgba(255,255,255,0.55); }
     #btn-suited.hidden { display: none; }
 
     /* ══════════════════════════════════════════
@@ -303,14 +302,13 @@
     }
     .mc-rank {
       font-size: 20px; font-weight: 900; line-height: 1;
-      color: transparent;
-      -webkit-text-stroke: 1.8px #111827;
+      color: #111827;
     }
     .mc-dot {
       width: 7px; height: 7px; border-radius: 50%;
       background: #111827; flex-shrink: 0;
     }
-    .mini-card.red .mc-rank { -webkit-text-stroke: 1.8px #c92a2a; }
+    .mini-card.red .mc-rank { color: #c92a2a; }
     .mini-card.red .mc-dot  { background: #c92a2a; }
 
     #result-text {
@@ -319,12 +317,12 @@
       transition: color 0.12s;
     }
     #result-reason {
-      font-size: 12px; font-weight: 500;
-      color: rgba(255,255,255,0.32); letter-spacing: 0.01em;
+      font-size: 13px; font-weight: 600;
+      color: rgba(255,255,255,0.58); letter-spacing: 0.01em;
     }
     #result-tap-hint {
-      font-size: 9px; font-weight: 500;
-      color: rgba(255,255,255,0.10); letter-spacing: 0.04em; margin-top: 1px;
+      font-size: 10px; font-weight: 500;
+      color: rgba(255,255,255,0.32); letter-spacing: 0.04em; margin-top: 1px;
     }
 
     @keyframes pop-in {
@@ -338,19 +336,19 @@
     ══════════════════════════════════════════ */
     #link-grid {
       display: block; text-align: center;
-      font-size: 10px; font-weight: 500;
-      color: rgba(255,255,255,0.13); text-decoration: none;
+      font-size: 11px; font-weight: 600;
+      color: rgba(255,255,255,0.50); text-decoration: none;
       letter-spacing: 0.04em;
-      border-top: 1px solid rgba(255,255,255,0.05);
+      border-top: 1px solid rgba(255,255,255,0.08);
       padding: 10px 0 max(12px, env(safe-area-inset-bottom));
       flex-shrink: 0; transition: color 0.10s;
     }
-    #link-grid:hover { color: rgba(255,255,255,0.30); }
+    #link-grid:hover { color: rgba(255,255,255,0.75); }
   </style>
 </head>
 <body>
 
-<div id="test-marker">DRAG POLISH FINAL</div>
+<div id="test-marker">SPEED READABILITY V1</div>
 
 <div id="app">
 
@@ -796,11 +794,15 @@ function resetCards() {
 /* ══════════════════════════════════════════
    RANGE LOOKUP
 ══════════════════════════════════════════ */
+function normalizeRanks(r1, r2) {
+  if (r1 === r2) return [r1, r2];
+  const i1 = RANKS.indexOf(r1), i2 = RANKS.indexOf(r2);
+  return i1 < i2 ? [r1, r2] : [r2, r1];
+}
+
 function handKey(r1, r2, isSuited) {
   if (r1 === r2) return r1 + r2;
-  const i1 = RANKS.indexOf(r1), i2 = RANKS.indexOf(r2);
-  const hi = i1 < i2 ? r1 : r2;
-  const lo = i1 < i2 ? r2 : r1;
+  const [hi, lo] = normalizeRanks(r1, r2);
   return hi + lo + (isSuited ? "s" : "o");
 }
 
@@ -848,7 +850,8 @@ function updateMiniCards(r1, r2, isSuited) {
 function recompute() {
   const key     = handKey(rank1, rank2, suited);
   const actions = getActions(key);
-  updateMiniCards(rank1, rank2, suited);
+  const [dispR1, dispR2] = normalizeRanks(rank1, rank2);
+  updateMiniCards(dispR1, dispR2, suited);
 
   const PRIORITY = ["3BET","OPEN","CALL","FOLD"];
   const main = PRIORITY.find(p => actions.includes(p)) || "FOLD";
