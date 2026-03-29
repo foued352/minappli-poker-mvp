@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Minappli · Range Editor</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%; min-height: 100%;
+      background: #0a1018;
+      color: #e2e8f0;
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+    }
+
+    /* ── Layout ── */
+    #app {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding-bottom: 10px;
+    }
+    header h1 { font-size: 16px; font-weight: 700; color: #fff; }
+    header span { font-size: 11px; color: rgba(255,255,255,0.55); }
+    header a {
+      margin-left: auto;
+      font-size: 11px; color: rgba(255,255,255,0.44);
+      text-decoration: none;
+      border: 1px solid rgba(255,255,255,0.12);
+      padding: 3px 10px; border-radius: 5px;
+    }
+    header a:hover { color: #fff; border-color: rgba(255,255,255,0.28); }
+
+    /* ── Context global (Stack / Position / Mode) ── */
+    #ctx-global {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    /* ── Context local opener (VS OPEN) ── */
+    #opener-group {
+      padding: 6px 0 4px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .ctrl-group { display: flex; gap: 4px; align-items: center; }
+    .ctrl-label {
+      font-size: 11px; font-weight: 700;
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      margin-right: 2px;
+    }
+    .ctrl-btn {
+      padding: 5px 11px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.54);
+      font-size: 11px; font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: background 0.07s, color 0.07s, border-color 0.07s;
+    }
+    .ctrl-btn:hover { background: rgba(255,255,255,0.10); color: rgba(255,255,255,0.80); }
+    .ctrl-btn.active {
+      background: rgba(255,255,255,0.18);
+      color: #fff;
+      border-color: rgba(255,255,255,0.42);
+    }
+    .ctrl-btn:disabled { opacity: 0.22; cursor: default; }
+
+    /* ── Main area: grid + sidebar ── */
+    #main {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    /* ── Grid ── */
+    #grid-wrap {
+      flex-shrink: 0;
+    }
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(13, 1fr);
+      gap: 2px;
+      width: min(calc(100vw - 32px - 200px - 16px), 460px);
+    }
+    .cell {
+      aspect-ratio: 1;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(7px, 1.4vw, 11px);
+      font-weight: 700;
+      cursor: pointer;
+      user-select: none;
+      transition: filter 0.06s, transform 0.06s;
+      position: relative;
+      letter-spacing: -0.02em;
+    }
+    .cell:hover { filter: brightness(1.3); transform: scale(1.08); z-index: 2; }
+    .cell[data-action="fold"]    { background: rgba(255,255,255,0.07);  color: rgba(255,255,255,0.30); border: 1px solid rgba(255,255,255,0.07); }
+    .cell[data-action="open"]    { background: rgba(34,197,94,0.28);    color: #86efac; border: 1px solid rgba(34,197,94,0.36); }
+    .cell[data-action="call"]    { background: rgba(59,130,246,0.28);   color: #93c5fd; border: 1px solid rgba(59,130,246,0.36); }
+    .cell[data-action="threebet"]{ background: rgba(239,68,68,0.28);    color: #fca5a5; border: 1px solid rgba(239,68,68,0.36); }
+    /* Pairs diagonal — slightly brighter to differentiate */
+    .cell-pair[data-action="fold"] { background: rgba(255,255,255,0.13); color: rgba(255,255,255,0.50); border-color: rgba(255,255,255,0.12); }
+
+    /* Rank headers */
+    .rank-header {
+      display: flex;
+      gap: 2px;
+      flex: 1;
+    }
+    .rank-hdr {
+      flex: 1;
+      text-align: center;
+      font-size: 11px; font-weight: 700;
+      color: rgba(255,255,255,0.52);
+      aspect-ratio: 1;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Sidebar Panel (unified) ── */
+    #panel {
+      flex: 1;
+      min-width: 170px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 10px;
+      overflow: hidden;
+      align-self: flex-start;
+    }
+    .panel-section { padding: 10px 12px; }
+    .panel-sep { border-top: 1px solid rgba(255,255,255,0.07); }
+    .panel-title {
+      font-size: 10px; font-weight: 700;
+      color: rgba(255,255,255,0.40);
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      margin-bottom: 7px;
+    }
+    .panel-spot {
+      font-size: 12px; font-weight: 700;
+      color: rgba(255,255,255,0.72);
+      letter-spacing: 0.04em;
+    }
+    .stat-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; font-size: 11px; }
+    .stat-label { color: rgba(255,255,255,0.42); }
+    .stat-value { font-weight: 700; color: #fff; }
+    .stat-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+    .legend-row { display: flex; align-items: center; gap: 7px; margin-bottom: 4px; font-size: 11px; color: rgba(255,255,255,0.64); }
+    .legend-swatch { width: 16px; height: 11px; border-radius: 2px; flex-shrink: 0; }
+    .export-btns { display: flex; gap: 5px; margin-bottom: 7px; }
+    .act-btn {
+      flex: 1; padding: 5px 4px; border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.70);
+      font-size: 11px; font-weight: 700; cursor: pointer;
+      transition: background 0.07s, color 0.07s;
+    }
+    .act-btn:hover { background: rgba(255,255,255,0.16); color: #fff; }
+    .act-btn.green { border-color: rgba(34,197,94,0.30); background: rgba(34,197,94,0.12); color: #86efac; }
+    .act-btn.green:hover { background: rgba(34,197,94,0.22); }
+    textarea#json-area {
+      width: 100%; height: 68px;
+      background: rgba(0,0,0,0.28); border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 6px; color: rgba(255,255,255,0.65);
+      font-size: 10px; font-family: monospace; padding: 5px; resize: vertical;
+    }
+    #btn-reset {
+      width: 100%; padding: 6px; border-radius: 6px;
+      border: 1px solid rgba(239,68,68,0.22);
+      background: rgba(239,68,68,0.08); color: rgba(239,68,68,0.70);
+      font-size: 11px; font-weight: 700; cursor: pointer;
+      transition: background 0.07s, color 0.07s;
+    }
+    #btn-reset:hover { background: rgba(239,68,68,0.18); color: #fca5a5; }
+
+    /* ── Edit tools (palette + breadcrumb) ── */
+    #edit-tools {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 8px;
+    }
+    #paint-btns { display: flex; gap: 5px; }
+    .paint-btn {
+      padding: 5px 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.54);
+      font-size: 11px; font-weight: 700;
+      cursor: pointer; letter-spacing: 0.03em;
+      transition: background 0.07s, color 0.07s, border-color 0.07s;
+    }
+    .paint-btn:hover { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.80); }
+    .paint-btn[data-action="fold"].active    { background: rgba(180,200,240,0.18); border-color: rgba(180,200,240,0.45); color: #e2e8f8; box-shadow: 0 0 8px rgba(160,180,220,0.14); }
+    .paint-btn[data-action="open"].active    { background: rgba(34,197,94,0.32);   border-color: rgba(34,197,94,0.66);   color: #4ade80; box-shadow: 0 0 10px rgba(34,197,94,0.24); }
+    .paint-btn[data-action="call"].active    { background: rgba(59,130,246,0.32);  border-color: rgba(59,130,246,0.66);  color: #60a5fa; box-shadow: 0 0 10px rgba(59,130,246,0.24); }
+    .paint-btn[data-action="threebet"].active{ background: rgba(239,68,68,0.32);   border-color: rgba(239,68,68,0.66);   color: #f87171; box-shadow: 0 0 10px rgba(239,68,68,0.24); }
+    /* breadcrumb now in #panel — see .panel-spot */
+
+    /* ── Row labels ── */
+    #grid-row { display: flex; gap: 2px; }
+    #row-labels {
+      display: flex; flex-direction: column; gap: 2px;
+      width: 14px; flex-shrink: 0;
+    }
+    .row-lbl {
+      font-size: clamp(7px, 1.3vw, 9px); font-weight: 700;
+      color: rgba(255,255,255,0.40);
+      aspect-ratio: 1;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #rank-header-spacer { width: 16px; flex-shrink: 0; }
+    #col-labels-row { display: flex; align-items: center; margin-bottom: 3px; }
+
+    /* Toast */
+    #toast {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: rgba(34,197,94,0.90); color: #fff;
+      padding: 8px 20px; border-radius: 20px;
+      font-size: 12px; font-weight: 700;
+      opacity: 0; transition: opacity 0.2s;
+      pointer-events: none;
+    }
+    #toast.show { opacity: 1; }
+
+    @media (max-width: 600px) {
+      #main { flex-direction: column; }
+      #grid { width: calc(100vw - 48px); }
+      #sidebar { min-width: unset; }
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <header>
+    <h1>Range Editor</h1>
+    <span>Minappli — outil de contrôle des ranges</span>
+    <a href="mobile_fast_input.html">← Fast Input</a>
+  </header>
+
+  <!-- Ligne 2 : Contexte global (Stack / Position / Mode) -->
+  <div id="ctx-global">
+    <div class="ctrl-group">
+      <span class="ctrl-label">Stack</span>
+      <button class="ctrl-btn" data-type="stack" data-val="20bb">20bb</button>
+      <button class="ctrl-btn" data-type="stack" data-val="25bb">25bb</button>
+      <button class="ctrl-btn active" data-type="stack" data-val="40bb">40bb</button>
+    </div>
+    <div class="ctrl-group">
+      <span class="ctrl-label">Position</span>
+      <button class="ctrl-btn" data-type="pos" data-val="UTG">UTG</button>
+      <button class="ctrl-btn" data-type="pos" data-val="HJ">HJ</button>
+      <button class="ctrl-btn" data-type="pos" data-val="CO">CO</button>
+      <button class="ctrl-btn active" data-type="pos" data-val="BTN">BTN</button>
+      <button class="ctrl-btn" data-type="pos" data-val="SB">SB</button>
+      <button class="ctrl-btn" data-type="pos" data-val="BB">BB</button>
+    </div>
+    <div class="ctrl-group">
+      <span class="ctrl-label">Mode</span>
+      <button class="ctrl-btn active" data-type="mode" data-val="open">OPEN</button>
+      <button class="ctrl-btn" data-type="mode" data-val="vsopen">VS OPEN</button>
+    </div>
+  </div>
+
+  <!-- Ligne 3 : Contexte local (ouvreur VS OPEN uniquement) -->
+  <div class="ctrl-group" id="opener-group" style="display:none;">
+    <span class="ctrl-label">Ouvreur</span>
+    <div id="opener-btns"></div>
+  </div>
+
+  <!-- Ligne 4 : Outils d'édition -->
+  <div id="edit-tools">
+    <span class="ctrl-label" style="flex-shrink:0;">Peindre</span>
+    <div id="paint-btns">
+      <button class="paint-btn" data-action="fold">FOLD</button>
+      <button class="paint-btn" data-action="open">OPEN</button>
+      <button class="paint-btn" data-action="call">CALL</button>
+      <button class="paint-btn" data-action="threebet">3BET</button>
+    </div>
+  </div>
+
+  <div id="main">
+    <div id="grid-wrap">
+      <div id="col-labels-row">
+        <div id="rank-header-spacer"></div>
+        <div class="rank-header" id="rank-header"></div>
+      </div>
+      <div id="grid-row">
+        <div id="row-labels"></div>
+        <div id="grid"></div>
+      </div>
+    </div>
+
+    <div id="panel">
+      <div class="panel-section">
+        <span class="panel-spot" id="breadcrumb"></span>
+      </div>
+      <div class="panel-sep"></div>
+      <div class="panel-section">
+        <div class="panel-title">Stats</div>
+        <div id="stats-content"></div>
+      </div>
+      <div class="panel-sep"></div>
+      <div class="panel-section">
+        <div class="panel-title">Légende</div>
+        <div class="legend-row"><div class="legend-swatch" style="background:rgba(34,197,94,0.30)"></div> OPEN</div>
+        <div class="legend-row"><div class="legend-swatch" style="background:rgba(59,130,246,0.30)"></div> CALL</div>
+        <div class="legend-row"><div class="legend-swatch" style="background:rgba(239,68,68,0.30)"></div> 3BET</div>
+        <div class="legend-row"><div class="legend-swatch" style="background:rgba(255,255,255,0.09)"></div> FOLD</div>
+        <p style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:6px;">Haut-gauche = suited (AKs)</p>
+      </div>
+      <div class="panel-sep"></div>
+      <div class="panel-section">
+        <div class="panel-title">Export / Import</div>
+        <div class="export-btns">
+          <button class="act-btn green" id="btn-export">Copier JSON</button>
+          <button class="act-btn" id="btn-import">Importer</button>
+        </div>
+        <textarea id="json-area" placeholder="JSON du spot ici..."></textarea>
+      </div>
+      <div class="panel-sep"></div>
+      <div class="panel-section">
+        <button id="btn-reset">Remettre à zéro ce spot</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+<div id="toast">Copié !</div>
+
+<script src="mobile_fast_input_ranges.js"></script>
+<script>
+"use strict";
+
+const RANKS = ["A","K","Q","J","T","9","8","7","6","5","4","3","2"];
+
+const OPENER_OPTIONS = {
+  UTG: [], HJ: ["UTG"], CO: ["UTG","HJ"], BTN: ["UTG","HJ","CO"],
+  SB: ["CO","BTN"], BB: ["UTG","HJ","CO","BTN","SB"]
+};
+
+const COMBOS = { pair: 6, suited: 4, offsuit: 12 };
+const TOTAL_COMBOS = 1326;
+
+/* ── State ── */
+let activeStack  = "40bb";
+let activePos    = "BTN";
+let activeMode   = "open";
+let activeOpener = null;
+let paintAction  = "open";
+let spotData     = {}; /* hand → "fold"|"open"|"call"|"threebet" */
+
+/* ── Helpers ── */
+function getHand(row, col) {
+  if (row === col) return RANKS[row] + RANKS[row];
+  if (row < col)  return RANKS[row] + RANKS[col] + "s";
+  return RANKS[col] + RANKS[row] + "o";
+}
+
+function handType(row, col) {
+  if (row === col) return "pair";
+  if (row < col)  return "suited";
+  return "offsuit";
+}
+
+function cycleAction(current) {
+  if (activeMode === "open") {
+    return current === "open" ? "fold" : "open";
+  }
+  /* vsopen: fold → call → threebet → fold */
+  if (current === "fold")    return "call";
+  if (current === "call")    return "threebet";
+  return "fold";
+}
+
+/* ── Load spot from ranges data ── */
+function loadSpot() {
+  /* Init all to fold */
+  for (let r = 0; r < 13; r++)
+    for (let c = 0; c < 13; c++)
+      spotData[getHand(r,c)] = "fold";
+
+  const src = activeMode === "open"
+    ? MFI_RANGES_RAW?.[activeStack]?.[activePos]
+    : MFI_VSOPEN_RAW?.[activeStack]?.[activePos];
+
+  if (!src) return;
+  (src.open     || []).forEach(h => { if (h in spotData) spotData[h] = "open";     });
+  (src.call     || []).forEach(h => { if (h in spotData) spotData[h] = "call";     });
+  (src.threebet || []).forEach(h => { if (h in spotData) spotData[h] = "threebet"; });
+}
+
+/* ── Render grid ── */
+function renderGrid() {
+  const grid = document.getElementById("grid");
+  /* Reuse cells if they exist */
+  let cells = grid.querySelectorAll(".cell");
+  if (cells.length === 0) {
+    grid.innerHTML = "";
+    for (let r = 0; r < 13; r++) {
+      for (let c = 0; c < 13; c++) {
+        const el = document.createElement("div");
+        const ht = handType(r, c);
+        el.className = `cell cell-${ht}`;
+        el.dataset.row = r;
+        el.dataset.col = c;
+        el.title = getHand(r, c);
+        el.onclick = () => onCellClick(r, c);
+        grid.appendChild(el);
+      }
+    }
+    cells = grid.querySelectorAll(".cell");
+  }
+  cells.forEach(el => {
+    const r = +el.dataset.row;
+    const c = +el.dataset.col;
+    const hand = getHand(r, c);
+    const action = spotData[hand] || "fold";
+    el.dataset.action = action;
+    /* Short label: only show for non-fold to reduce clutter */
+    const label = hand.length <= 3 ? hand : hand.slice(0,2) + hand.slice(-1);
+    el.textContent = action === "fold" ? label : label;
+  });
+}
+
+/* ── Render rank headers ── */
+function renderHeaders() {
+  const hdr = document.getElementById("rank-header");
+  hdr.innerHTML = "";
+  RANKS.forEach(r => {
+    const el = document.createElement("div");
+    el.className = "rank-hdr";
+    el.textContent = r;
+    hdr.appendChild(el);
+  });
+}
+
+/* ── Row labels ── */
+function renderRowLabels() {
+  const container = document.getElementById("row-labels");
+  container.innerHTML = "";
+  RANKS.forEach(r => {
+    const el = document.createElement("div");
+    el.className = "row-lbl";
+    el.textContent = r;
+    container.appendChild(el);
+  });
+}
+
+/* ── Paint palette ── */
+function updatePaintPalette() {
+  const btns = document.querySelectorAll(".paint-btn");
+  /* In open mode, reset paint if it was call/threebet */
+  if (activeMode === "open" && (paintAction === "call" || paintAction === "threebet")) {
+    paintAction = "open";
+  }
+  btns.forEach(btn => {
+    const a = btn.dataset.action;
+    if (activeMode === "open" && (a === "call" || a === "threebet")) {
+      btn.style.display = "none";
+    } else {
+      btn.style.display = "";
+    }
+    btn.classList.toggle("active", a === paintAction);
+  });
+}
+
+/* ── Breadcrumb ── */
+function updateBreadcrumb() {
+  const modeLabel = activeMode === "open" ? "OPEN" : "VS OPEN";
+  document.getElementById("breadcrumb").textContent = `${activeStack} · ${activePos} · ${modeLabel}`;
+}
+
+/* ── Cell click ── */
+function onCellClick(row, col) {
+  const hand = getHand(row, col);
+  spotData[hand] = paintAction;
+  const cell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
+  if (cell) cell.dataset.action = paintAction;
+  updateStats();
+}
+
+/* ── Stats ── */
+function updateStats() {
+  const counts   = { open: 0, call: 0, threebet: 0, fold: 0 };
+  const comboCnt = { open: 0, call: 0, threebet: 0, fold: 0 };
+  let totalCombos = 0;
+
+  for (let r = 0; r < 13; r++) {
+    for (let c = 0; c < 13; c++) {
+      const hand   = getHand(r, c);
+      const action = spotData[hand] || "fold";
+      const type   = handType(r, c);
+      const n      = COMBOS[type];
+      counts[action]++;
+      comboCnt[action] += n;
+      totalCombos += n;
+    }
+  }
+
+  const COLORS = { open: "#22c55e", call: "#3b82f6", threebet: "#ef4444", fold: "#4b5563" };
+  const LABELS = { open: "OPEN", call: "CALL", threebet: "3BET", fold: "FOLD" };
+
+  const pct = v => Math.round((v / totalCombos) * 100);
+
+  let html = "";
+  ["open","call","threebet","fold"].forEach(a => {
+    if (activeMode === "open" && (a === "call" || a === "threebet")) return;
+    if (counts[a] === 0 && a === "fold") {
+      /* still show fold */
+    }
+    const relevant = a !== "fold" || counts[a] > 0;
+    if (!relevant && a === "call") return;
+    html += `<div class="stat-row">
+      <span class="stat-label"><span class="stat-dot" style="background:${COLORS[a]}"></span>${LABELS[a]}</span>
+      <span class="stat-value">${comboCnt[a]} combos <span style="color:rgba(255,255,255,0.36)">(${pct(comboCnt[a])}%)</span></span>
+    </div>`;
+  });
+
+  /* Total non-fold */
+  const playedCombos = comboCnt.open + comboCnt.call + comboCnt.threebet;
+  html += `<div class="stat-row" style="margin-top:6px;border-top:1px solid rgba(255,255,255,0.08);padding-top:6px;">
+    <span class="stat-label" style="color:rgba(255,255,255,0.60)">Total joué</span>
+    <span class="stat-value">${playedCombos} <span style="color:rgba(255,255,255,0.36)">(${pct(playedCombos)}%)</span></span>
+  </div>`;
+
+  document.getElementById("stats-content").innerHTML = html;
+}
+
+/* ── Opener bar ── */
+function updateOpenerBar() {
+  const grp = document.getElementById("opener-group");
+  const container = document.getElementById("opener-btns");
+  const opts = OPENER_OPTIONS[activePos] || [];
+
+  if (activeMode !== "vsopen" || opts.length === 0) {
+    grp.style.display = "none";
+    return;
+  }
+  grp.style.display = "flex";
+  if (!opts.includes(activeOpener)) activeOpener = opts[opts.length - 1];
+  container.innerHTML = "";
+  opts.forEach(op => {
+    const b = document.createElement("button");
+    b.className = "ctrl-btn" + (op === activeOpener ? " active" : "");
+    b.textContent = op;
+    b.style.gap = "4px";
+    b.onclick = () => {
+      activeOpener = op;
+      container.querySelectorAll(".ctrl-btn").forEach(x => x.classList.toggle("active", x.textContent === op));
+    };
+    container.appendChild(b);
+  });
+}
+
+/* ── Export ── */
+function buildExportJSON() {
+  const open = [], call = [], threebet = [];
+  for (let r = 0; r < 13; r++)
+    for (let c = 0; c < 13; c++) {
+      const h = getHand(r, c);
+      const a = spotData[h];
+      if (a === "open")     open.push(h);
+      if (a === "call")     call.push(h);
+      if (a === "threebet") threebet.push(h);
+    }
+  const out = { stack: activeStack, pos: activePos, mode: activeMode };
+  if (activeMode === "open") {
+    out.open = open; out.call = call; out.threebet = threebet;
+  } else {
+    out.call = call; out.threebet = threebet;
+  }
+  return JSON.stringify(out, null, 2);
+}
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 1800);
+}
+
+/* ── Import ── */
+function importJSON(raw) {
+  try {
+    const obj = JSON.parse(raw);
+    /* Reset spot */
+    for (let r = 0; r < 13; r++)
+      for (let c = 0; c < 13; c++)
+        spotData[getHand(r, c)] = "fold";
+    (obj.open     || []).forEach(h => { if (h in spotData) spotData[h] = "open";     });
+    (obj.call     || []).forEach(h => { if (h in spotData) spotData[h] = "call";     });
+    (obj.threebet || []).forEach(h => { if (h in spotData) spotData[h] = "threebet"; });
+    renderGrid();
+    updateStats();
+    showToast("Import OK");
+  } catch(e) {
+    showToast("JSON invalide");
+  }
+}
+
+/* ── Full refresh ── */
+function refresh() {
+  loadSpot();
+  renderGrid();
+  updateStats();
+  updateOpenerBar();
+  updatePaintPalette();
+  updateBreadcrumb();
+}
+
+/* ── Control button logic ── */
+document.querySelectorAll(".ctrl-btn[data-type]").forEach(btn => {
+  btn.onclick = () => {
+    const type = btn.dataset.type;
+    const val  = btn.dataset.val;
+    document.querySelectorAll(`.ctrl-btn[data-type="${type}"]`).forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    if (type === "stack")  { activeStack = val; }
+    if (type === "pos")    { activePos   = val; }
+    if (type === "mode")   { activeMode  = val; }
+    refresh();
+  };
+});
+
+/* ── Export button ── */
+document.getElementById("btn-export").onclick = () => {
+  const json = buildExportJSON();
+  document.getElementById("json-area").value = json;
+  navigator.clipboard?.writeText(json).then(() => showToast("Copié !")).catch(() => showToast("JSON dans la zone texte"));
+};
+
+/* ── Import button ── */
+document.getElementById("btn-import").onclick = () => {
+  const raw = document.getElementById("json-area").value.trim();
+  if (raw) importJSON(raw);
+};
+
+/* ── Reset button ── */
+document.getElementById("btn-reset").onclick = () => {
+  if (!confirm(`Remettre ${activePos} ${activeMode} ${activeStack} à zéro ?`)) return;
+  for (let r = 0; r < 13; r++)
+    for (let c = 0; c < 13; c++)
+      spotData[getHand(r, c)] = "fold";
+  renderGrid();
+  updateStats();
+  showToast("Spot remis à zéro");
+};
+
+/* ── Paint button logic ── */
+document.querySelectorAll(".paint-btn").forEach(btn => {
+  btn.onclick = () => {
+    paintAction = btn.dataset.action;
+    document.querySelectorAll(".paint-btn").forEach(b => b.classList.toggle("active", b.dataset.action === paintAction));
+  };
+});
+
+/* ── Init ── */
+renderHeaders();
+renderRowLabels();
+refresh();
+</script>
+</body>
+</html>
