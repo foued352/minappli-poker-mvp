@@ -31,7 +31,7 @@
     }
 
     /* ══════════════════════════════════════════
-       CONTEXT — calmed down, clearly secondary
+       CONTEXT — secondary, calm
     ══════════════════════════════════════════ */
     #ctx {
       flex-shrink: 0;
@@ -58,24 +58,15 @@
     .ctx-btn:disabled { opacity: 0.18; pointer-events: none; }
     #mode-row { align-items: center; gap: 5px; }
     #vs-bar { display: flex; align-items: center; gap: 3px; margin-left: 4px; }
-    .vs-lbl {
-      font-size: 9px; font-weight: 600;
-      color: rgba(255,255,255,0.26); letter-spacing: 0.07em; padding-right: 2px;
-    }
+    .vs-lbl { font-size: 9px; font-weight: 600; color: rgba(255,255,255,0.26); letter-spacing: 0.07em; padding-right: 2px; }
     .opener-btn {
       padding: 3px 7px; border-radius: 5px;
-      border: 1px solid rgba(255,255,255,0.09);
-      background: transparent;
-      color: rgba(255,255,255,0.36);
-      font-size: 10px; font-weight: 600;
+      border: 1px solid rgba(255,255,255,0.09); background: transparent;
+      color: rgba(255,255,255,0.36); font-size: 10px; font-weight: 600;
       cursor: pointer; user-select: none;
       transition: background 0.07s, color 0.07s;
     }
-    .opener-btn.active {
-      background: rgba(255,255,255,0.11);
-      color: rgba(255,255,255,0.82);
-      border-color: rgba(255,255,255,0.26);
-    }
+    .opener-btn.active { background: rgba(255,255,255,0.11); color: rgba(255,255,255,0.82); border-color: rgba(255,255,255,0.26); }
 
     /* ══════════════════════════════════════════
        HAND ZONE
@@ -84,8 +75,7 @@
       flex: 1; min-height: 0;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      gap: 14px;
-      padding: 12px 0 0;
+      gap: 14px; padding: 12px 0 0;
     }
 
     #cards-zone {
@@ -111,105 +101,119 @@
       -webkit-tap-highlight-color: transparent;
       touch-action: none;
       transition: transform 0.16s cubic-bezier(0.34, 1.4, 0.64, 1),
-                  box-shadow 0.14s, border-color 0.12s,
-                  opacity 0.14s;
+                  box-shadow 0.14s, border-color 0.12s, opacity 0.14s;
     }
     .card:active { transform: scale(0.93) !important; }
 
-    /* Idle fan */
+    /* Idle fan rotation */
     #hand-zone.idle #cards-row .card:first-child { transform: rotate(-5deg); }
     #hand-zone.idle #cards-row .card:last-child  { transform: rotate(5deg);  }
     #hand-zone.idle #cards-row .card:first-child:active { transform: rotate(-5deg) scale(0.93) !important; }
     #hand-zone.idle #cards-row .card:last-child:active  { transform: rotate(5deg)  scale(0.93) !important; }
 
-    /* Passive (inactive card during picking) */
-    .card.passive { opacity: 0.44; transform: scale(0.94); }
+    /* Passive — inactive card during picking */
+    .card.passive { opacity: 0.42; transform: scale(0.93); }
 
-    /* Face down */
+    /* ── Face down — POKER RED BACK ── */
     .card[data-state="down"] {
-      background: linear-gradient(155deg, #1a2336 0%, #0f1622 55%, #0c1220 100%);
-      border: 1.5px solid rgba(255,255,255,0.09);
-      box-shadow: 0 10px 36px rgba(0,0,0,0.60), 0 3px 8px rgba(0,0,0,0.32),
-                  inset 0 1px 0 rgba(255,255,255,0.06);
+      background: linear-gradient(150deg, #8a0000 0%, #6a0000 55%, #550000 100%);
+      border: 2px solid rgba(255,255,255,0.22);
+      box-shadow: 0 10px 36px rgba(0,0,0,0.65), 0 3px 8px rgba(0,0,0,0.36),
+                  inset 0 1px 0 rgba(255,200,200,0.12);
     }
     .card[data-state="down"]::before {
-      content: ""; position: absolute; inset: 8px;
-      border: 1px solid rgba(255,255,255,0.07); border-radius: 8px;
+      content: ""; position: absolute; inset: 7px;
+      border: 1.5px solid rgba(255,255,255,0.22);
+      border-radius: 7px;
       background: repeating-linear-gradient(
         45deg,
-        rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px,
-        transparent 1px, transparent 8px
+        rgba(255,255,255,0.055) 0px, rgba(255,255,255,0.055) 1px,
+        transparent 1px, transparent 7px
       );
     }
     .card[data-state="down"]::after {
       content: "◆"; position: absolute;
-      font-size: 22px; color: rgba(255,255,255,0.04);
+      font-size: 30px; color: rgba(255,255,255,0.16);
     }
     .card[data-state="down"] .card-rank-center { display: none; }
     .card[data-state="down"] .card-corner-tl,
     .card[data-state="down"] .card-corner-br  { display: none; }
 
-    /* Selecting */
+    /* ── Selecting — active, slightly enlarged ── */
     .card[data-state="selecting"] {
-      background: linear-gradient(155deg, #1e2840 0%, #141d32 100%);
-      border: 2px solid rgba(255,255,255,0.70);
-      box-shadow: 0 0 0 5px rgba(255,255,255,0.06),
-                  0 0 32px rgba(255,255,255,0.08),
-                  0 12px 40px rgba(0,0,0,0.56);
+      transform: scale(1.05);
+      background: linear-gradient(150deg, #8a0000 0%, #6a0000 55%, #550000 100%);
+      border: 2px solid rgba(255,255,255,0.80);
+      box-shadow: 0 0 0 5px rgba(255,255,255,0.07),
+                  0 0 32px rgba(255,255,255,0.10),
+                  0 14px 44px rgba(0,0,0,0.60);
     }
     .card[data-state="selecting"]::before {
-      content: ""; position: absolute; inset: 8px;
-      border: 1px solid rgba(255,255,255,0.14); border-radius: 8px;
+      content: ""; position: absolute; inset: 7px;
+      border: 1.5px solid rgba(255,255,255,0.28);
+      border-radius: 7px;
+      background: repeating-linear-gradient(
+        45deg,
+        rgba(255,255,255,0.07) 0px, rgba(255,255,255,0.07) 1px,
+        transparent 1px, transparent 7px
+      );
     }
-    /* Downward triangle — visual continuity to picker below */
+    /* Downward triangle — visual continuity to picker */
     .card[data-state="selecting"]::after {
       content: "";
-      position: absolute; bottom: -9px; left: 50%;
+      position: absolute; bottom: -12px; left: 50%;
       transform: translateX(-50%);
-      border-left: 8px solid transparent;
-      border-right: 8px solid transparent;
-      border-top: 8px solid rgba(255,255,255,0.44);
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-top: 11px solid rgba(255,255,255,0.60);
     }
     .card[data-state="selecting"] .card-rank-center { display: none; }
     .card[data-state="selecting"] .card-corner-tl,
     .card[data-state="selecting"] .card-corner-br  { display: none; }
 
-    /* Face up */
+    /* ── Face up — clean white, outlined rank ── */
     .card[data-state="up"] {
-      background: rgba(255,255,255,0.085);
-      border: 1.5px solid rgba(255,255,255,0.34);
-      box-shadow: 0 10px 32px rgba(0,0,0,0.48), 0 3px 10px rgba(0,0,0,0.26),
-                  inset 0 1px 0 rgba(255,255,255,0.10);
+      background: #f4f5f7;
+      border: 1.5px solid rgba(200,210,230,0.40);
+      box-shadow: 0 12px 36px rgba(0,0,0,0.55), 0 3px 12px rgba(0,0,0,0.32),
+                  inset 0 1px 0 rgba(255,255,255,0.90);
     }
+    /* Card flip with snap */
     @keyframes card-flip {
-      0%   { transform: rotateY(80deg) scale(0.95); opacity: 0.4; }
-      60%  { transform: rotateY(-6deg) scale(1.02); opacity: 1;   }
-      100% { transform: rotateY(0deg)  scale(1);    opacity: 1;   }
+      0%   { transform: rotateY(90deg) scale(0.92); opacity: 0.3; }
+      50%  { transform: rotateY(-5deg) scale(1.09); opacity: 1;   }
+      75%  { transform: rotateY(2deg)  scale(1.01); }
+      100% { transform: rotateY(0deg)  scale(1.0);  opacity: 1;   }
     }
-    .card.flipping { animation: card-flip 0.20s cubic-bezier(0.22, 1, 0.36, 1); }
+    .card.flipping { animation: card-flip 0.22s cubic-bezier(0.22, 1, 0.36, 1); }
+
+    /* Outlined rank — no fill, stroke only */
     .card[data-state="up"] .card-rank-center {
-      font-size: 52px; font-weight: 900; color: #fff;
+      font-size: 58px; font-weight: 900;
+      color: transparent;
+      -webkit-text-stroke: 2.5px #1a1f2e;
       line-height: 1; letter-spacing: -0.02em;
     }
     .card[data-state="up"] .card-corner-tl {
-      position: absolute; top: 10px; left: 12px;
-      font-size: 16px; font-weight: 800;
-      color: rgba(255,255,255,0.48); line-height: 1;
+      position: absolute; top: 9px; left: 11px;
+      font-size: 15px; font-weight: 800;
+      color: #1a1f2e; line-height: 1;
     }
     .card[data-state="up"] .card-corner-br {
-      position: absolute; bottom: 10px; right: 12px;
-      font-size: 16px; font-weight: 800;
-      color: rgba(255,255,255,0.48); line-height: 1;
+      position: absolute; bottom: 9px; right: 11px;
+      font-size: 15px; font-weight: 800;
+      color: #1a1f2e; line-height: 1;
       transform: rotate(180deg);
     }
 
     /* ══════════════════════════════════════════
-       RANK PICKER — inline, attached to cards
+       RANK PICKER — inline, attached
     ══════════════════════════════════════════ */
     #rank-picker {
-      display: none;
-      width: 100%;
-      margin-top: 12px; /* tight to card, visually attached */
+      display: none; width: 100%;
+      margin-top: 14px; /* triangle extends 12px, so 2px gap */
+      border-top: 1px solid rgba(255,255,255,0.16); /* visual line at top */
+      padding-top: 11px;
     }
     @keyframes picker-appear {
       from { opacity: 0; transform: translateY(-5px); }
@@ -227,16 +231,14 @@
       text-align: center; margin-bottom: 9px;
     }
 
-    #rank-grid {
-      display: flex; flex-wrap: wrap; gap: 8px;
-      justify-content: center;
-    }
+    #rank-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+
     .rank-btn {
       width: calc((100% - 48px) / 7);
       aspect-ratio: 1; border-radius: 12px;
-      border: 1.5px solid rgba(255,255,255,0.13);
-      background: rgba(255,255,255,0.07);
-      color: rgba(255,255,255,0.88);
+      border: 1.5px solid rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.10);
+      color: rgba(255,255,255,0.90);
       font-size: clamp(16px, 5vw, 22px); font-weight: 900;
       cursor: pointer;
       display: flex; align-items: center; justify-content: center;
@@ -244,14 +246,15 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.20);
       transition: background 0.05s, transform 0.05s, border-color 0.05s;
     }
-    .rank-btn:active { transform: scale(0.86); background: rgba(255,255,255,0.22); border-color: rgba(255,255,255,0.36); }
-    /* Drag-over — very obvious, instant */
+    .rank-btn:active { transform: scale(0.86); background: rgba(255,255,255,0.22); }
+
+    /* Drag-over — maximum contrast, instantly obvious */
     .rank-btn.drag-over {
-      background: rgba(255,255,255,0.34) !important;
-      border-color: rgba(255,255,255,1.0) !important;
-      transform: scale(1.16) !important;
-      box-shadow: 0 0 18px rgba(255,255,255,0.18) !important;
-      color: #fff !important;
+      background: rgba(255,255,255,0.93) !important;
+      color: #0a0f1a !important;
+      border-color: rgba(255,255,255,0.96) !important;
+      transform: scale(1.20) !important;
+      box-shadow: 0 0 24px rgba(255,255,255,0.24) !important;
       transition: none !important;
     }
 
@@ -264,7 +267,7 @@
     }
 
     /* ══════════════════════════════════════════
-       SUITED CHIP — between cards and result
+       SUITED CHIP
     ══════════════════════════════════════════ */
     #suited-row {
       min-height: 22px;
@@ -273,49 +276,37 @@
     #btn-suited {
       padding: 4px 14px; border-radius: 10px;
       border: 1px solid rgba(255,255,255,0.14);
-      background: transparent;
-      color: rgba(255,255,255,0.32);
-      font-size: 10px; font-weight: 600;
-      letter-spacing: 0.06em;
+      background: transparent; color: rgba(255,255,255,0.32);
+      font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
       cursor: pointer; user-select: none;
       transition: background 0.07s, color 0.07s, border-color 0.07s;
     }
-    #btn-suited.on {
-      background: rgba(255,255,255,0.12);
-      color: rgba(255,255,255,0.80);
-      border-color: rgba(255,255,255,0.38);
-    }
+    #btn-suited.on { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.80); border-color: rgba(255,255,255,0.38); }
     #btn-suited.hidden { display: none; }
 
     /* ══════════════════════════════════════════
-       RESULT — compact, central, clean
+       RESULT — compact, clean
     ══════════════════════════════════════════ */
     #hand-result {
       display: none; flex-direction: column;
-      align-items: center; gap: 5px;
-      text-align: center;
+      align-items: center; gap: 5px; text-align: center;
     }
     #hand-result.active { display: flex; }
 
-    /* Mini cards */
-    #hand-display {
-      display: flex; gap: 6px;
-      align-items: center; justify-content: center;
-    }
+    /* Mini cards — neutral style, suit symbols kept for hand-type info */
+    #hand-display { display: flex; gap: 6px; align-items: center; justify-content: center; }
     .mini-card {
-      width: 40px; height: 56px;
-      border-radius: 6px; background: #eef0f5;
+      width: 40px; height: 56px; border-radius: 6px;
+      background: #f4f5f7;
       box-shadow: 0 3px 10px rgba(0,0,0,0.50);
       display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      flex-shrink: 0;
+      align-items: center; justify-content: center; flex-shrink: 0;
     }
     .mc-rank { font-size: 18px; font-weight: 900; line-height: 1.1; color: #111827; }
     .mc-suit { font-size: 12px; line-height: 1; color: #111827; }
     .mini-card.red .mc-rank,
     .mini-card.red .mc-suit { color: #c92a2a; }
 
-    /* Action */
     #result-text {
       font-size: clamp(52px, 15vw, 68px);
       font-weight: 900; letter-spacing: 0.04em; line-height: 1;
@@ -323,13 +314,11 @@
     }
     #result-reason {
       font-size: 12px; font-weight: 500;
-      color: rgba(255,255,255,0.32);
-      letter-spacing: 0.01em;
+      color: rgba(255,255,255,0.32); letter-spacing: 0.01em;
     }
     #result-tap-hint {
       font-size: 9px; font-weight: 500;
-      color: rgba(255,255,255,0.10);
-      letter-spacing: 0.04em; margin-top: 1px;
+      color: rgba(255,255,255,0.10); letter-spacing: 0.04em; margin-top: 1px;
     }
 
     @keyframes pop-in {
@@ -355,7 +344,7 @@
 </head>
 <body>
 
-<div id="test-marker">DRAG CLARITY v1</div>
+<div id="test-marker">DRAG POLISH FINAL</div>
 
 <div id="app">
 
@@ -395,7 +384,6 @@
       <div id="idle-hint">Touchez · glissez</div>
     </div>
 
-    <!-- Suited chip — between cards zone and result, natural hand property -->
     <div id="suited-row">
       <button id="btn-suited" class="hidden">Suited</button>
     </div>
@@ -496,8 +484,7 @@ let dragActive  = false;
 let dragHovered = null;
 
 function beginDrag() {
-  dragActive  = true;
-  dragHovered = null;
+  dragActive = true; dragHovered = null;
   document.body.style.overflow = "hidden";
   document.addEventListener("pointermove",   onDragMove,   { passive: false });
   document.addEventListener("pointerup",     onDragEnd);
@@ -529,7 +516,6 @@ function onDragEnd(e) {
   const btn = rankBtnAt(e.clientX, e.clientY) || dragHovered;
   cleanupDrag();
   if (btn) pickRank(btn.textContent.trim());
-  /* No rank reached: picker stays open for fallback tap */
 }
 
 function onDragCancel() { cleanupDrag(); }
@@ -576,7 +562,7 @@ function init() {
     cardEl.addEventListener("pointerdown", (e) => {
       if (cardEl.releasePointerCapture) cardEl.releasePointerCapture(e.pointerId);
       e.preventDefault();
-      onCardPointerDown(e, n);
+      onCardPointerDown(n);
     });
     cardEl.addEventListener("contextmenu", e => e.preventDefault());
   }
@@ -590,20 +576,14 @@ function init() {
 /* ══════════════════════════════════════════
    CARD POINTER DOWN
 ══════════════════════════════════════════ */
-function onCardPointerDown(e, n) {
+function onCardPointerDown(n) {
   if (step === "done") { resetCards(); return; }
 
-  if (step === "idle") {
-    startPicking1();
-    beginDrag();
-    return;
-  }
+  if (step === "idle") { startPicking1(); beginDrag(); return; }
 
   if (step === "picking1") {
     if (n === 1) { resetCards(); return; }
-    /* card2 during picking1 — re-activate drag */
-    beginDrag();
-    return;
+    beginDrag(); return;
   }
 
   if (step === "picking2") {
@@ -617,7 +597,6 @@ function onCardPointerDown(e, n) {
     EL.btnSuited.classList.add("hidden");
     EL.pickingLabel.textContent = "Carte 1";
     beginDrag();
-    return;
   }
 }
 
@@ -697,9 +676,7 @@ function fixMode() {
 
 function updateVsBar() {
   const opts = OPENER_OPTIONS[activePos] || [];
-  if (activeMode !== "vsopen" || opts.length === 0) {
-    EL.vsBar.style.display = "none"; return;
-  }
+  if (activeMode !== "vsopen" || opts.length === 0) { EL.vsBar.style.display = "none"; return; }
   EL.vsBar.style.display = "flex";
   if (!opts.includes(activeOpener)) activeOpener = opts[opts.length - 1];
   EL.openerGrp.innerHTML = "";
@@ -721,11 +698,8 @@ function updateVsBar() {
 function showView(view) {
   EL.handZone.classList.toggle("idle", view === "idle");
   EL.idleHint.style.display = view === "idle" ? "" : "none";
-  if (view === "picking") {
-    EL.rankPicker.classList.add("active");
-  } else {
-    EL.rankPicker.classList.remove("active");
-  }
+  if (view === "picking") { EL.rankPicker.classList.add("active"); }
+  else                    { EL.rankPicker.classList.remove("active"); }
   EL.handResult.classList.toggle("active", view === "result");
 }
 
@@ -737,7 +711,6 @@ function startPicking1() {
   step = "picking1";
   setCard(EL.card1, "selecting", null);
   setCard(EL.card2, "down", null);
-  /* card2 visually dims — not the active card */
   EL.card1.classList.remove("passive");
   EL.card2.classList.add("passive");
   EL.btnSuited.classList.add("hidden");
@@ -752,7 +725,6 @@ function pickRank(rank) {
     setCard(EL.card1, "up", rank);
     step = "picking2";
     setCard(EL.card2, "selecting", null);
-    /* card2 now active — remove passive */
     EL.card1.classList.remove("passive");
     EL.card2.classList.remove("passive");
     EL.pickingLabel.textContent = "Carte 2";
@@ -770,7 +742,6 @@ function pickRank(rank) {
     setCard(EL.card2, "up", rank);
     step = "done";
     recompute();
-    return;
   }
 }
 
@@ -845,9 +816,6 @@ function getActions(key) {
   return out.length ? out : ["FOLD"];
 }
 
-/* ══════════════════════════════════════════
-   MINI CARDS
-══════════════════════════════════════════ */
 function getMiniCardData(r1, r2, isSuited) {
   if (r1 === r2) return [
     { rank: r1, suit: "\u2660", red: false },
@@ -872,13 +840,9 @@ function updateMiniCards(r1, r2, isSuited) {
   });
 }
 
-/* ══════════════════════════════════════════
-   RESULT
-══════════════════════════════════════════ */
 function recompute() {
   const key     = handKey(rank1, rank2, suited);
   const actions = getActions(key);
-
   updateMiniCards(rank1, rank2, suited);
 
   const PRIORITY = ["3BET","OPEN","CALL","FOLD"];
@@ -888,7 +852,6 @@ function recompute() {
   const labels = [...new Set(actions.map(a => DISPLAY[a]?.label || a))];
   EL.resultText.textContent = labels.join(" / ");
   EL.resultText.style.color = d.color;
-
   EL.resultReason.textContent = actions.length === 1
     ? (REASON[main] || "")
     : "Plusieurs options jouables";
