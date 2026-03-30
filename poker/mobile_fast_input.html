@@ -68,24 +68,27 @@
     /* ══ POSITION BUTTONS ══ */
     .pos-btn {
       position: absolute; z-index: 3;
-      padding: 6px 13px; border-radius: 8px;
-      border: 1.5px solid rgba(255,255,255,0.16);
-      background: rgba(0,0,0,0.45);
-      color: rgba(255,255,255,0.55);
-      font-size: 11px; font-weight: 800; letter-spacing: 0.06em;
+      padding: 7px 16px; border-radius: 9px;
+      border: 1.5px solid rgba(255,255,255,0.20);
+      background: rgba(0,0,0,0.58);
+      color: rgba(255,255,255,0.62);
+      font-size: 12px; font-weight: 800; letter-spacing: 0.06em;
       cursor: pointer; user-select: none; touch-action: manipulation;
       transition: all 0.12s;
       white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.40);
     }
-    .pos-btn:active { opacity: 0.75; }
+    .pos-btn:active { opacity: 0.72; transform: scale(0.93); }
+    #pos-UTG:active,
+    #pos-BTN:active { transform: translateX(-50%) scale(0.93); }
 
-    /* placements around the oval */
-    #pos-UTG { top: 5%;    left: 50%;  transform: translateX(-50%); }
-    #pos-HJ  { top: 24%;  left: 2%; }
-    #pos-CO  { top: 24%;  right: 2%; }
-    #pos-SB  { bottom: 24%; left: 2%; }
-    #pos-BB  { bottom: 24%; right: 2%; }
-    #pos-BTN { bottom: 5%; left: 50%; transform: translateX(-50%); }
+    /* Winamax-like placements */
+    #pos-UTG { top: 3%;    left: 50%; transform: translateX(-50%); }
+    #pos-HJ  { top: 16%;  left: 2%; }
+    #pos-CO  { top: 16%;  right: 2%; }
+    #pos-SB  { bottom: 16%; left: 2%; }
+    #pos-BB  { bottom: 16%; right: 2%; }
+    #pos-BTN { bottom: 3%; left: 50%; transform: translateX(-50%); }
 
     /* HERO */
     .pos-btn.hero {
@@ -130,8 +133,9 @@
     .card {
       width: 62px; height: 87px; border-radius: 7px;
       position: relative; display: flex; align-items: center; justify-content: center;
-      user-select: none;
+      user-select: none; cursor: pointer; touch-action: manipulation;
     }
+    .card[data-state="up"]:active { transform: scale(0.91); }
     .card[data-state="down"] {
       background: linear-gradient(150deg, #8a0000 0%, #6a0000 55%, #550000 100%);
       border: 1.5px solid rgba(255,255,255,0.18);
@@ -214,18 +218,19 @@
       display: flex; justify-content: center; align-items: center; min-height: 34px;
     }
     #suited-row.hidden { visibility: hidden; }
-    #suited-toggle {
-      display: flex; border-radius: 9px; overflow: hidden;
-      border: 1.5px solid rgba(255,255,255,0.28);
-    }
-    .suit-opt {
-      padding: 5px 15px; background: transparent; border: none;
-      color: rgba(255,255,255,0.40);
-      font-size: 11px; font-weight: 800; letter-spacing: 0.08em;
+    #btn-suited {
+      padding: 6px 22px; border-radius: 9px;
+      border: 1.5px solid rgba(255,255,255,0.26);
+      background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.50);
+      font-size: 12px; font-weight: 800; letter-spacing: 0.10em;
+      min-width: 96px;
       cursor: pointer; user-select: none; touch-action: manipulation;
-      transition: background 0.08s, color 0.08s;
+      transition: background 0.08s, color 0.08s, border-color 0.08s;
     }
-    .suit-opt.active { background: rgba(255,255,255,0.20); color: #fff; }
+    #btn-suited.suited {
+      background: rgba(255,255,255,0.20); color: #fff;
+      border-color: rgba(255,255,255,0.55);
+    }
 
     /* ══ RESULT ZONE ══ */
     #result-zone {
@@ -261,7 +266,7 @@
 </head>
 <body>
 
-<div id="test-marker">TABLE UI V1</div>
+<div id="test-marker">TABLE CORRECTIONS V2</div>
 
 <div id="app">
 
@@ -296,10 +301,7 @@
       <div id="rank-grid" class="locked"></div>
 
       <div id="suited-row" class="hidden">
-        <div id="suited-toggle">
-          <button class="suit-opt active" id="btn-off">OFF</button>
-          <button class="suit-opt" id="btn-suited">SUITED</button>
-        </div>
+        <button id="btn-suited">OFF</button>
       </div>
 
       <div id="result-zone">
@@ -387,7 +389,6 @@ function init() {
   EL.card1        = document.getElementById("card1");
   EL.card2        = document.getElementById("card2");
   EL.suitedRow    = document.getElementById("suited-row");
-  EL.btnOff       = document.getElementById("btn-off");
   EL.btnSuited    = document.getElementById("btn-suited");
   EL.actionsRow   = document.getElementById("actions-row");
   EL.resultReason = document.getElementById("result-reason");
@@ -401,8 +402,9 @@ function init() {
   POSITIONS.forEach(p => {
     document.getElementById("pos-" + p).addEventListener("click", () => onPosTap(p));
   });
-  EL.btnOff.addEventListener("click", () => setSuited(false));
-  EL.btnSuited.addEventListener("click", () => setSuited(true));
+  EL.btnSuited.addEventListener("click", toggleSuited);
+  EL.card1.addEventListener("click", onCard1Tap);
+  EL.card2.addEventListener("click", onCard2Tap);
   document.getElementById("result-zone").addEventListener("click", () => {
     if (handStep === "done") resetHand();
   });
@@ -513,19 +515,11 @@ function updatePosHighlights() {
 function onRankTap(rank) {
   if (heroPos === null) return;
 
-  if (handStep === "idle" || handStep === "done") {
-    if (handStep === "done") {
-      resetVisuals();
-      hideResult();
-      setCard(EL.card2, "down", null);
-      EL.suitedRow.classList.add("hidden");
-    }
-    rank1 = rank; rank2 = null; suited = false;
-    EL.btnOff.classList.add("active");
-    EL.btnSuited.classList.remove("active");
+  if (handStep === "idle") {
+    rank1 = rank; rank2 = null; resetSuited();
     handStep = "picked1";
-    setCard(EL.card1, "up", rank);
-    EL.card1.classList.add("sel");
+    setCard(EL.card1, "up", rank); EL.card1.classList.add("sel");
+    EL.suitedRow.classList.add("hidden");
     highlightRanks();
     EL.idleHint.textContent = "Choisissez la 2ème carte";
     EL.idleHint.style.display = "";
@@ -533,30 +527,106 @@ function onRankTap(rank) {
   }
 
   if (handStep === "picked1") {
-    rank2 = rank;
-    handStep = "done";
-    setCard(EL.card2, "up", rank);
-    EL.card2.classList.add("sel");
-    if (rank1 === rank2) {
-      suited = false;
-      EL.btnOff.classList.add("active");
-      EL.btnSuited.classList.remove("active");
-      EL.suitedRow.classList.add("hidden");
-    } else {
-      EL.suitedRow.classList.remove("hidden");
-    }
+    rank2 = rank; handStep = "done";
+    setCard(EL.card2, "up", rank); EL.card2.classList.add("sel");
+    applySuitedVisibility();
     highlightRanks();
     EL.idleHint.style.display = "none";
     recompute();
+    return;
+  }
+
+  if (handStep === "editing1") {
+    rank1 = rank; handStep = "done";
+    setCard(EL.card1, "up", rank); EL.card1.classList.add("sel");
+    applySuitedVisibility();
+    highlightRanks();
+    EL.idleHint.style.display = "none";
+    recompute();
+    return;
+  }
+
+  if (handStep === "editing2") {
+    rank2 = rank; handStep = "done";
+    setCard(EL.card2, "up", rank); EL.card2.classList.add("sel");
+    applySuitedVisibility();
+    highlightRanks();
+    EL.idleHint.style.display = "none";
+    recompute();
+    return;
+  }
+
+  if (handStep === "done") {
+    // New hand from scratch
+    resetVisuals(); hideResult();
+    setCard(EL.card2, "down", null);
+    EL.suitedRow.classList.add("hidden");
+    rank1 = rank; rank2 = null; resetSuited();
+    handStep = "picked1";
+    setCard(EL.card1, "up", rank); EL.card1.classList.add("sel");
+    highlightRanks();
+    EL.idleHint.textContent = "Choisissez la 2ème carte";
+    EL.idleHint.style.display = "";
+  }
+}
+
+function applySuitedVisibility() {
+  if (rank1 === rank2) {
+    resetSuited();
+    EL.suitedRow.classList.add("hidden");
+  } else {
+    EL.suitedRow.classList.remove("hidden");
+  }
+}
+
+/* ── CARD TAP ── */
+function onCard1Tap() {
+  if (handStep === "picked1") {
+    // Cancel card1
+    rank1 = null;
+    setCard(EL.card1, "down", null);
+    highlightRanks();
+    handStep = "idle";
+    EL.idleHint.textContent = "Choisissez une carte";
+    return;
+  }
+  if (handStep === "done" || handStep === "editing2") {
+    rank1 = null;
+    setCard(EL.card1, "down", null);
+    EL.suitedRow.classList.add("hidden");
+    hideResult();
+    highlightRanks();
+    handStep = "editing1";
+    EL.idleHint.textContent = "Choisissez la 1ère carte";
+    EL.idleHint.style.display = "";
+  }
+}
+
+function onCard2Tap() {
+  if (handStep === "done" || handStep === "editing1") {
+    rank2 = null;
+    setCard(EL.card2, "down", null);
+    EL.suitedRow.classList.add("hidden");
+    hideResult();
+    highlightRanks();
+    handStep = "editing2";
+    EL.idleHint.textContent = "Choisissez la 2ème carte";
+    EL.idleHint.style.display = "";
   }
 }
 
 /* ── SUITED ── */
-function setSuited(val) {
-  suited = val;
-  EL.btnOff.classList.toggle("active", !suited);
-  EL.btnSuited.classList.toggle("active", suited);
+function toggleSuited() {
+  suited = !suited;
+  EL.btnSuited.textContent = suited ? "SUITED" : "OFF";
+  EL.btnSuited.classList.toggle("suited", suited);
   if (handStep === "done") recompute();
+}
+
+function resetSuited() {
+  suited = false;
+  EL.btnSuited.textContent = "OFF";
+  EL.btnSuited.classList.remove("suited");
 }
 
 /* ── CARDS ── */
@@ -600,8 +670,7 @@ function resetHand() {
   setCard(EL.card2, "down", null);
   resetVisuals();
   EL.suitedRow.classList.add("hidden");
-  EL.btnOff.classList.add("active");
-  EL.btnSuited.classList.remove("active");
+  resetSuited();
   hideResult();
   if (heroPos !== null) {
     EL.idleHint.textContent = "Choisissez une carte";
