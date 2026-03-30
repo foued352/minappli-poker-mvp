@@ -7,17 +7,16 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ══ VISUAL MARKER ══ */
     #test-marker {
       position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
-      background: #4c0099; color: #fff; font-size: 13px; font-weight: 900;
-      text-align: center; padding: 7px; letter-spacing: 0.08em;
+      background: #c45400; color: #fff; font-size: 12px; font-weight: 900;
+      text-align: center; padding: 6px; letter-spacing: 0.08em;
       font-family: system-ui, sans-serif;
     }
 
     html, body {
       width: 100%; height: 100%; overflow: hidden;
-      background: #070c15; color: #e2e8f0;
+      background: #04090f;
       font-family: system-ui, -apple-system, sans-serif;
       -webkit-tap-highlight-color: transparent;
       -webkit-touch-callout: none;
@@ -25,348 +24,262 @@
 
     #app {
       width: 100%; height: 100%;
-      display: flex; flex-direction: column;
       max-width: 420px; margin: 0 auto;
-      padding: 36px 16px 0;
+      display: flex; flex-direction: column;
+      padding-top: 30px;
     }
 
-    /* ══════════════════════════════════════════
-       CONTEXT — secondary, calm
-    ══════════════════════════════════════════ */
-    #ctx {
+    /* ══ STACK BAR ══ */
+    #stack-bar {
       flex-shrink: 0;
-      display: flex; flex-direction: column;
-      gap: 3px; padding-bottom: 6px;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex; gap: 6px; justify-content: center; align-items: center;
+      padding: 7px 16px;
+      background: rgba(0,0,0,0.45);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
     }
-    .ctx-row { display: flex; gap: 3px; align-items: center; flex-wrap: wrap; }
-    .ctx-btn {
-      padding: 3px 8px; border-radius: 6px;
-      border: 1px solid rgba(255,255,255,0.09);
-      background: transparent;
-      color: rgba(255,255,255,0.38);
-      font-size: 10px; font-weight: 600;
-      cursor: pointer; letter-spacing: 0.02em;
-      transition: background 0.07s, color 0.07s, border-color 0.07s;
-      user-select: none;
+    .stack-btn {
+      padding: 4px 13px; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.12); background: transparent;
+      color: rgba(255,255,255,0.38); font-size: 11px; font-weight: 700;
+      cursor: pointer; user-select: none; letter-spacing: 0.04em;
+      touch-action: manipulation;
+      transition: all 0.08s;
     }
-    .ctx-btn.active {
-      background: rgba(255,255,255,0.12);
-      color: rgba(255,255,255,0.86);
-      border-color: rgba(255,255,255,0.28);
-    }
-    .ctx-btn:disabled { opacity: 0.18; pointer-events: none; }
-    #mode-row { align-items: center; gap: 5px; }
-    #vs-bar { display: flex; align-items: center; gap: 3px; margin-left: 4px; }
-    .vs-lbl { font-size: 9px; font-weight: 600; color: rgba(255,255,255,0.26); letter-spacing: 0.07em; padding-right: 2px; }
-    .opener-btn {
-      padding: 3px 7px; border-radius: 5px;
-      border: 1px solid rgba(255,255,255,0.09); background: transparent;
-      color: rgba(255,255,255,0.36); font-size: 10px; font-weight: 600;
-      cursor: pointer; user-select: none;
-      transition: background 0.07s, color 0.07s;
-    }
-    .opener-btn.active { background: rgba(255,255,255,0.11); color: rgba(255,255,255,0.82); border-color: rgba(255,255,255,0.26); }
+    .stack-btn.active { background: rgba(255,255,255,0.14); color: rgba(255,255,255,0.90); border-color: rgba(255,255,255,0.28); }
 
-    /* ══════════════════════════════════════════
-       HAND ZONE
-    ══════════════════════════════════════════ */
-    #hand-zone {
+    /* ══ TABLE SCENE ══ */
+    #table-scene {
       flex: 1; min-height: 0;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 14px; padding: 12px 0 0;
-    }
-
-    #cards-zone {
-      display: flex; flex-direction: column;
-      align-items: center; width: 100%;
-    }
-
-    /* ══════════════════════════════════════════
-       CARDS
-    ══════════════════════════════════════════ */
-    #cards-row {
-      display: flex; gap: 22px;
-      align-items: flex-end; justify-content: center;
-      perspective: 700px;
-    }
-
-    .card {
-      width: 138px; height: 193px;
-      border-radius: 14px; cursor: pointer;
       position: relative;
       display: flex; align-items: center; justify-content: center;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-      touch-action: none;
-      transition: transform 0.16s cubic-bezier(0.34, 1.4, 0.64, 1),
-                  box-shadow 0.14s, border-color 0.12s, opacity 0.14s;
+      background: radial-gradient(ellipse 88% 88% at 50% 50%,
+        #122a1a 0%, #0b1e12 50%, #06120a 100%);
+      overflow: hidden;
     }
-    .card:active { transform: scale(0.93) !important; }
+    /* Oval rail */
+    #table-scene::before {
+      content: ""; pointer-events: none;
+      position: absolute; inset: 10px;
+      border-radius: 50%;
+      border: 2.5px solid rgba(255,255,255,0.07);
+      box-shadow: inset 0 0 40px rgba(0,0,0,0.40), 0 0 0 6px rgba(0,0,0,0.30);
+    }
 
-    /* Idle fan rotation */
-    #hand-zone.idle #cards-row .card:first-child { transform: rotate(-5deg); }
-    #hand-zone.idle #cards-row .card:last-child  { transform: rotate(5deg);  }
-    #hand-zone.idle #cards-row .card:first-child:active { transform: rotate(-5deg) scale(0.93) !important; }
-    #hand-zone.idle #cards-row .card:last-child:active  { transform: rotate(5deg)  scale(0.93) !important; }
+    /* ══ POSITION BUTTONS ══ */
+    .pos-btn {
+      position: absolute; z-index: 3;
+      padding: 6px 13px; border-radius: 8px;
+      border: 1.5px solid rgba(255,255,255,0.16);
+      background: rgba(0,0,0,0.45);
+      color: rgba(255,255,255,0.55);
+      font-size: 11px; font-weight: 800; letter-spacing: 0.06em;
+      cursor: pointer; user-select: none; touch-action: manipulation;
+      transition: all 0.12s;
+      white-space: nowrap;
+    }
+    .pos-btn:active { opacity: 0.75; }
 
-    /* Passive — inactive card during picking */
-    .card.passive { opacity: 0.42; transform: scale(0.93); }
+    /* placements around the oval */
+    #pos-UTG { top: 5%;    left: 50%;  transform: translateX(-50%); }
+    #pos-HJ  { top: 24%;  left: 2%; }
+    #pos-CO  { top: 24%;  right: 2%; }
+    #pos-SB  { bottom: 24%; left: 2%; }
+    #pos-BB  { bottom: 24%; right: 2%; }
+    #pos-BTN { bottom: 5%; left: 50%; transform: translateX(-50%); }
 
-    /* ── Face down — POKER RED BACK ── */
+    /* HERO */
+    .pos-btn.hero {
+      background: rgba(255,210,0,0.20);
+      border-color: rgba(255,210,0,0.88);
+      color: #ffd200;
+      box-shadow: 0 0 16px rgba(255,210,0,0.18);
+    }
+    /* VILLAIN */
+    .pos-btn.villain {
+      background: rgba(255,70,50,0.18);
+      border-color: rgba(255,80,60,0.78);
+      color: #ff6040;
+      box-shadow: 0 0 12px rgba(255,60,40,0.14);
+    }
+
+    /* ══ CENTER ZONE ══ */
+    #center-zone {
+      position: relative; z-index: 2;
+      width: 68%;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 7px;
+      padding: 56px 0;
+    }
+
+    /* Context line */
+    #ctx-line {
+      font-size: 13px; font-weight: 800;
+      color: rgba(255,255,255,0.72); letter-spacing: 0.05em;
+      text-align: center; white-space: nowrap;
+    }
+    #ctx-line.prompt {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.10em;
+      color: rgba(255,255,255,0.26); text-transform: uppercase;
+    }
+
+    /* ══ CARDS ══ */
+    #cards-row {
+      display: flex; gap: 12px; align-items: flex-end; justify-content: center;
+      perspective: 600px;
+    }
+    .card {
+      width: 62px; height: 87px; border-radius: 7px;
+      position: relative; display: flex; align-items: center; justify-content: center;
+      user-select: none;
+    }
     .card[data-state="down"] {
       background: linear-gradient(150deg, #8a0000 0%, #6a0000 55%, #550000 100%);
-      border: 2px solid rgba(255,255,255,0.22);
-      box-shadow: 0 10px 36px rgba(0,0,0,0.65), 0 3px 8px rgba(0,0,0,0.36),
-                  inset 0 1px 0 rgba(255,200,200,0.12);
+      border: 1.5px solid rgba(255,255,255,0.18);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.65);
     }
     .card[data-state="down"]::before {
-      content: ""; position: absolute; inset: 7px;
-      border: 1.5px solid rgba(255,255,255,0.22);
-      border-radius: 7px;
-      background: repeating-linear-gradient(
-        45deg,
-        rgba(255,255,255,0.055) 0px, rgba(255,255,255,0.055) 1px,
-        transparent 1px, transparent 7px
-      );
+      content: ""; position: absolute; inset: 5px;
+      border: 1px solid rgba(255,255,255,0.15); border-radius: 4px;
+      background: repeating-linear-gradient(45deg,
+        rgba(255,255,255,0.045) 0px, rgba(255,255,255,0.045) 1px,
+        transparent 1px, transparent 6px);
     }
-    .card[data-state="down"]::after {
-      display: none;
-    }
-    .card[data-state="down"] .card-rank-center { display: none; }
+    .card[data-state="down"] .card-rank-center,
     .card[data-state="down"] .card-corner-tl,
-    .card[data-state="down"] .card-corner-br  { display: none; }
+    .card[data-state="down"] .card-corner-br { display: none; }
 
-    /* ── Selecting — active, slightly enlarged ── */
-    .card[data-state="selecting"] {
-      transform: scale(1.05);
-      background: linear-gradient(150deg, #8a0000 0%, #6a0000 55%, #550000 100%);
-      border: 2px solid rgba(255,255,255,0.80);
-      box-shadow: 0 0 0 5px rgba(255,255,255,0.07),
-                  0 0 32px rgba(255,255,255,0.10),
-                  0 14px 44px rgba(0,0,0,0.60);
-    }
-    .card[data-state="selecting"]::before {
-      content: ""; position: absolute; inset: 7px;
-      border: 1.5px solid rgba(255,255,255,0.28);
-      border-radius: 7px;
-      background: repeating-linear-gradient(
-        45deg,
-        rgba(255,255,255,0.07) 0px, rgba(255,255,255,0.07) 1px,
-        transparent 1px, transparent 7px
-      );
-    }
-    /* Downward triangle — visual continuity to picker */
-    .card[data-state="selecting"]::after {
-      content: "";
-      position: absolute; bottom: -12px; left: 50%;
-      transform: translateX(-50%);
-      border-left: 10px solid transparent;
-      border-right: 10px solid transparent;
-      border-top: 11px solid rgba(255,255,255,0.60);
-    }
-    .card[data-state="selecting"] .card-rank-center { display: none; }
-    .card[data-state="selecting"] .card-corner-tl,
-    .card[data-state="selecting"] .card-corner-br  { display: none; }
-
-    /* ── Face up — clean white, outlined rank ── */
     .card[data-state="up"] {
       background: #f4f5f7;
-      border: 1.5px solid rgba(200,210,230,0.40);
-      box-shadow: 0 12px 36px rgba(0,0,0,0.55), 0 3px 12px rgba(0,0,0,0.32),
-                  inset 0 1px 0 rgba(255,255,255,0.90);
+      border: 1px solid rgba(200,210,230,0.45);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.55);
     }
-    /* Card flip with snap */
+    .card[data-state="up"].sel {
+      border: 2px solid rgba(255,210,0,0.80);
+      box-shadow: 0 0 0 3px rgba(255,210,0,0.12), 0 6px 16px rgba(0,0,0,0.55);
+    }
     @keyframes card-flip {
-      0%   { transform: rotateY(90deg) scale(0.92); opacity: 0.3; }
-      50%  { transform: rotateY(-5deg) scale(1.09); opacity: 1;   }
-      75%  { transform: rotateY(2deg)  scale(1.01); }
-      100% { transform: rotateY(0deg)  scale(1.0);  opacity: 1;   }
+      0%   { transform: rotateY(90deg) scale(0.90); opacity: 0.3; }
+      55%  { transform: rotateY(-4deg) scale(1.05); opacity: 1; }
+      100% { transform: rotateY(0deg)  scale(1.0);  opacity: 1; }
     }
-    .card.flipping { animation: card-flip 0.22s cubic-bezier(0.22, 1, 0.36, 1); }
+    .card.flipping { animation: card-flip 0.16s ease-out; }
 
-    /* Filled rank — solid, instantly readable */
     .card[data-state="up"] .card-rank-center {
-      font-size: 58px; font-weight: 900;
-      color: #1a1f2e;
-      line-height: 1; letter-spacing: -0.02em;
+      font-size: 28px; font-weight: 900; color: #1a1f2e; line-height: 1;
     }
     .card[data-state="up"] .card-corner-tl {
-      position: absolute; top: 9px; left: 11px;
-      font-size: 15px; font-weight: 800;
-      color: #1a1f2e; line-height: 1;
+      position: absolute; top: 4px; left: 6px;
+      font-size: 10px; font-weight: 800; color: #1a1f2e; line-height: 1;
     }
     .card[data-state="up"] .card-corner-br {
-      position: absolute; bottom: 9px; right: 11px;
-      font-size: 15px; font-weight: 800;
-      color: #1a1f2e; line-height: 1;
+      position: absolute; bottom: 4px; right: 6px;
+      font-size: 10px; font-weight: 800; color: #1a1f2e; line-height: 1;
       transform: rotate(180deg);
     }
 
-    /* ══════════════════════════════════════════
-       RANK PICKER — inline, attached
-    ══════════════════════════════════════════ */
-    #rank-picker {
-      display: none; width: 100%;
-      margin-top: 14px; /* triangle extends 12px, so 2px gap */
-      border-top: 1px solid rgba(255,255,255,0.16); /* visual line at top */
-      padding-top: 11px;
+    /* ══ RANK GRID ══ */
+    #rank-grid {
+      display: flex; flex-wrap: wrap; gap: 5px;
+      justify-content: center; width: 100%;
     }
-    @keyframes picker-appear {
-      from { opacity: 0; transform: translateY(-5px); }
-      to   { opacity: 1; transform: translateY(0);    }
-    }
-    #rank-picker.active {
-      display: block;
-      animation: picker-appear 0.12s ease-out forwards;
-    }
-
-    #picking-label {
-      font-size: 10px; font-weight: 700;
-      color: rgba(255,255,255,0.55);
-      letter-spacing: 0.12em; text-transform: uppercase;
-      text-align: center; margin-bottom: 9px;
-    }
-
-    #rank-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
-
     .rank-btn {
-      width: calc((100% - 48px) / 7);
-      aspect-ratio: 1; border-radius: 12px;
-      border: 1.5px solid rgba(255,255,255,0.16);
-      background: rgba(255,255,255,0.10);
-      color: rgba(255,255,255,0.90);
-      font-size: clamp(16px, 5vw, 22px); font-weight: 900;
-      cursor: pointer;
+      width: calc((100% - 30px) / 7);
+      aspect-ratio: 1; border-radius: 8px;
+      border: 1.5px solid rgba(255,255,255,0.13);
+      background: rgba(0,0,0,0.32);
+      color: rgba(255,255,255,0.85);
+      font-size: clamp(12px, 3.8vw, 17px); font-weight: 900;
+      cursor: pointer; touch-action: manipulation;
       display: flex; align-items: center; justify-content: center;
       user-select: none;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.20);
-      transition: background 0.05s, transform 0.05s, border-color 0.05s;
+      transition: background 0.07s, transform 0.07s, border-color 0.07s;
     }
-    .rank-btn:active { transform: scale(0.86); background: rgba(255,255,255,0.22); }
+    .rank-btn:active { transform: scale(0.84); }
 
-    /* Drag-over — maximum contrast, instantly obvious */
-    .rank-btn.drag-over {
-      background: rgba(255,255,255,0.93) !important;
-      color: #0a0f1a !important;
-      border-color: rgba(255,255,255,0.96) !important;
-      transform: scale(1.20) !important;
-      box-shadow: 0 0 24px rgba(255,255,255,0.24) !important;
-      transition: none !important;
+    .rank-btn.sel-1 {
+      background: rgba(255,210,0,0.90) !important;
+      color: #1a1200 !important;
+      border-color: rgba(255,210,0,1) !important;
+      box-shadow: 0 0 14px rgba(255,210,0,0.28) !important;
     }
-
-    /* ── Idle hint ── */
-    #idle-hint {
-      margin-top: 14px;
-      font-size: 11px; font-weight: 600;
-      color: rgba(255,255,255,0.13);
-      letter-spacing: 0.10em; text-transform: uppercase;
+    .rank-btn.sel-2 {
+      background: rgba(255,210,0,0.38) !important;
+      color: #fff5b0 !important;
+      border-color: rgba(255,210,0,0.72) !important;
     }
+    #rank-grid.locked .rank-btn { opacity: 0.22; pointer-events: none; }
 
-    /* ══════════════════════════════════════════
-       SUITED CHIP
-    ══════════════════════════════════════════ */
+    /* ══ SUITED TOGGLE ══ */
     #suited-row {
-      min-height: 22px;
-      display: flex; align-items: center; justify-content: center;
+      display: flex; justify-content: center; align-items: center; min-height: 34px;
     }
-    #btn-suited {
-      padding: 7px 22px; border-radius: 12px;
-      border: 2px solid rgba(255,255,255,0.55);
-      background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.88);
-      font-size: 14px; font-weight: 800; letter-spacing: 0.08em;
-      cursor: pointer; user-select: none;
-      transition: background 0.07s, color 0.07s, border-color 0.07s;
+    #suited-row.hidden { visibility: hidden; }
+    #suited-toggle {
+      display: flex; border-radius: 9px; overflow: hidden;
+      border: 1.5px solid rgba(255,255,255,0.28);
     }
-    #btn-suited.on { background: rgba(255,255,255,0.22); color: #fff; border-color: rgba(255,255,255,0.90); }
-    #btn-suited.hidden { display: none; }
+    .suit-opt {
+      padding: 5px 15px; background: transparent; border: none;
+      color: rgba(255,255,255,0.40);
+      font-size: 11px; font-weight: 800; letter-spacing: 0.08em;
+      cursor: pointer; user-select: none; touch-action: manipulation;
+      transition: background 0.08s, color 0.08s;
+    }
+    .suit-opt.active { background: rgba(255,255,255,0.20); color: #fff; }
 
-    /* ══════════════════════════════════════════
-       RESULT — compact, clean
-    ══════════════════════════════════════════ */
-    #hand-result {
-      display: none; flex-direction: column;
-      align-items: center; gap: 5px; text-align: center;
-    }
-    #hand-result.active { display: flex; }
-
-    /* Mini cards — rank outline + color dot, no symbols */
-    #hand-display { display: flex; gap: 6px; align-items: center; justify-content: center; }
-    .mini-card {
-      width: 40px; height: 56px; border-radius: 6px;
-      background: #f4f5f7;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.50);
+    /* ══ RESULT ZONE ══ */
+    #result-zone {
       display: flex; flex-direction: column;
-      align-items: center; justify-content: center; gap: 4px; flex-shrink: 0;
+      align-items: center; gap: 2px; text-align: center;
+      min-height: 56px; cursor: pointer;
     }
-    .mc-rank {
-      font-size: 20px; font-weight: 900; line-height: 1;
-      color: #111827;
+    #actions-row {
+      display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap;
     }
-    .mc-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: #111827; flex-shrink: 0;
-    }
-    .mini-card.red .mc-rank { color: #c92a2a; }
-    .mini-card.red .mc-dot  { background: #c92a2a; }
-
-    #result-text {
-      font-size: clamp(52px, 15vw, 68px);
-      font-weight: 900; letter-spacing: 0.04em; line-height: 1;
-      transition: color 0.12s;
+    .action-chip {
+      font-size: clamp(24px, 7.5vw, 38px); font-weight: 900;
+      letter-spacing: 0.03em; line-height: 1;
     }
     #result-reason {
-      font-size: 14px; font-weight: 700;
-      color: rgba(255,255,255,0.82); letter-spacing: 0.01em;
+      font-size: 11px; font-weight: 700;
+      color: rgba(255,255,255,0.65); letter-spacing: 0.01em;
+    }
+    #idle-hint {
+      font-size: 10px; font-weight: 600;
+      color: rgba(255,255,255,0.26); letter-spacing: 0.08em; text-transform: uppercase;
     }
     #result-tap-hint {
-      font-size: 11px; font-weight: 600;
-      color: rgba(255,255,255,0.55); letter-spacing: 0.04em; margin-top: 3px;
+      font-size: 10px; font-weight: 600;
+      color: rgba(255,255,255,0.38); letter-spacing: 0.04em;
     }
-
     @keyframes pop-in {
-      from { transform: scale(0.76); opacity: 0; }
+      from { transform: scale(0.78); opacity: 0; }
       to   { transform: scale(1);    opacity: 1; }
     }
-    .pop-in { animation: pop-in 0.18s cubic-bezier(0.28, 1.7, 0.58, 1); }
-
-    /* ══════════════════════════════════════════
-       FOOTER
-    ══════════════════════════════════════════ */
-    #link-grid {
-      display: block; text-align: center;
-      font-size: 13px; font-weight: 700;
-      color: rgba(255,255,255,0.78); text-decoration: none;
-      letter-spacing: 0.03em;
-      border-top: 1px solid rgba(255,255,255,0.10);
-      padding: 12px 0 max(14px, env(safe-area-inset-bottom));
-      flex-shrink: 0; transition: color 0.10s;
-    }
-    #link-grid:hover { color: #fff; }
+    .pop-in { animation: pop-in 0.16s cubic-bezier(0.28, 1.7, 0.58, 1); }
   </style>
 </head>
 <body>
 
-<div id="test-marker">BOLD READABILITY V2</div>
+<div id="test-marker">TABLE UI V1</div>
 
 <div id="app">
 
-  <div id="ctx">
-    <div class="ctx-row" id="stack-row"></div>
-    <div class="ctx-row" id="pos-row"></div>
-    <div class="ctx-row" id="mode-row">
-      <div id="mode-grp" style="display:flex;gap:3px;"></div>
-      <div id="vs-bar" style="display:none;">
-        <span class="vs-lbl">vs</span>
-        <div id="opener-grp" style="display:flex;gap:3px;"></div>
-      </div>
-    </div>
-  </div>
+  <div id="stack-bar"></div>
 
-  <div id="hand-zone" class="idle">
+  <div id="table-scene">
 
-    <div id="cards-zone">
+    <button class="pos-btn" id="pos-UTG" data-pos="UTG">UTG</button>
+    <button class="pos-btn" id="pos-HJ"  data-pos="HJ">HJ</button>
+    <button class="pos-btn" id="pos-CO"  data-pos="CO">CO</button>
+    <button class="pos-btn" id="pos-SB"  data-pos="SB">SB</button>
+    <button class="pos-btn" id="pos-BB"  data-pos="BB">BB</button>
+    <button class="pos-btn" id="pos-BTN" data-pos="BTN">BTN</button>
+
+    <div id="center-zone">
+
+      <div id="ctx-line" class="prompt">Choisissez votre position</div>
+
       <div id="cards-row">
         <div class="card" id="card1" data-state="down">
           <span class="card-corner-tl"></span>
@@ -380,35 +293,24 @@
         </div>
       </div>
 
-      <div id="rank-picker">
-        <div id="picking-label"></div>
-        <div id="rank-grid"></div>
-      </div>
+      <div id="rank-grid" class="locked"></div>
 
-      <div id="idle-hint">Touchez · glissez</div>
-    </div>
-
-    <div id="suited-row">
-      <button id="btn-suited" class="hidden">Suited</button>
-    </div>
-
-    <div id="hand-result">
-      <div id="hand-display">
-        <div class="mini-card" id="mc1">
-          <span class="mc-rank"></span><span class="mc-dot"></span>
-        </div>
-        <div class="mini-card" id="mc2">
-          <span class="mc-rank"></span><span class="mc-dot"></span>
+      <div id="suited-row" class="hidden">
+        <div id="suited-toggle">
+          <button class="suit-opt active" id="btn-off">OFF</button>
+          <button class="suit-opt" id="btn-suited">SUITED</button>
         </div>
       </div>
-      <div id="result-text"></div>
-      <div id="result-reason"></div>
-      <div id="result-tap-hint">tap pour recommencer</div>
-    </div>
 
+      <div id="result-zone">
+        <div id="actions-row" style="display:none;"></div>
+        <div id="result-reason" style="display:none;"></div>
+        <div id="idle-hint">Choisissez une carte</div>
+        <div id="result-tap-hint" style="display:none;">tap pour rejouer</div>
+      </div>
+
+    </div>
   </div>
-
-  <a id="link-grid" href="../range_editor.html">Voir la grille</a>
 
 </div>
 
@@ -416,9 +318,7 @@
 <script>
 "use strict";
 
-/* ══════════════════════════════════════════
-   RANGES
-══════════════════════════════════════════ */
+/* ── RANGES ── */
 const RANGES = {};
 for (const [stack, positions] of Object.entries(MFI_RANGES_RAW)) {
   RANGES[stack] = {};
@@ -441,359 +341,282 @@ for (const [stack, positions] of Object.entries(MFI_VSOPEN_RAW)) {
   }
 }
 
-/* ══════════════════════════════════════════
-   CONSTANTS
-══════════════════════════════════════════ */
+/* ── CONSTANTS ── */
 const STACKS    = ["20bb","25bb","40bb"];
 const POSITIONS = ["UTG","HJ","CO","BTN","SB","BB"];
 const RANKS     = ["A","K","Q","J","T","9","8","7","6","5","4","3","2"];
 
 const OPENER_OPTIONS = {
   UTG: [], HJ: ["UTG"], CO: ["UTG","HJ"], BTN: ["UTG","HJ","CO"],
-  SB:  ["CO","BTN"], BB: ["UTG","HJ","CO","BTN","SB"],
+  SB: ["CO","BTN"], BB: ["UTG","HJ","CO","BTN","SB"],
 };
 const MODE_ALLOWED = {
   UTG: ["open"], HJ: ["open","vsopen"], CO: ["open","vsopen"],
   BTN: ["open","vsopen"], SB: ["open","vsopen"], BB: ["vsopen"],
 };
 
-const DISPLAY = {
+const ACTION_DISPLAY = {
   FOLD:   { label: "FOLD",  color: "#8090b8" },
   CALL:   { label: "CALL",  color: "#f5a623" },
-  OPEN:   { label: "RAISE", color: "#22c55e" },
-  "3BET": { label: "RAISE", color: "#22c55e" },
+  OPEN:   { label: "OPEN",  color: "#22c55e" },
+  "3BET": { label: "3BET",  color: "#e84040" },
 };
 const REASON = {
-  FOLD:   "Hors de la range simplifiee",
+  FOLD:   "Hors de la range",
   CALL:   "Main correcte dans ce spot",
-  OPEN:   "Spot standard — premiere mise",
+  OPEN:   "Spot standard — première mise",
   "3BET": "Main forte — pression maximale",
 };
 
-/* ══════════════════════════════════════════
-   STATE
-══════════════════════════════════════════ */
+/* ── STATE ── */
 let activeStack  = "40bb";
-let activePos    = "BTN";
+let heroPos      = null;
+let villainPos   = null;
 let activeMode   = "open";
 let activeOpener = null;
 let rank1 = null, rank2 = null;
 let suited = false;
-let step = "idle";
+let handStep = "idle"; // idle | picked1 | done
 
-/* ══════════════════════════════════════════
-   DRAG STATE
-══════════════════════════════════════════ */
-let dragActive  = false;
-let dragHovered = null;
-
-function beginDrag() {
-  dragActive = true; dragHovered = null;
-  document.body.style.overflow = "hidden";
-  document.addEventListener("pointermove",   onDragMove,   { passive: false });
-  document.addEventListener("pointerup",     onDragEnd);
-  document.addEventListener("pointercancel", onDragCancel);
-}
-
-function cleanupDrag() {
-  dragActive = false;
-  document.body.style.overflow = "";
-  if (dragHovered) { dragHovered.classList.remove("drag-over"); dragHovered = null; }
-  document.removeEventListener("pointermove",   onDragMove);
-  document.removeEventListener("pointerup",     onDragEnd);
-  document.removeEventListener("pointercancel", onDragCancel);
-}
-
-function onDragMove(e) {
-  if (!dragActive) return;
-  e.preventDefault();
-  const btn = rankBtnAt(e.clientX, e.clientY);
-  if (btn !== dragHovered) {
-    if (dragHovered) dragHovered.classList.remove("drag-over");
-    dragHovered = btn;
-    if (dragHovered) dragHovered.classList.add("drag-over");
-  }
-}
-
-function onDragEnd(e) {
-  if (!dragActive) { cleanupDrag(); return; }
-  const btn = rankBtnAt(e.clientX, e.clientY) || dragHovered;
-  cleanupDrag();
-  if (btn) pickRank(btn.textContent.trim());
-}
-
-function onDragCancel() { cleanupDrag(); }
-
-function rankBtnAt(x, y) {
-  const el = document.elementFromPoint(x, y);
-  return el ? el.closest(".rank-btn") : null;
-}
-
-/* ══════════════════════════════════════════
-   DOM REFS
-══════════════════════════════════════════ */
+/* ── DOM ── */
 const EL = {};
 
-/* ══════════════════════════════════════════
-   INIT
-══════════════════════════════════════════ */
 function init() {
-  EL.stackRow     = document.getElementById("stack-row");
-  EL.posRow       = document.getElementById("pos-row");
-  EL.modeGrp      = document.getElementById("mode-grp");
-  EL.vsBar        = document.getElementById("vs-bar");
-  EL.openerGrp    = document.getElementById("opener-grp");
-  EL.handZone     = document.getElementById("hand-zone");
-  EL.idleHint     = document.getElementById("idle-hint");
-  EL.rankPicker   = document.getElementById("rank-picker");
+  EL.stackBar     = document.getElementById("stack-bar");
   EL.rankGrid     = document.getElementById("rank-grid");
-  EL.pickingLabel = document.getElementById("picking-label");
-  EL.handResult   = document.getElementById("hand-result");
-  EL.resultText   = document.getElementById("result-text");
-  EL.resultReason = document.getElementById("result-reason");
-  EL.mc1          = document.getElementById("mc1");
-  EL.mc2          = document.getElementById("mc2");
   EL.card1        = document.getElementById("card1");
   EL.card2        = document.getElementById("card2");
+  EL.suitedRow    = document.getElementById("suited-row");
+  EL.btnOff       = document.getElementById("btn-off");
   EL.btnSuited    = document.getElementById("btn-suited");
+  EL.actionsRow   = document.getElementById("actions-row");
+  EL.resultReason = document.getElementById("result-reason");
+  EL.idleHint     = document.getElementById("idle-hint");
+  EL.tapHint      = document.getElementById("result-tap-hint");
+  EL.ctxLine      = document.getElementById("ctx-line");
 
-  buildStacks();
-  buildPositions();
-  buildModes();
+  buildStackBar();
   buildRankGrid();
 
-  function bindCard(cardEl, n) {
-    cardEl.addEventListener("pointerdown", (e) => {
-      if (cardEl.releasePointerCapture) cardEl.releasePointerCapture(e.pointerId);
-      e.preventDefault();
-      onCardPointerDown(n);
-    });
-    cardEl.addEventListener("contextmenu", e => e.preventDefault());
-  }
-  bindCard(EL.card1, 1);
-  bindCard(EL.card2, 2);
-  EL.btnSuited.addEventListener("click", onSuitedToggle);
-
-  showView("idle");
-}
-
-/* ══════════════════════════════════════════
-   CARD POINTER DOWN
-══════════════════════════════════════════ */
-function onCardPointerDown(n) {
-  if (step === "done") { resetCards(); return; }
-
-  if (step === "idle") { startPicking1(); beginDrag(); return; }
-
-  if (step === "picking1") {
-    if (n === 1) { resetCards(); return; }
-    beginDrag(); return;
-  }
-
-  if (step === "picking2") {
-    if (n === 2) { beginDrag(); return; }
-    /* card1 during picking2 — back to picking1 */
-    rank2 = null; step = "picking1";
-    setCard(EL.card2, "down", null);
-    setCard(EL.card1, "selecting", null);
-    EL.card2.classList.add("passive");
-    EL.card1.classList.remove("passive");
-    EL.btnSuited.classList.add("hidden");
-    EL.pickingLabel.textContent = "Carte 1";
-    beginDrag();
-  }
-}
-
-/* ══════════════════════════════════════════
-   BUILD CONTEXT
-══════════════════════════════════════════ */
-function buildStacks() {
-  EL.stackRow.innerHTML = "";
-  STACKS.forEach(s => {
-    const b = mkBtn(s, "ctx-btn" + (s === activeStack ? " active" : ""), () => {
-      activeStack = s; setActive(EL.stackRow, s);
-      if (step === "done") recompute();
-    });
-    EL.stackRow.appendChild(b);
-  });
-}
-
-function buildPositions() {
-  EL.posRow.innerHTML = "";
   POSITIONS.forEach(p => {
-    const b = mkBtn(p, "ctx-btn" + (p === activePos ? " active" : ""), () => {
-      activePos = p; setActive(EL.posRow, p);
-      fixMode(); updateVsBar();
-      if (step === "done") recompute();
-    });
-    EL.posRow.appendChild(b);
+    document.getElementById("pos-" + p).addEventListener("click", () => onPosTap(p));
+  });
+  EL.btnOff.addEventListener("click", () => setSuited(false));
+  EL.btnSuited.addEventListener("click", () => setSuited(true));
+  document.getElementById("result-zone").addEventListener("click", () => {
+    if (handStep === "done") resetHand();
   });
 }
 
-function buildModes() {
-  EL.modeGrp.innerHTML = "";
-  [["open","OPEN"],["vsopen","VS OPEN"]].forEach(([m, label]) => {
-    const b = mkBtn(label, "ctx-btn" + (m === activeMode ? " active" : ""), () => {
-      activeMode = m; setActive(EL.modeGrp, label);
-      updateVsBar();
-      if (step === "done") recompute();
+/* ── STACK BAR ── */
+function buildStackBar() {
+  STACKS.forEach(s => {
+    const b = document.createElement("button");
+    b.className = "stack-btn" + (s === activeStack ? " active" : "");
+    b.textContent = s;
+    b.addEventListener("click", () => {
+      activeStack = s;
+      EL.stackBar.querySelectorAll(".stack-btn").forEach(x =>
+        x.classList.toggle("active", x.textContent === s));
+      if (handStep === "done") recompute();
     });
-    b.dataset.mode = m;
-    EL.modeGrp.appendChild(b);
+    EL.stackBar.appendChild(b);
   });
-  fixMode();
 }
 
+/* ── RANK GRID ── */
 function buildRankGrid() {
-  EL.rankGrid.querySelectorAll(".rank-btn").forEach(b => b.remove());
   RANKS.forEach(r => {
-    const b = mkBtn(r, "rank-btn", () => pickRank(r));
+    const b = document.createElement("button");
+    b.className = "rank-btn"; b.id = "rank-" + r; b.textContent = r;
+    b.addEventListener("click", () => onRankTap(r));
     EL.rankGrid.appendChild(b);
   });
 }
 
-function mkBtn(text, className, onClick) {
-  const b = document.createElement("button");
-  b.className = className; b.textContent = text;
-  b.addEventListener("click", onClick);
-  return b;
-}
-
-function setActive(container, text) {
-  container.querySelectorAll(".ctx-btn").forEach(b => {
-    b.classList.toggle("active", b.textContent === text);
-  });
-}
-
-function fixMode() {
-  const allowed = MODE_ALLOWED[activePos] || ["open"];
-  EL.modeGrp.querySelectorAll(".ctx-btn").forEach(b => {
-    const m = b.dataset.mode;
-    b.disabled = !allowed.includes(m);
-    if (b.disabled && b.classList.contains("active")) {
-      const fallback = allowed[0];
-      activeMode = fallback;
-      setActive(EL.modeGrp, fallback === "open" ? "OPEN" : "VS OPEN");
-    }
-  });
-}
-
-function updateVsBar() {
-  const opts = OPENER_OPTIONS[activePos] || [];
-  if (activeMode !== "vsopen" || opts.length === 0) { EL.vsBar.style.display = "none"; return; }
-  EL.vsBar.style.display = "flex";
-  if (!opts.includes(activeOpener)) activeOpener = opts[opts.length - 1];
-  EL.openerGrp.innerHTML = "";
-  opts.forEach(op => {
-    const b = mkBtn(op, "opener-btn" + (op === activeOpener ? " active" : ""), () => {
-      activeOpener = op;
-      EL.openerGrp.querySelectorAll(".opener-btn").forEach(x => {
-        x.classList.toggle("active", x.textContent === op);
-      });
-      if (step === "done") recompute();
-    });
-    EL.openerGrp.appendChild(b);
-  });
-}
-
-/* ══════════════════════════════════════════
-   VIEWS
-══════════════════════════════════════════ */
-function showView(view) {
-  EL.handZone.classList.toggle("idle", view === "idle");
-  EL.idleHint.style.display = view === "idle" ? "" : "none";
-  if (view === "picking") { EL.rankPicker.classList.add("active"); }
-  else                    { EL.rankPicker.classList.remove("active"); }
-  EL.handResult.classList.toggle("active", view === "result");
-}
-
-/* ══════════════════════════════════════════
-   PICKING FLOW
-══════════════════════════════════════════ */
-function startPicking1() {
-  rank1 = null; rank2 = null; suited = false;
-  step = "picking1";
-  setCard(EL.card1, "selecting", null);
-  setCard(EL.card2, "down", null);
-  EL.card1.classList.remove("passive");
-  EL.card2.classList.add("passive");
-  EL.btnSuited.classList.add("hidden");
-  EL.btnSuited.classList.remove("on");
-  EL.pickingLabel.textContent = "Carte 1";
-  showView("picking");
-}
-
-function pickRank(rank) {
-  if (step === "picking1") {
-    rank1 = rank;
-    setCard(EL.card1, "up", rank);
-    step = "picking2";
-    setCard(EL.card2, "selecting", null);
-    EL.card1.classList.remove("passive");
-    EL.card2.classList.remove("passive");
-    EL.pickingLabel.textContent = "Carte 2";
-    EL.btnSuited.classList.remove("hidden");
-    if (suited) EL.btnSuited.classList.add("on");
+/* ── POSITION LOGIC ── */
+function onPosTap(pos) {
+  if (heroPos === null) {
+    // First click → set hero
+    heroPos = pos;
+    updateMode();
+    updateCtxLine();
+    updatePosHighlights();
+    EL.rankGrid.classList.remove("locked");
+    EL.idleHint.textContent = "Choisissez une carte";
     return;
   }
-  if (step === "picking2") {
+
+  if (pos === heroPos) {
+    if (villainPos !== null) {
+      // Hero click with villain → remove villain only
+      villainPos = null;
+    } else {
+      // Hero click alone → full reset (change hero)
+      heroPos = null;
+      villainPos = null;
+      EL.rankGrid.classList.add("locked");
+      resetHand();
+    }
+    updateMode();
+    updateCtxLine();
+    updatePosHighlights();
+    if (handStep === "done") recompute();
+    return;
+  }
+
+  // Non-hero click → set / change villain
+  villainPos = pos;
+  updateMode();
+  updateCtxLine();
+  updatePosHighlights();
+  if (handStep === "done") recompute();
+}
+
+function updateMode() {
+  if (heroPos === null) { activeMode = "open"; activeOpener = null; return; }
+  const allowed = MODE_ALLOWED[heroPos] || ["open"];
+  if (villainPos !== null
+      && allowed.includes("vsopen")
+      && (OPENER_OPTIONS[heroPos] || []).includes(villainPos)) {
+    activeMode   = "vsopen";
+    activeOpener = villainPos;
+  } else {
+    activeMode   = allowed.includes("open") ? "open" : "vsopen";
+    activeOpener = null;
+  }
+}
+
+function updateCtxLine() {
+  if (heroPos === null) {
+    EL.ctxLine.className = "prompt";
+    EL.ctxLine.textContent = "Choisissez votre position";
+    return;
+  }
+  EL.ctxLine.className = "";
+  let t = heroPos;
+  if (activeMode === "vsopen" && activeOpener) t += " vs " + activeOpener;
+  t += "  •  " + activeStack;
+  EL.ctxLine.textContent = t;
+}
+
+function updatePosHighlights() {
+  POSITIONS.forEach(p => {
+    const btn = document.getElementById("pos-" + p);
+    btn.classList.remove("hero", "villain");
+    if (p === heroPos)    btn.classList.add("hero");
+    else if (p === villainPos) btn.classList.add("villain");
+  });
+}
+
+/* ── RANK TAP ── */
+function onRankTap(rank) {
+  if (heroPos === null) return;
+
+  if (handStep === "idle" || handStep === "done") {
+    if (handStep === "done") {
+      resetVisuals();
+      hideResult();
+      setCard(EL.card2, "down", null);
+      EL.suitedRow.classList.add("hidden");
+    }
+    rank1 = rank; rank2 = null; suited = false;
+    EL.btnOff.classList.add("active");
+    EL.btnSuited.classList.remove("active");
+    handStep = "picked1";
+    setCard(EL.card1, "up", rank);
+    EL.card1.classList.add("sel");
+    highlightRanks();
+    EL.idleHint.textContent = "Choisissez la 2ème carte";
+    EL.idleHint.style.display = "";
+    return;
+  }
+
+  if (handStep === "picked1") {
     rank2 = rank;
+    handStep = "done";
+    setCard(EL.card2, "up", rank);
+    EL.card2.classList.add("sel");
     if (rank1 === rank2) {
       suited = false;
-      EL.btnSuited.classList.remove("on");
-      EL.btnSuited.classList.add("hidden");
+      EL.btnOff.classList.add("active");
+      EL.btnSuited.classList.remove("active");
+      EL.suitedRow.classList.add("hidden");
+    } else {
+      EL.suitedRow.classList.remove("hidden");
     }
-    setCard(EL.card2, "up", rank);
-    step = "done";
+    highlightRanks();
+    EL.idleHint.style.display = "none";
     recompute();
   }
 }
 
+/* ── SUITED ── */
+function setSuited(val) {
+  suited = val;
+  EL.btnOff.classList.toggle("active", !suited);
+  EL.btnSuited.classList.toggle("active", suited);
+  if (handStep === "done") recompute();
+}
+
+/* ── CARDS ── */
 function setCard(el, state, rank) {
   const wasDown = el.dataset.state !== "up";
   el.dataset.state = state;
+  el.classList.remove("sel");
   const rankEl = el.querySelector(".card-rank-center");
   const tlEl   = el.querySelector(".card-corner-tl");
   const brEl   = el.querySelector(".card-corner-br");
   if (state === "up" && rank) {
-    rankEl.textContent = rank;
-    tlEl.textContent   = rank;
-    brEl.textContent   = rank;
-    if (wasDown) {
-      el.classList.remove("flipping");
-      void el.offsetWidth;
-      el.classList.add("flipping");
-    }
+    rankEl.textContent = rank; tlEl.textContent = rank; brEl.textContent = rank;
+    if (wasDown) { el.classList.remove("flipping"); void el.offsetWidth; el.classList.add("flipping"); }
   } else {
-    rankEl.textContent = "";
-    tlEl.textContent   = "";
-    brEl.textContent   = "";
+    rankEl.textContent = ""; tlEl.textContent = ""; brEl.textContent = "";
     el.classList.remove("flipping");
   }
 }
 
-function onSuitedToggle() {
-  if (rank1 === rank2 && rank1 !== null) return;
-  suited = !suited;
-  EL.btnSuited.classList.toggle("on", suited);
-  if (step === "done") recompute();
+function highlightRanks() {
+  EL.rankGrid.querySelectorAll(".rank-btn").forEach(b => {
+    b.classList.remove("sel-1","sel-2");
+    const r = b.textContent;
+    if (rank1 !== null && r === rank1 && r === rank2) { b.classList.add("sel-1"); return; }
+    if (rank1 !== null && r === rank1) b.classList.add("sel-1");
+    if (rank2 !== null && r === rank2) b.classList.add("sel-2");
+  });
 }
 
-function resetCards() {
+function resetVisuals() {
+  EL.rankGrid.querySelectorAll(".rank-btn").forEach(b => b.classList.remove("sel-1","sel-2"));
+  EL.card1.classList.remove("sel");
+  EL.card2.classList.remove("sel");
+}
+
+/* ── RESET ── */
+function resetHand() {
   rank1 = null; rank2 = null; suited = false;
-  step = "idle";
+  handStep = "idle";
   setCard(EL.card1, "down", null);
   setCard(EL.card2, "down", null);
-  EL.card1.classList.remove("passive");
-  EL.card2.classList.remove("passive");
-  EL.btnSuited.classList.remove("on");
-  EL.btnSuited.classList.add("hidden");
-  showView("idle");
+  resetVisuals();
+  EL.suitedRow.classList.add("hidden");
+  EL.btnOff.classList.add("active");
+  EL.btnSuited.classList.remove("active");
+  hideResult();
+  if (heroPos !== null) {
+    EL.idleHint.textContent = "Choisissez une carte";
+    EL.idleHint.style.display = "";
+  }
 }
 
-/* ══════════════════════════════════════════
-   RANGE LOOKUP
-══════════════════════════════════════════ */
+function hideResult() {
+  EL.actionsRow.style.display   = "none";
+  EL.resultReason.style.display = "none";
+  EL.tapHint.style.display      = "none";
+  EL.idleHint.style.display     = "";
+}
+
+/* ── LOOKUP ── */
 function normalizeRanks(r1, r2) {
   if (r1 === r2) return [r1, r2];
   const i1 = RANKS.indexOf(r1), i2 = RANKS.indexOf(r2);
@@ -808,7 +631,7 @@ function handKey(r1, r2, isSuited) {
 
 function getActions(key) {
   if (activeMode === "open") {
-    const rng = RANGES[activeStack]?.[activePos];
+    const rng = RANGES[activeStack]?.[heroPos];
     if (!rng) return ["FOLD"];
     const out = [];
     if (rng.open.has(key))     out.push("OPEN");
@@ -816,7 +639,7 @@ function getActions(key) {
     if (rng.threebet.has(key)) out.push("3BET");
     return out.length ? out : ["FOLD"];
   }
-  const rng = VSOPEN[activeStack]?.[activePos];
+  const rng = VSOPEN[activeStack]?.[heroPos];
   if (!rng) return ["FOLD"];
   const out = [];
   if (rng.call.has(key))     out.push("CALL");
@@ -824,51 +647,32 @@ function getActions(key) {
   return out.length ? out : ["FOLD"];
 }
 
-function getMiniCardData(r1, r2, isSuited) {
-  if (r1 === r2) return [
-    { rank: r1, red: false },
-    { rank: r2, red: true  },
-  ];
-  if (isSuited) return [
-    { rank: r1, red: false },
-    { rank: r2, red: false },
-  ];
-  return [
-    { rank: r1, red: false },
-    { rank: r2, red: true  },
-  ];
-}
-
-function updateMiniCards(r1, r2, isSuited) {
-  const data = getMiniCardData(r1, r2, isSuited);
-  [EL.mc1, EL.mc2].forEach((mc, i) => {
-    mc.querySelector(".mc-rank").textContent = data[i].rank;
-    mc.classList.toggle("red", data[i].red);
-  });
-}
-
+/* ── RECOMPUTE ── */
 function recompute() {
-  const key     = handKey(rank1, rank2, suited);
-  const actions = getActions(key);
-  const [dispR1, dispR2] = normalizeRanks(rank1, rank2);
-  updateMiniCards(dispR1, dispR2, suited);
-
+  const [r1, r2] = normalizeRanks(rank1, rank2);
+  const key      = handKey(rank1, rank2, suited);
+  const actions  = getActions(key);
   const PRIORITY = ["3BET","OPEN","CALL","FOLD"];
-  const main = PRIORITY.find(p => actions.includes(p)) || "FOLD";
-  const d = DISPLAY[main] || DISPLAY.FOLD;
+  const main     = PRIORITY.find(p => actions.includes(p)) || "FOLD";
 
-  const labels = [...new Set(actions.map(a => DISPLAY[a]?.label || a))];
-  EL.resultText.textContent = labels.join(" / ");
-  EL.resultText.style.color = d.color;
+  EL.actionsRow.innerHTML = "";
+  actions.forEach(a => {
+    const d = ACTION_DISPLAY[a] || ACTION_DISPLAY.FOLD;
+    const s = document.createElement("span");
+    s.className = "action-chip"; s.textContent = d.label; s.style.color = d.color;
+    EL.actionsRow.appendChild(s);
+  });
+
   EL.resultReason.textContent = actions.length === 1
-    ? (REASON[main] || "")
-    : "Plusieurs options jouables";
+    ? (REASON[main] || "") : "Plusieurs options jouables";
 
-  EL.handResult.classList.remove("pop-in");
-  void EL.handResult.offsetWidth;
-  EL.handResult.classList.add("pop-in");
+  EL.actionsRow.style.display   = "flex";
+  EL.resultReason.style.display = "";
+  EL.tapHint.style.display      = "";
 
-  showView("result");
+  EL.actionsRow.classList.remove("pop-in");
+  void EL.actionsRow.offsetWidth;
+  EL.actionsRow.classList.add("pop-in");
 }
 
 window.addEventListener("DOMContentLoaded", init);
