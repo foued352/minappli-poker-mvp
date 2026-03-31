@@ -347,12 +347,12 @@ const GAME_ORDER = ["BTN","SB","BB","UTG","HJ","CO"];
 // 6 fixed visual slots — strict Winamax calque (position:absolute + %)
 // slot 0 = HERO anchor (bottom-left)
 const SLOT_COORDS = [
-  { left: "22%",  bottom: "8%",  top: null,  right: null,  transform: null },            // 0 HERO
-  { left: "8%",   bottom: "28%", top: null,  right: null,  transform: null },            // 1 SB-like
-  { left: null,   bottom: "28%", top: null,  right: "6%",  transform: null },            // 2 BB-like
-  { left: "50%",  top: "10%",    bottom: null, right: null, transform: "translateX(-50%)" }, // 3 UTG
-  { left: "10%",  top: "28%",    bottom: null, right: null, transform: null },            // 4 HJ
-  { left: null,   top: "28%",    bottom: null, right: "10%", transform: null },           // 5 CO
+  { left: "14%",  bottom: "3%",  top: null,    right: null,  transform: null },                  // 0 HERO/BTN — bas gauche, collé au rail
+  { left: "1%",   bottom: "22%", top: null,    right: null,  transform: null },                  // 1 SB — flanc gauche
+  { left: null,   bottom: "22%", top: null,    right: "1%",  transform: null },                  // 2 BB — flanc droit
+  { left: "50%",  top: "2%",     bottom: null, right: null,  transform: "translateX(-50%)" },    // 3 UTG — haut centre, rail
+  { left: "2%",   top: "22%",    bottom: null, right: null,  transform: null },                  // 4 HJ — haut gauche
+  { left: null,   top: "22%",    bottom: null, right: "2%",  transform: null },                  // 5 CO — haut droit
 ];
 
 function applyPositions() {
