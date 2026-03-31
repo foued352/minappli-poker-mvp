@@ -68,7 +68,7 @@
     /* ══ POSITION BUTTONS ══ */
     .pos-btn {
       position: absolute; z-index: 3;
-      width: 70px; height: 70px; border-radius: 50%; padding: 0;
+      width: 74px; height: 74px; border-radius: 50%; padding: 0;
       border: 2px solid rgba(255,255,255,0.22);
       background: rgba(0,0,0,0.60);
       color: rgba(255,255,255,0.65);
@@ -78,7 +78,7 @@
       display: flex; align-items: center; justify-content: center;
       box-shadow: 0 3px 10px rgba(0,0,0,0.50);
     }
-    .pos-btn:active { opacity: 0.72; transform: scale(0.88); }
+    .pos-btn:active { opacity: 0.68; }
 
     /* Dealer button */
     #dealer-btn {
@@ -346,13 +346,14 @@ const GAME_ORDER = ["BTN","SB","BB","UTG","HJ","CO"];
 
 // 6 fixed visual slots — strict Winamax calque (position:absolute + %)
 // slot 0 = HERO anchor (bottom-left)
+// Centres exacts (calque screen Winamax) — positionnement par centre du rond
 const SLOT_COORDS = [
-  { left: "16%",  bottom: "8%",  top: null,    right: null,  transform: null },                  // 0 HERO/BTN
-  { left: "7%",   bottom: "24%", top: null,    right: null,  transform: null },                  // 1 SB
-  { left: null,   bottom: "24%", top: null,    right: "7%",  transform: null },                  // 2 BB
-  { left: "50%",  top: "8%",     bottom: null, right: null,  transform: "translateX(-50%)" },    // 3 UTG
-  { left: "7%",   top: "24%",    bottom: null, right: null,  transform: null },                  // 4 HJ
-  { left: null,   top: "24%",    bottom: null, right: "7%",  transform: null },                  // 5 CO
+  { x: "24%", y: "89%" }, // 0 HERO/BTN — bas gauche
+  { x: "9%",  y: "73%" }, // 1 SB
+  { x: "91%", y: "73%" }, // 2 BB
+  { x: "50%", y: "11%" }, // 3 UTG
+  { x: "10%", y: "31%" }, // 4 HJ
+  { x: "90%", y: "31%" }, // 5 CO
 ];
 
 function applyPositions() {
@@ -362,15 +363,14 @@ function applyPositions() {
     const slot = (GAME_ORDER.indexOf(p) - heroIdx + 6) % 6;
     const c    = SLOT_COORDS[slot];
     const btn  = document.getElementById("pos-" + p);
-    btn.style.left = btn.style.right = btn.style.top = btn.style.bottom = btn.style.transform = "";
-    if (c.left   !== null) btn.style.left      = c.left;
-    if (c.right  !== null) btn.style.right     = c.right;
-    if (c.top    !== null) btn.style.top       = c.top;
-    if (c.bottom !== null) btn.style.bottom    = c.bottom;
-    if (c.transform)       btn.style.transform = c.transform;
+    btn.style.left      = c.x;
+    btn.style.top       = c.y;
+    btn.style.right     = "";
+    btn.style.bottom    = "";
+    btn.style.transform = "translate(-50%, -50%)";
   });
 
-  // Dealer button: pixel-computed from BTN's rendered center
+  // Dealer button: tangent haut-droit du BTN réel
   requestAnimationFrame(placeDealerBtn);
 }
 
@@ -383,8 +383,9 @@ function placeDealerBtn() {
   const br = btnEl.getBoundingClientRect();
   const bx = (br.left + br.right)  / 2 - sr.left;
   const by = (br.top  + br.bottom) / 2 - sr.top;
-  db.style.left = (bx + 24) + "px";
-  db.style.top  = (by - 22) + "px";
+  const r  = br.width / 2;
+  db.style.left = (bx + r * 0.68) + "px";
+  db.style.top  = (by - r * 0.68 - 11) + "px";
 }
 
 const OPENER_OPTIONS = {
