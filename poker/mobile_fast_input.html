@@ -74,21 +74,26 @@
       color: rgba(255,255,255,0.62);
       font-size: 12px; font-weight: 800; letter-spacing: 0.06em;
       cursor: pointer; user-select: none; touch-action: manipulation;
-      transition: all 0.12s;
+      transition: background 0.12s, border-color 0.12s, color 0.12s, box-shadow 0.12s,
+                  left 0.20s ease, top 0.20s ease;
       white-space: nowrap;
       box-shadow: 0 2px 8px rgba(0,0,0,0.40);
     }
     .pos-btn:active { opacity: 0.72; transform: scale(0.93); }
-    #pos-UTG:active,
-    #pos-BTN:active { transform: translateX(-50%) scale(0.93); }
+    .pos-btn.no-anim { transition: background 0.12s, border-color 0.12s, color 0.12s, box-shadow 0.12s !important; }
 
-    /* Winamax-like placements */
-    #pos-UTG { top: 3%;    left: 50%; transform: translateX(-50%); }
-    #pos-HJ  { top: 16%;  left: 2%; }
-    #pos-CO  { top: 16%;  right: 2%; }
-    #pos-SB  { bottom: 16%; left: 2%; }
-    #pos-BB  { bottom: 16%; right: 2%; }
-    #pos-BTN { bottom: 3%; left: 50%; transform: translateX(-50%); }
+    /* Dealer button */
+    #dealer-btn {
+      position: absolute; z-index: 4;
+      width: 24px; height: 24px; border-radius: 50%;
+      background: #fff; color: #1a1a1a;
+      font-size: 11px; font-weight: 900; letter-spacing: 0;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: none;
+      transition: left 0.20s ease, top 0.20s ease;
+      box-shadow: 0 2px 7px rgba(0,0,0,0.55);
+    }
+    #dealer-btn.no-anim { transition: none !important; }
 
     /* HERO */
     .pos-btn.hero {
@@ -256,7 +261,7 @@
 </head>
 <body>
 
-<div id="test-marker">HIERARCHY V3</div>
+<div id="test-marker">WINAMAX GEO V4</div>
 
 <div id="app">
 
@@ -270,6 +275,7 @@
     <button class="pos-btn" id="pos-SB"  data-pos="SB">SB</button>
     <button class="pos-btn" id="pos-BB"  data-pos="BB">BB</button>
     <button class="pos-btn" id="pos-BTN" data-pos="BTN">BTN</button>
+    <div id="dealer-btn">D</div>
 
     <div id="center-zone">
 
@@ -338,6 +344,66 @@ const STACKS    = ["20bb","25bb","40bb"];
 const POSITIONS = ["UTG","HJ","CO","BTN","SB","BB"];
 const RANKS     = ["A","K","Q","J","T","9","8","7","6","5","4","3","2"];
 
+/* ── SEAT GEOMETRY ── */
+const SEAT_ORDER = ["BTN","SB","BB","UTG","HJ","CO"]; // clockwise from BTN
+const HERO_ANGLE = 210; // degrees from top, clockwise — bottom-left anchor
+const SLOT_STEP  = 60;  // degrees between seats
+const SEAT_INSET = 32;  // px from scene edge to seat center
+
+function applyPositions(animate) {
+  const scene = document.getElementById("table-scene");
+  const W = scene.offsetWidth;
+  const H = scene.offsetHeight;
+  if (W === 0 || H === 0) return;
+
+  const cx  = W / 2;
+  const cy  = H / 2;
+  const rx  = W / 2 - SEAT_INSET;
+  const ry  = H / 2 - SEAT_INSET;
+
+  // heroIdx: BTN (index 0) is default anchor when no hero selected
+  const heroIdx = heroPos ? SEAT_ORDER.indexOf(heroPos) : 0;
+
+  const db = document.getElementById("dealer-btn");
+
+  if (!animate) {
+    POSITIONS.forEach(p => document.getElementById("pos-" + p).classList.add("no-anim"));
+    if (db) db.classList.add("no-anim");
+  }
+
+  POSITIONS.forEach(p => {
+    const slot     = (SEAT_ORDER.indexOf(p) - heroIdx + 6) % 6;
+    const angleDeg = (HERO_ANGLE + slot * SLOT_STEP) % 360;
+    const rad      = angleDeg * Math.PI / 180;
+    const x        = cx + rx * Math.sin(rad);
+    const y        = cy - ry * Math.cos(rad);
+    const btn      = document.getElementById("pos-" + p);
+    btn.style.left      = (x - btn.offsetWidth  / 2) + "px";
+    btn.style.top       = (y - btn.offsetHeight / 2) + "px";
+    btn.style.transform = "";
+  });
+
+  // Dealer button: attached to BTN, offset toward center by ~28px
+  if (db) {
+    const btnSlot    = (SEAT_ORDER.indexOf("BTN") - heroIdx + 6) % 6;
+    const btnAngle   = (HERO_ANGLE + btnSlot * SLOT_STEP) % 360;
+    const btnRad     = btnAngle * Math.PI / 180;
+    const bx         = cx + rx * Math.sin(btnRad);
+    const by         = cy - ry * Math.cos(btnRad);
+    const dx         = bx + (cx - bx) * 0.28;
+    const dy         = by + (cy - by) * 0.28;
+    db.style.left    = (dx - 12) + "px";
+    db.style.top     = (dy - 12) + "px";
+  }
+
+  if (!animate) {
+    requestAnimationFrame(() => {
+      POSITIONS.forEach(p => document.getElementById("pos-" + p).classList.remove("no-anim"));
+      if (db) db.classList.remove("no-anim");
+    });
+  }
+}
+
 const OPENER_OPTIONS = {
   UTG: [], HJ: ["UTG"], CO: ["UTG","HJ"], BTN: ["UTG","HJ","CO"],
   SB: ["CO","BTN"], BB: ["UTG","HJ","CO","BTN","SB"],
@@ -398,6 +464,9 @@ function init() {
   document.getElementById("result-zone").addEventListener("click", () => {
     if (handStep === "done") resetHand();
   });
+
+  requestAnimationFrame(() => applyPositions(false));
+  window.addEventListener("resize", () => applyPositions(false));
 }
 
 /* ── STACK BAR ── */
@@ -434,6 +503,7 @@ function onPosTap(pos) {
     updateMode();
     updateCtxLine();
     updatePosHighlights();
+    applyPositions(true);
     EL.rankGrid.classList.remove("locked");
     EL.idleHint.textContent = "Choisissez une carte";
     return;
@@ -453,6 +523,7 @@ function onPosTap(pos) {
     updateMode();
     updateCtxLine();
     updatePosHighlights();
+    applyPositions(true);
     if (handStep === "done") recompute();
     return;
   }
@@ -462,6 +533,7 @@ function onPosTap(pos) {
   updateMode();
   updateCtxLine();
   updatePosHighlights();
+  applyPositions(true);
   if (handStep === "done") recompute();
 }
 
