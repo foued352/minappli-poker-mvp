@@ -52,22 +52,26 @@
       flex: 1; min-height: 0;
       position: relative;
       display: flex; align-items: center; justify-content: center;
-      background: radial-gradient(ellipse 86% 94% at 50% 54%,
-        #122a1a 0%, #0b1e12 55%, #06120a 100%);
+      background: radial-gradient(ellipse 78% 88% at 50% 56%,
+        #143020 0%, #0b1e12 52%, #050e08 100%);
       overflow: hidden;
     }
-    /* Oval rail — perspective pear : haut serré, bas large */
+    /* Rail Winamax — rectangle arrondi asymétrique, pas ellipse lisse */
     #table-scene::before {
       content: ""; pointer-events: none;
-      position: absolute; inset: 8px 14px 14px 14px;
-      border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
-      border: 2.5px solid rgba(255,255,255,0.09);
-      box-shadow: inset 0 0 40px rgba(0,0,0,0.40), 0 0 0 6px rgba(0,0,0,0.30);
+      position: absolute;
+      top: 6%; bottom: 4%; left: 8%; right: 8%;
+      border-radius: 48% 48% 52% 52% / 38% 38% 62% 62%;
+      border: 3px solid rgba(255,255,255,0.11);
+      box-shadow: inset 0 0 50px rgba(0,0,0,0.45),
+                  inset 0 -20px 40px rgba(0,0,0,0.20),
+                  0 0 0 5px rgba(0,0,0,0.35);
     }
 
-    /* ══ GEOMETRY PREVIEW — masquer tout sauf table + sièges ══ */
-    #stack-bar   { display: none; }
-    #center-zone { display: none; }
+    /* ══ GEOMETRY PREVIEW — fond + table + sièges + dealer UNIQUEMENT ══ */
+    #stack-bar, #center-zone, #idle-hint, #rank-grid,
+    #cards-row, #suited-row, #result-zone, #ctx-line { display: none !important; }
+    #app { padding-top: 0; }
 
     /* ══ POSITION BUTTONS ══ */
     .pos-btn {
@@ -352,12 +356,12 @@ const GAME_ORDER = ["BTN","SB","BB","UTG","HJ","CO"];
 // slot 0 = HERO anchor (bottom-left)
 // Centres exacts (calque screen Winamax) — positionnement par centre du rond
 const SLOT_COORDS = [
-  { x: "34%", y: "90%" }, // 0 HERO/BTN
-  { x: "24%", y: "71%" }, // 1 SB
-  { x: "76%", y: "71%" }, // 2 BB
-  { x: "50%", y: "16%" }, // 3 UTG
-  { x: "18%", y: "41%" }, // 4 HJ
-  { x: "82%", y: "41%" }, // 5 CO
+  { x: "34%", y: "84%" }, // 0 HERO/BTN — remonté vers la courbe
+  { x: "22%", y: "78%" }, // 1 SB — descendu
+  { x: "78%", y: "78%" }, // 2 BB — descendu
+  { x: "50%", y: "13%" }, // 3 UTG — comprimé en haut
+  { x: "16%", y: "34%" }, // 4 HJ — remonté sur épaules
+  { x: "84%", y: "34%" }, // 5 CO — remonté sur épaules
 ];
 
 function applyPositions() {
@@ -388,8 +392,9 @@ function placeDealerBtn() {
   const bx = (br.left + br.right)  / 2 - sr.left;
   const by = (br.top  + br.bottom) / 2 - sr.top;
   const r  = br.width / 2;
-  db.style.left = (bx + r * 0.68) + "px";
-  db.style.top  = (by - r * 0.68 - 11) + "px";
+  // Collé au bord extérieur haut-droit — tangent au cercle
+  db.style.left = (bx + r + 2) + "px";
+  db.style.top  = (by - r - 2) + "px";
 }
 
 const OPENER_OPTIONS = {
