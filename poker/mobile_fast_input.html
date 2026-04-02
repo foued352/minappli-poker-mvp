@@ -262,6 +262,9 @@
     }
     .pop-in { animation: pop-in 0.16s cubic-bezier(0.28, 1.7, 0.58, 1); }
 
+    /* ══ CALIBRATION MODE ══ */
+    body.cal-mode .pos-btn { font-size: 0 !important; }
+
     /* ══ CALIBRATION IMAGE ══ */
     #cal-img {
       position: absolute; inset: 0; z-index: 1;
@@ -360,32 +363,35 @@ const POSITIONS = ["UTG","HJ","CO","BTN","SB","BB"];
 const RANKS     = ["A","K","Q","J","T","9","8","7","6","5","4","3","2"];
 
 /* ── SEAT GEOMETRY ── */
-// Game order (circular): BTN → SB → BB → UTG → HJ → CO
+// SLOTS : géométrie pure, indépendante des positions poker
+// Coordonnées calquées sur winamax_blue_overlay.png
+const SLOTS = {
+  lower_left:  { x: "17%", y: "78%" }, // hero anchor
+  mid_left:    { x: "11%", y: "43%" },
+  upper_left:  { x: "18%", y: "21%" },
+  top:         { x: "52%", y: "18%" },
+  upper_right: { x: "84%", y: "29%" },
+  mid_right:   { x: "85%", y: "46%" },
+};
+
+// Ordre des slots depuis le hero (index 0), sens anti-horaire → horaire
+// hero=lower_left, puis mid_left, upper_left, top, upper_right, mid_right
+const SLOT_ORDER = ["lower_left","mid_left","upper_left","top","upper_right","mid_right"];
+
+// REMAP : positions poker dynamiques
+// Ordre circulaire poker 6-max
 const GAME_ORDER = ["BTN","SB","BB","UTG","HJ","CO"];
 
-// Slots calqués sur winamax_blue_overlay.png — centres mesurés sur l'image
-// GAME_ORDER = ["BTN","SB","BB","UTG","HJ","CO"]
-// Slot 0 = BTN haut-centre, Slot 3 = UTG bas-gauche = HERO ANCHOR
-const SLOT_COORDS = [
-  { x: "52%", y: "18%" }, // 0 BTN — légèrement bas + droite
-  { x: "84%", y: "29%" }, // 1 SB — inchangé
-  { x: "85%", y: "46%" }, // 2 BB — inchangé
-  { x: "17%", y: "78%" }, // 3 UTG — inchangé (HERO anchor)
-  { x: "11%", y: "43%" }, // 4 HJ — remonté
-  { x: "18%", y: "21%" }, // 5 CO — remonté nettement + légèrement droite
-];
-
 function applyPositions() {
-  // Default heroIdx=3 → layout naturel Winamax (BTN haut, UTG bas-gauche)
-  // Hero sélectionné → va en slot 3 (bas-gauche)
+  // heroIdx défaut = 3 (UTG) → layout naturel Winamax : UTG bas-gauche, BTN haut
   const heroIdx = heroPos ? GAME_ORDER.indexOf(heroPos) : 3;
 
   POSITIONS.forEach(p => {
-    const slot = (GAME_ORDER.indexOf(p) - heroIdx + 3 + 6) % 6;
-    const c    = SLOT_COORDS[slot];
-    const btn  = document.getElementById("pos-" + p);
-    btn.style.left      = c.x;
-    btn.style.top       = c.y;
+    const rotIdx = (GAME_ORDER.indexOf(p) - heroIdx + 6) % 6;
+    const coords = SLOTS[SLOT_ORDER[rotIdx]];
+    const btn    = document.getElementById("pos-" + p);
+    btn.style.left      = coords.x;
+    btn.style.top       = coords.y;
     btn.style.right     = "";
     btn.style.bottom    = "";
     btn.style.transform = "translate(-50%, -50%)";
@@ -825,6 +831,7 @@ function initCalibration() {
           : (param === "blue") ? "winamax_blue_overlay.png"
           : decodeURIComponent(param);
   img.style.display = "block";
+  document.body.classList.add("cal-mode");
   document.getElementById("test-marker").textContent = "CALIBRATION — " + img.src.split("/").pop();
 }
 
