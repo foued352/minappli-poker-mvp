@@ -363,23 +363,25 @@ const RANKS     = ["A","K","Q","J","T","9","8","7","6","5","4","3","2"];
 // Game order (circular): BTN → SB → BB → UTG → HJ → CO
 const GAME_ORDER = ["BTN","SB","BB","UTG","HJ","CO"];
 
-// 6 fixed visual slots — strict Winamax calque (position:absolute + %)
-// slot 0 = HERO anchor (bottom-left)
-// Centres exacts (calque screen Winamax) — positionnement par centre du rond
+// Slots calqués sur winamax_blue_overlay.png — centres mesurés sur l'image
+// GAME_ORDER = ["BTN","SB","BB","UTG","HJ","CO"]
+// Slot 0 = BTN haut-centre, Slot 3 = UTG bas-gauche = HERO ANCHOR
 const SLOT_COORDS = [
-  { x: "29%", y: "89%" }, // 0 HERO/BTN — décalé gauche -5%, descendu +5%
-  { x: "22%", y: "69%" }, // 1 SB — remonté -9%
-  { x: "78%", y: "69%" }, // 2 BB — remonté -9%
-  { x: "50%", y: "16%" }, // 3 UTG — descendu +3%
-  { x: "16%", y: "34%" }, // 4 HJ — inchangé
-  { x: "84%", y: "34%" }, // 5 CO — inchangé
+  { x: "50%", y: "15%" }, // 0 BTN — haut-centre
+  { x: "84%", y: "29%" }, // 1 SB — haut-droit
+  { x: "85%", y: "46%" }, // 2 BB — milieu-droit
+  { x: "17%", y: "78%" }, // 3 UTG — bas-gauche (HERO anchor)
+  { x: "11%", y: "47%" }, // 4 HJ — milieu-gauche
+  { x: "15%", y: "29%" }, // 5 CO — haut-gauche
 ];
 
 function applyPositions() {
-  const heroIdx = heroPos ? GAME_ORDER.indexOf(heroPos) : 0;
+  // Default heroIdx=3 → layout naturel Winamax (BTN haut, UTG bas-gauche)
+  // Hero sélectionné → va en slot 3 (bas-gauche)
+  const heroIdx = heroPos ? GAME_ORDER.indexOf(heroPos) : 3;
 
   POSITIONS.forEach(p => {
-    const slot = (GAME_ORDER.indexOf(p) - heroIdx + 6) % 6;
+    const slot = (GAME_ORDER.indexOf(p) - heroIdx + 3 + 6) % 6;
     const c    = SLOT_COORDS[slot];
     const btn  = document.getElementById("pos-" + p);
     btn.style.left      = c.x;
@@ -403,9 +405,13 @@ function placeDealerBtn() {
   const bx = (br.left + br.right)  / 2 - sr.left;
   const by = (br.top  + br.bottom) / 2 - sr.top;
   const r  = br.width / 2;
-  // Collé au bord extérieur haut-droit — tangent au cercle
-  db.style.left = (bx + r + 2) + "px";
-  db.style.top  = (by - r - 2) + "px";
+  // Direction BTN → centre de table, D posé juste au bord intérieur du cercle
+  const cx = sr.width  / 2;
+  const cy = sr.height / 2;
+  const dx = cx - bx, dy = cy - by;
+  const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+  db.style.left = (bx + (dx / dist) * (r + 6) - 11) + "px";
+  db.style.top  = (by + (dy / dist) * (r + 6) - 11) + "px";
 }
 
 const OPENER_OPTIONS = {
@@ -815,7 +821,9 @@ function initCalibration() {
   const param = new URLSearchParams(location.search).get("cal");
   if (!param) return;
   const img = document.getElementById("cal-img");
-  img.src = (param === "1") ? "winamax_ref.png" : decodeURIComponent(param);
+  img.src = (param === "1") ? "winamax_ref.png"
+          : (param === "blue") ? "winamax_blue_overlay.png"
+          : decodeURIComponent(param);
   img.style.display = "block";
   document.getElementById("test-marker").textContent = "CALIBRATION — " + img.src.split("/").pop();
 }
