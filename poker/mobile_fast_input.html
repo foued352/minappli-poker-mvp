@@ -367,12 +367,12 @@ const GAME_ORDER = ["BTN","SB","BB","UTG","HJ","CO"];
 // GAME_ORDER = ["BTN","SB","BB","UTG","HJ","CO"]
 // Slot 0 = BTN haut-centre, Slot 3 = UTG bas-gauche = HERO ANCHOR
 const SLOT_COORDS = [
-  { x: "50%", y: "15%" }, // 0 BTN — haut-centre
-  { x: "84%", y: "29%" }, // 1 SB — haut-droit
-  { x: "85%", y: "46%" }, // 2 BB — milieu-droit
-  { x: "17%", y: "78%" }, // 3 UTG — bas-gauche (HERO anchor)
-  { x: "11%", y: "47%" }, // 4 HJ — milieu-gauche
-  { x: "15%", y: "29%" }, // 5 CO — haut-gauche
+  { x: "52%", y: "18%" }, // 0 BTN — légèrement bas + droite
+  { x: "84%", y: "29%" }, // 1 SB — inchangé
+  { x: "85%", y: "46%" }, // 2 BB — inchangé
+  { x: "17%", y: "78%" }, // 3 UTG — inchangé (HERO anchor)
+  { x: "11%", y: "43%" }, // 4 HJ — remonté
+  { x: "18%", y: "21%" }, // 5 CO — remonté nettement + légèrement droite
 ];
 
 function applyPositions() {
@@ -410,8 +410,8 @@ function placeDealerBtn() {
   const cy = sr.height / 2;
   const dx = cx - bx, dy = cy - by;
   const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-  db.style.left = (bx + (dx / dist) * (r + 6) - 11) + "px";
-  db.style.top  = (by + (dy / dist) * (r + 6) - 11) + "px";
+  db.style.left = (bx + (dx / dist) * (r - 4) + 6 - 11) + "px";
+  db.style.top  = (by + (dy / dist) * (r - 4) + 4 - 11) + "px";
 }
 
 const OPENER_OPTIONS = {
