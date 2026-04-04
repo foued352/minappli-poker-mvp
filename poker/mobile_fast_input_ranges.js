@@ -147,9 +147,9 @@ const MFI_RANGES_RAW = {
     "UTG": {
       open: [
         "AA","KK","QQ","JJ","TT","99","88","77",
-        "AKs","AQs","AJs",
+        "AKs","AQs","AJs","ATs",
         "KQs",
-        "AKo","AQo"
+        "AKo","AQo","AJo"
       ],
       call: [], threebet: []
     },
@@ -159,7 +159,7 @@ const MFI_RANGES_RAW = {
         "AKs","AQs","AJs","ATs","A9s",
         "KQs","KJs",
         "QJs",
-        "AKo","AQo","AJo",
+        "AKo","AQo","AJo","ATo",
         "KQo","KJo"
       ],
       call: [], threebet: []
@@ -170,7 +170,7 @@ const MFI_RANGES_RAW = {
         "AKs","AQs","AJs","ATs","A9s","A8s","A7s","A6s","A5s",
         "KQs","KJs","KTs",
         "QJs","QTs","JTs","T9s","98s","87s","76s",
-        "AKo","AQo","AJo","ATo",
+        "AKo","AQo","AJo","ATo","A9o",
         "KQo","KJo","KTo",
         "QJo","JTo"
       ],

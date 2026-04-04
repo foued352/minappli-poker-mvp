@@ -604,6 +604,7 @@ function onRankTap(rank) {
   if (handStep === "picked1") {
     rank2 = rank; handStep = "done";
     setCard(EL.card2, "up", rank); EL.card2.classList.add("sel");
+    canonicalizeDisplay();
     applySuitedVisibility();
     highlightRanks();
     EL.idleHint.style.display = "none";
@@ -614,6 +615,7 @@ function onRankTap(rank) {
   if (handStep === "editing1") {
     rank1 = rank; handStep = "done";
     setCard(EL.card1, "up", rank); EL.card1.classList.add("sel");
+    canonicalizeDisplay();
     applySuitedVisibility();
     highlightRanks();
     EL.idleHint.style.display = "none";
@@ -624,6 +626,7 @@ function onRankTap(rank) {
   if (handStep === "editing2") {
     rank2 = rank; handStep = "done";
     setCard(EL.card2, "up", rank); EL.card2.classList.add("sel");
+    canonicalizeDisplay();
     applySuitedVisibility();
     highlightRanks();
     EL.idleHint.style.display = "none";
@@ -642,6 +645,16 @@ function onRankTap(rank) {
     highlightRanks();
     EL.idleHint.textContent = "Choisissez la 2ème carte";
     EL.idleHint.style.display = "";
+  }
+}
+
+function canonicalizeDisplay() {
+  if (rank1 === null || rank2 === null || rank1 === rank2) return;
+  const i1 = RANKS.indexOf(rank1), i2 = RANKS.indexOf(rank2);
+  if (i1 > i2) {
+    [rank1, rank2] = [rank2, rank1];
+    setCard(EL.card1, "up", rank1); EL.card1.classList.add("sel");
+    setCard(EL.card2, "up", rank2); EL.card2.classList.add("sel");
   }
 }
 
