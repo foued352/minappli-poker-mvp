@@ -93,20 +93,23 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.55);
     }
 
-    /* HERO */
+    /* P6 — HERO: remplissage plein, immédiatement lisible */
     .pos-btn.hero {
-      background: rgba(255,210,0,0.10);
-      border-color: rgba(255,210,0,0.52);
-      color: rgba(255,210,0,0.78);
-      box-shadow: none;
+      background: rgba(255,210,0,0.22);
+      border-color: rgba(255,210,0,0.80);
+      color: rgba(255,210,0,0.98);
+      box-shadow: 0 0 14px rgba(255,210,0,0.15);
     }
-    /* VILLAIN */
+    /* P6 — VILLAIN */
     .pos-btn.villain {
-      background: rgba(255,70,50,0.18);
-      border-color: rgba(255,80,60,0.78);
+      background: rgba(255,70,50,0.22);
+      border-color: rgba(255,80,60,0.85);
       color: #ff6040;
-      box-shadow: 0 0 12px rgba(255,60,40,0.14);
+      box-shadow: 0 0 12px rgba(255,60,40,0.18);
     }
+    /* P6 — autres positions: réduit opacity pour laisser hero lisible */
+    .pos-btn.dim { opacity: 0.35; }
+    .pos-btn { transition: background 0.12s, border-color 0.12s, color 0.12s, box-shadow 0.12s, opacity 0.12s; }
 
     /* ══ CENTER ZONE ══ */
     #center-zone {
@@ -114,7 +117,8 @@
       width: 68%;
       display: flex; flex-direction: column;
       align-items: center; gap: 14px;
-      padding: 32px 0;
+      /* P10 — safe zone basse : espace pour les boutons de position */
+      padding: 28px 0 52px;
     }
 
     /* Context line */
@@ -174,15 +178,20 @@
     .card[data-state="up"] .card-rank-center {
       font-size: 38px; font-weight: 900; color: #1a1f2e; line-height: 1;
     }
+    /* P5 — coin de carte : rang + suit sur 2 lignes */
     .card[data-state="up"] .card-corner-tl {
       position: absolute; top: 5px; left: 7px;
-      font-size: 12px; font-weight: 800; color: #1a1f2e; line-height: 1;
+      display: flex; flex-direction: column; align-items: flex-start;
+      color: #1a1f2e; line-height: 1;
     }
     .card[data-state="up"] .card-corner-br {
       position: absolute; bottom: 5px; right: 7px;
-      font-size: 12px; font-weight: 800; color: #1a1f2e; line-height: 1;
+      display: flex; flex-direction: column; align-items: flex-end;
+      color: #1a1f2e; line-height: 1;
       transform: rotate(180deg);
     }
+    .c-rank { font-size: 12px; font-weight: 800; line-height: 1; }
+    .c-suit  { font-size: 9px;  font-weight: 700; line-height: 1; }
 
     /* ══ RANK GRID ══ */
     #rank-grid {
@@ -249,10 +258,12 @@
       letter-spacing: 0.04em; line-height: 1;
     }
     #result-reason, #result-tap-hint { display: none !important; }
+    /* P2 — hauteur fixe : aucun mouvement de layout quand le texte apparaît */
     #range-hint {
-      font-size: 12px; font-weight: 600;
-      color: rgba(255,255,255,0.48); letter-spacing: 0.06em;
-      text-align: center; min-height: 16px;
+      font-size: 11.5px; font-weight: 600;
+      color: rgba(255,255,255,0.52); letter-spacing: 0.05em;
+      text-align: center;
+      height: 16px; overflow: hidden; white-space: nowrap;
     }
 
     @keyframes pop-in {
@@ -283,6 +294,11 @@
 
   <div id="stack-bar"></div>
 
+  <!-- MARQUEUR TEMPORAIRE — retirer après validation -->
+  <div style="position:fixed;top:0;left:0;right:0;z-index:9999;background:#e84040;color:#fff;font-size:11px;font-weight:900;text-align:center;letter-spacing:0.12em;padding:3px 0;pointer-events:none;">
+    FLOW V2 — P5/P6/P7/P8/P10
+  </div>
+
   <div id="table-scene">
 
     <div id="poker-table"></div>
@@ -303,14 +319,14 @@
 
       <div id="cards-row">
         <div class="card" id="card1" data-state="down">
-          <span class="card-corner-tl"></span>
+          <span class="card-corner-tl"><span class="c-rank"></span><span class="c-suit"></span></span>
           <span class="card-rank-center"></span>
-          <span class="card-corner-br"></span>
+          <span class="card-corner-br"><span class="c-rank"></span><span class="c-suit"></span></span>
         </div>
         <div class="card" id="card2" data-state="down">
-          <span class="card-corner-tl"></span>
+          <span class="card-corner-tl"><span class="c-rank"></span><span class="c-suit"></span></span>
           <span class="card-rank-center"></span>
-          <span class="card-corner-br"></span>
+          <span class="card-corner-br"><span class="c-rank"></span><span class="c-suit"></span></span>
         </div>
       </div>
 
@@ -508,6 +524,8 @@ function buildStackBar() {
       activeStack = s;
       EL.stackBar.querySelectorAll(".stack-btn").forEach(x =>
         x.classList.toggle("active", x.textContent === s));
+      /* P8 — mise à jour immédiate ctx-line + recalcul si main sélectionnée */
+      updateCtxLine();
       if (handStep === "done") recompute();
     });
     EL.stackBar.appendChild(b);
@@ -585,9 +603,10 @@ function updateCtxLine() {
 function updatePosHighlights() {
   POSITIONS.forEach(p => {
     const btn = document.getElementById("pos-" + p);
-    btn.classList.remove("hero", "villain");
-    if (p === heroPos)    btn.classList.add("hero");
+    btn.classList.remove("hero", "villain", "dim");
+    if      (p === heroPos)    btn.classList.add("hero");
     else if (p === villainPos) btn.classList.add("villain");
+    else                       btn.classList.add("dim");
   });
 }
 
@@ -711,6 +730,8 @@ function toggleSuited() {
   suited = !suited;
   EL.btnSuited.textContent = suited ? "SUITED" : "OFF";
   EL.btnSuited.classList.toggle("suited", suited);
+  /* P5 — mettre à jour couleur cartes immédiatement */
+  applyCardColors();
   if (handStep === "done") recompute();
 }
 
@@ -725,16 +746,58 @@ function setCard(el, state, rank) {
   const wasDown = el.dataset.state !== "up";
   el.dataset.state = state;
   el.classList.remove("sel");
-  const rankEl = el.querySelector(".card-rank-center");
-  const tlEl   = el.querySelector(".card-corner-tl");
-  const brEl   = el.querySelector(".card-corner-br");
+  const rankEl  = el.querySelector(".card-rank-center");
+  const tlRank  = el.querySelector(".card-corner-tl .c-rank");
+  const tlSuit  = el.querySelector(".card-corner-tl .c-suit");
+  const brRank  = el.querySelector(".card-corner-br .c-rank");
+  const brSuit  = el.querySelector(".card-corner-br .c-suit");
   if (state === "up" && rank) {
-    rankEl.textContent = rank; tlEl.textContent = rank; brEl.textContent = rank;
+    rankEl.textContent = rank;
+    if (tlRank) tlRank.textContent = rank;
+    if (brRank) brRank.textContent = rank;
+    /* reset suit — applyCardColors() will fill it when both cards ready */
+    if (tlSuit) tlSuit.textContent = "";
+    if (brSuit) brSuit.textContent = "";
+    /* reset colors to default dark */
+    [rankEl, tlRank, brRank].forEach(e => { if (e) e.style.color = ""; });
     if (wasDown) { el.classList.remove("flipping"); void el.offsetWidth; el.classList.add("flipping"); }
   } else {
-    rankEl.textContent = ""; tlEl.textContent = ""; brEl.textContent = "";
+    [rankEl, tlRank, brRank].forEach(e => { if (e) { e.textContent = ""; e.style.color = ""; } });
+    if (tlSuit) tlSuit.textContent = "";
+    if (brSuit) brSuit.textContent = "";
     el.classList.remove("flipping");
   }
+}
+
+/* P5 — Cartes intelligentes: suited=même couleur, off=rouge+noir ── */
+function applyFaceColor(el, suit, color) {
+  const rankEl = el.querySelector(".card-rank-center");
+  const tlRank = el.querySelector(".card-corner-tl .c-rank");
+  const tlSuit = el.querySelector(".card-corner-tl .c-suit");
+  const brRank = el.querySelector(".card-corner-br .c-rank");
+  const brSuit = el.querySelector(".card-corner-br .c-suit");
+  [rankEl, tlRank, brRank].forEach(e => { if (e) e.style.color = color; });
+  if (tlSuit) { tlSuit.textContent = suit; tlSuit.style.color = color; }
+  if (brSuit) { brSuit.textContent = suit; brSuit.style.color = color; }
+}
+
+function applyCardColors() {
+  /* Seulement quand les deux rangs sont connus */
+  if (rank1 === null || rank2 === null) return;
+  const RED = "#c62828"; const BLK = "#374151";
+  let c1, c2;
+  if (rank1 === rank2) {
+    /* paire : une rouge, une noire (neutre) */
+    c1 = { suit: "♥", color: RED }; c2 = { suit: "♠", color: BLK };
+  } else if (suited) {
+    /* suited : même couleur (rouge ♥) */
+    c1 = { suit: "♥", color: RED }; c2 = { suit: "♥", color: RED };
+  } else {
+    /* offsuit : rouge + noire */
+    c1 = { suit: "♥", color: RED }; c2 = { suit: "♠", color: BLK };
+  }
+  if (EL.card1.dataset.state === "up") applyFaceColor(EL.card1, c1.suit, c1.color);
+  if (EL.card2.dataset.state === "up") applyFaceColor(EL.card2, c2.suit, c2.color);
 }
 
 function highlightRanks() {
@@ -778,29 +841,62 @@ function hideResult() {
   EL.centerZone.classList.remove("decided");
 }
 
-function buildRangeHint(handSet) {
-  if (!handSet || handSet.size === 0) return "";
-  const RH = ["A","K","Q","J","T","9","8","7","6","5","4","3","2"];
-  const parts = [];
-  // Pairs
-  const pairsIn = RH.filter(r => handSet.has(r+r));
-  if (pairsIn.length) parts.push(pairsIn[pairsIn.length-1]+pairsIn[pairsIn.length-1]+"+");
-  // Axs
-  const axsIn = RH.slice(1).filter(r => handSet.has("A"+r+"s"));
-  if (axsIn.length) parts.push("A"+axsIn[axsIn.length-1]+"s+");
-  // Axo
-  const axoIn = RH.slice(1).filter(r => handSet.has("A"+r+"o"));
-  if (axoIn.length) parts.push("A"+axoIn[axoIn.length-1]+"o+");
-  // Kxs
-  const kxsIn = RH.slice(2).filter(r => handSet.has("K"+r+"s"));
-  if (kxsIn.length) parts.push("K"+kxsIn[kxsIn.length-1]+"s+");
-  // Kxo
-  const kxoIn = RH.slice(2).filter(r => handSet.has("K"+r+"o"));
-  if (kxoIn.length) parts.push("K"+kxoIn[kxoIn.length-1]+"o+");
-  // Qxs
-  const qxsIn = RH.slice(3).filter(r => handSet.has("Q"+r+"s"));
-  if (qxsIn.length) parts.push("Q"+qxsIn[qxsIn.length-1]+"s+");
-  return parts.slice(0, 5).join(" • ");
+/* P7 — Vraie compression range en notation poker standard ── */
+function buildRangeHint(hands) {
+  if (!hands || !hands.length) return "";
+  const set = new Set(hands);
+  const RH  = ["A","K","Q","J","T","9","8","7","6","5","4","3","2"];
+  const out = [];
+
+  /* 1 — Paires : groupes consécutifs */
+  const pidxs = RH.map((r, i) => set.has(r + r) ? i : -1).filter(i => i >= 0);
+  for (let k = 0; k < pidxs.length; ) {
+    let s = pidxs[k], e = s;
+    while (k + 1 < pidxs.length && pidxs[k + 1] === e + 1) { k++; e = pidxs[k]; }
+    if      (s === e)    out.push(RH[s] + RH[s]);
+    else if (s === 0)    out.push(RH[e] + RH[e] + "+");
+    else                 out.push(RH[s] + RH[s] + "-" + RH[e] + RH[e]);
+    k++;
+  }
+
+  /* 2 — Suited */
+  for (let i = 0; i < RH.length; i++) {
+    const r1 = RH[i], sec = [];
+    for (let j = i + 1; j < RH.length; j++)
+      if (set.has(r1 + RH[j] + "s")) sec.push(j);
+    for (let k = 0; k < sec.length; ) {
+      let s = sec[k], e = s;
+      while (k + 1 < sec.length && sec[k + 1] === e + 1) { k++; e = sec[k]; }
+      if      (s === i + 1 && s !== e) out.push(r1 + RH[e] + "s+");
+      else if (s !== e)                out.push(r1 + RH[s] + "s-" + r1 + RH[e] + "s");
+      else                             out.push(r1 + RH[s] + "s");
+      k++;
+    }
+  }
+
+  /* 3 — Offsuit */
+  for (let i = 0; i < RH.length; i++) {
+    const r1 = RH[i], sec = [];
+    for (let j = i + 1; j < RH.length; j++)
+      if (set.has(r1 + RH[j] + "o")) sec.push(j);
+    for (let k = 0; k < sec.length; ) {
+      let s = sec[k], e = s;
+      while (k + 1 < sec.length && sec[k + 1] === e + 1) { k++; e = sec[k]; }
+      if      (s === i + 1 && s !== e) out.push(r1 + RH[e] + "o+");
+      else if (s !== e)                out.push(r1 + RH[s] + "o-" + r1 + RH[e] + "o");
+      else                             out.push(r1 + RH[s] + "o");
+      k++;
+    }
+  }
+
+  /* Troncature douce à ~70 chars (une seule ligne visible) */
+  let result = "";
+  for (const p of out) {
+    const next = result ? result + " • " + p : p;
+    if (next.length > 70) { result += " …"; break; }
+    result = next;
+  }
+  return result;
 }
 
 /* ── LOOKUP ── */
@@ -857,11 +953,14 @@ function recompute() {
   EL.resultReason.style.display = "";
   EL.tapHint.style.display      = "";
 
-  const _bkt = main === "OPEN" ? "open" : main === "CALL" ? "call" : main === "3BET" ? "threebet" : null;
-  const _rng = _bkt
-    ? (activeMode === "open" ? RANGES[activeStack]?.[heroPos]?.[_bkt] : VSOPEN[activeStack]?.[heroPos]?.[_bkt])
-    : null;
-  EL.rangeHint.textContent = _rng ? buildRangeHint(_rng) : "";
+  /* P7 — range-hint : résumé du spot entier (open pour RFI, call pour vs-open) */
+  const rngSet = activeMode === "open"
+    ? RANGES[activeStack]?.[heroPos]?.open
+    : VSOPEN[activeStack]?.[heroPos]?.call;
+  EL.rangeHint.textContent = rngSet ? buildRangeHint([...rngSet]) : "";
+
+  /* P5 — couleur des cartes */
+  applyCardColors();
 
   EL.centerZone.classList.add("decided");
   EL.actionsRow.classList.remove("pop-in");
