@@ -95,10 +95,10 @@
 
     /* HERO */
     .pos-btn.hero {
-      background: rgba(255,210,0,0.20);
-      border-color: rgba(255,210,0,0.88);
-      color: #ffd200;
-      box-shadow: 0 0 16px rgba(255,210,0,0.18);
+      background: rgba(255,210,0,0.10);
+      border-color: rgba(255,210,0,0.52);
+      color: rgba(255,210,0,0.78);
+      box-shadow: none;
     }
     /* VILLAIN */
     .pos-btn.villain {
@@ -113,14 +113,14 @@
       position: relative; z-index: 2;
       width: 68%;
       display: flex; flex-direction: column;
-      align-items: center; gap: 7px;
-      padding: 56px 0;
+      align-items: center; gap: 14px;
+      padding: 32px 0;
     }
 
     /* Context line */
     #ctx-line {
-      font-size: 17px; font-weight: 900;
-      color: rgba(255,255,255,0.94); letter-spacing: 0.04em;
+      font-size: 14px; font-weight: 700;
+      color: rgba(255,255,255,0.68); letter-spacing: 0.06em;
       text-align: center; white-space: nowrap;
     }
     #ctx-line.prompt {
@@ -192,9 +192,9 @@
     .rank-btn {
       width: calc((100% - 30px) / 7);
       aspect-ratio: 1; border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.07);
-      background: rgba(0,0,0,0.16);
-      color: rgba(255,255,255,0.42);
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.07);
+      color: rgba(255,255,255,0.62);
       font-size: clamp(11px, 3.4vw, 15px); font-weight: 800;
       cursor: pointer; touch-action: manipulation;
       display: flex; align-items: center; justify-content: center;
@@ -220,7 +220,7 @@
     #suited-row {
       display: flex; justify-content: center; align-items: center; min-height: 34px;
     }
-    #suited-row.hidden { visibility: hidden; }
+    #suited-row.hidden { display: none; }
     #btn-suited {
       padding: 6px 22px; border-radius: 9px;
       border: 1.5px solid rgba(255,255,255,0.26);
@@ -248,6 +248,8 @@
       font-size: clamp(44px, 14vw, 62px); font-weight: 900;
       letter-spacing: 0.04em; line-height: 1;
     }
+    #result-reason, #result-tap-hint { display: none !important; }
+
     @keyframes pop-in {
       from { transform: scale(0.78); opacity: 0; }
       to   { transform: scale(1);    opacity: 1; }
@@ -307,8 +309,6 @@
         </div>
       </div>
 
-      <div id="rank-grid" class="locked"></div>
-
       <div id="suited-row" class="hidden">
         <button id="btn-suited">OFF</button>
       </div>
@@ -319,6 +319,8 @@
         <div id="idle-hint">Choisissez une carte</div>
         <div id="result-tap-hint" style="display:none;">tap pour rejouer</div>
       </div>
+
+      <div id="rank-grid" class="locked"></div>
 
     </div>
   </div>
