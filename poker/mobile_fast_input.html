@@ -110,7 +110,7 @@
 
     /* ══ CENTER ZONE ══ */
     #center-zone {
-      position: relative; z-index: 2;
+      position: relative; z-index: 6;
       width: 68%;
       display: flex; flex-direction: column;
       align-items: center; gap: 14px;
@@ -420,8 +420,12 @@ function placeDealerBtn() {
   const cy = sr.height / 2;
   const dx = cx - bx, dy = cy - by;
   const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-  db.style.left = (bx + (dx / dist) * (r - 4) + 6 - 11) + "px";
-  db.style.top  = (by + (dy / dist) * (r - 4) + 4 - 11) + "px";
+  // Perpendiculaire au vecteur BTN→centre (rotation 90° horaire)
+  // D posé sur le côté de BTN, jamais dans l'axe centre-zone
+  const px =  dy / dist;
+  const py = -dx / dist;
+  db.style.left = Math.round(bx + px * r * 0.8 - 11) + "px";
+  db.style.top  = Math.round(by + py * r * 0.8 - 11) + "px";
 }
 
 const OPENER_OPTIONS = {
