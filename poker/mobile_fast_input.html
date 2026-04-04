@@ -85,11 +85,11 @@
     /* Dealer button */
     #dealer-btn {
       position: absolute; z-index: 4;
-      width: 22px; height: 22px; border-radius: 50%;
+      width: 18px; height: 18px; border-radius: 50%;
       background: #fff; color: #1a1a1a;
-      font-size: 11px; font-weight: 900; letter-spacing: 0;
+      font-size: 10px; font-weight: 900; letter-spacing: 0;
       display: flex; align-items: center; justify-content: center;
-      pointer-events: none;
+      pointer-events: none; opacity: 0.50;
       box-shadow: 0 2px 6px rgba(0,0,0,0.55);
     }
 
@@ -214,13 +214,13 @@
       color: #fff5b0 !important;
       border-color: rgba(255,210,0,0.72) !important;
     }
-    #rank-grid.locked .rank-btn { opacity: 0.22; pointer-events: none; }
+    .decided #rank-grid .rank-btn { opacity: 0.32; }
 
     /* ══ SUITED TOGGLE ══ */
     #suited-row {
       display: flex; justify-content: center; align-items: center; min-height: 34px;
     }
-    #suited-row.hidden { display: none; }
+    #suited-row.hidden { visibility: hidden; pointer-events: none; }
     #btn-suited {
       padding: 6px 22px; border-radius: 9px;
       border: 1.5px solid rgba(255,255,255,0.26);
@@ -239,7 +239,7 @@
     #result-zone {
       display: flex; flex-direction: column;
       align-items: center; gap: 2px; text-align: center;
-      min-height: 56px; cursor: pointer;
+      height: 96px; overflow: visible; justify-content: center; cursor: pointer;
     }
     #actions-row {
       display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap;
@@ -250,8 +250,8 @@
     }
     #result-reason, #result-tap-hint { display: none !important; }
     #range-hint {
-      font-size: 11px; font-weight: 600;
-      color: rgba(255,255,255,0.28); letter-spacing: 0.06em;
+      font-size: 12px; font-weight: 600;
+      color: rgba(255,255,255,0.48); letter-spacing: 0.06em;
       text-align: center; min-height: 16px;
     }
 
@@ -327,7 +327,7 @@
 
       <div id="range-hint"></div>
 
-      <div id="rank-grid" class="locked"></div>
+      <div id="rank-grid"></div>
 
     </div>
   </div>
@@ -452,7 +452,7 @@ const REASON = {
 
 /* ── STATE ── */
 let activeStack  = "40bb";
-let heroPos      = null;
+let heroPos      = "UTG";
 let villainPos   = null;
 let activeMode   = "open";
 let activeOpener = null;
@@ -476,6 +476,7 @@ function init() {
   EL.tapHint      = document.getElementById("result-tap-hint");
   EL.rangeHint    = document.getElementById("range-hint");
   EL.ctxLine      = document.getElementById("ctx-line");
+  EL.centerZone   = document.getElementById("center-zone");
 
   buildStackBar();
   buildRankGrid();
@@ -491,6 +492,9 @@ function init() {
   });
 
   applyPositions();
+  updateMode();
+  updateCtxLine();
+  updatePosHighlights();
   window.addEventListener("resize", placeDealerBtn);
 }
 
@@ -522,27 +526,12 @@ function buildRankGrid() {
 
 /* ── POSITION LOGIC ── */
 function onPosTap(pos) {
-  if (heroPos === null) {
-    // First click → set hero
-    heroPos = pos;
-    updateMode();
-    updateCtxLine();
-    updatePosHighlights();
-    applyPositions();
-    EL.rankGrid.classList.remove("locked");
-    EL.idleHint.textContent = "Choisissez une carte";
-    return;
-  }
-
   if (pos === heroPos) {
     if (villainPos !== null) {
       // Hero click with villain → remove villain only
       villainPos = null;
     } else {
-      // Hero click alone → full reset (change hero)
-      heroPos = null;
-      villainPos = null;
-      EL.rankGrid.classList.add("locked");
+      // Hero click alone → reset hand, keep hero
       resetHand();
     }
     updateMode();
@@ -553,8 +542,12 @@ function onPosTap(pos) {
     return;
   }
 
-  // Non-hero click → set / change villain
-  villainPos = pos;
+  // Non-hero click: no villain yet → switch hero; villain exists → change villain
+  if (villainPos === null) {
+    heroPos = pos;
+  } else {
+    villainPos = pos;
+  }
   updateMode();
   updateCtxLine();
   updatePosHighlights();
@@ -600,8 +593,6 @@ function updatePosHighlights() {
 
 /* ── RANK TAP ── */
 function onRankTap(rank) {
-  if (heroPos === null) return;
-
   if (handStep === "idle") {
     rank1 = rank; rank2 = null; resetSuited();
     handStep = "picked1";
@@ -784,6 +775,7 @@ function hideResult() {
   EL.tapHint.style.display      = "none";
   EL.idleHint.style.display     = "";
   EL.rangeHint.textContent      = "";
+  EL.centerZone.classList.remove("decided");
 }
 
 function buildRangeHint(handSet) {
@@ -871,6 +863,7 @@ function recompute() {
     : null;
   EL.rangeHint.textContent = _rng ? buildRangeHint(_rng) : "";
 
+  EL.centerZone.classList.add("decided");
   EL.actionsRow.classList.remove("pop-in");
   void EL.actionsRow.offsetWidth;
   EL.actionsRow.classList.add("pop-in");
