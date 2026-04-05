@@ -166,7 +166,7 @@ function deepCopy(o) { return JSON.parse(JSON.stringify(o)); }
 
 let state = deepCopy(DEFAULT);
 try {
-  const saved = localStorage.getItem("poker_layout_v1");
+  const saved = localStorage.getItem("minappli.poker.layout.builder.v1");
   if (saved) state = JSON.parse(saved);
 } catch(_) {}
 
@@ -469,7 +469,7 @@ function resetToDefault() {
 
 /* ── PERSISTENCE ── */
 function save() {
-  try { localStorage.setItem("poker_layout_v1", JSON.stringify(state)); } catch(_) {}
+  try { localStorage.setItem("minappli.poker.layout.builder.v1", JSON.stringify(state)); } catch(_) {}
 }
 
 /* ── UI HELPERS ── */

@@ -396,21 +396,44 @@ const POSITIONS = ["UTG","HJ","CO","BTN","SB","BB"];
 const RANKS     = ["A","K","Q","J","T","9","8","7","6","5","4","3","2"];
 
 /* ── SEAT GEOMETRY ── */
-// SLOTS : géométrie pure, indépendante des positions poker
-// Coordonnées calquées sur winamax_blue_overlay.png
-const SLOTS = {
-  /* P1+P7 — hero descend, top monte → libère zone grid + rééquilibre table */
-  lower_left:  { x: "17.0%", y: "87.5%" },
-  mid_left:    { x: "13.8%", y: "39.5%" },
-  upper_left:  { x: "15.0%", y: "22.0%" },
-  top:         { x: "50.5%", y:  "9.0%" },
-  upper_right: { x: "82.8%", y: "22.0%" },
-  mid_right:   { x: "83.5%", y: "40.5%" },
+/* ── LAYOUT — lit le builder localStorage, fallback hardcodé ── */
+const DEFAULT_LAYOUT = {
+  table: { cx: 50.5, cy: 49.0, rx: 41.5, ry: 37.0 },
+  seats: {
+    SB:  { x: 17.0, y: 87.5 },
+    BB:  { x: 13.8, y: 39.5 },
+    UTG: { x: 15.0, y: 22.0 },
+    HJ:  { x: 50.5, y:  9.0 },
+    CO:  { x: 82.8, y: 22.0 },
+    BTN: { x: 83.5, y: 40.5 },
+  }
 };
+let LAYOUT = DEFAULT_LAYOUT;
+try {
+  const _saved = localStorage.getItem("minappli.poker.layout.builder.v1");
+  if (_saved) LAYOUT = JSON.parse(_saved);
+} catch(_) {}
 
-// Ordre des slots depuis le hero (index 0), sens anti-horaire → horaire
-// hero=lower_left, puis mid_left, upper_left, top, upper_right, mid_right
-const SLOT_ORDER = ["lower_left","mid_left","upper_left","top","upper_right","mid_right"];
+// Applique la table ellipse depuis LAYOUT.table
+(function() {
+  const t  = LAYOUT.table;
+  const el = document.getElementById("poker-table");
+  if (!el) return;
+  el.style.left   = (t.cx - t.rx) + "%";
+  el.style.right  = (100 - t.cx - t.rx) + "%";
+  el.style.top    = (t.cy - t.ry) + "%";
+  el.style.bottom = (100 - t.cy - t.ry) + "%";
+})();
+
+// SLOTS dérivés de LAYOUT.seats
+// Mapping : SLOT_ORDER[i] = GAME_ORDER[(i+1)%6] quand hero=SB
+const _SEAT_FOR_SLOT = ["SB","BB","UTG","HJ","CO","BTN"];
+const SLOT_ORDER     = ["lower_left","mid_left","upper_left","top","upper_right","mid_right"];
+const SLOTS = {};
+SLOT_ORDER.forEach((slot, i) => {
+  const s = LAYOUT.seats[_SEAT_FOR_SLOT[i]];
+  SLOTS[slot] = { x: s.x + "%", y: s.y + "%" };
+});
 
 // REMAP : positions poker dynamiques
 // Ordre circulaire poker 6-max
@@ -1002,5 +1025,28 @@ function initCalibration() {
 
 window.addEventListener("DOMContentLoaded", () => { init(); initCalibration(); });
 </script>
+<script>
+const DEFAULT_LAYOUT = {
+  table: { cx: 50, cy: 48, rx: 27, ry: 22, stroke: 3 },
+  seats: {
+    UTG: { x: 26, y: 20, r: 28 },
+    HJ:  { x: 50, y: 14, r: 28 },
+    CO:  { x: 74, y: 20, r: 28 },
+    BTN: { x: 82, y: 50, r: 28 },
+    SB:  { x: 60, y: 82, r: 28 },
+    BB:  { x: 40, y: 82, r: 28 }
+  }
+};
+
+const LAYOUT = (() => {
+  try {
+    const raw = localStorage.getItem("minappli.poker.layout.builder.v1");
+    return raw ? JSON.parse(raw) : DEFAULT_LAYOUT;
+  } catch {
+    return DEFAULT_LAYOUT;
+  }
+})();
+</script>
 </body>
 </html>
+
