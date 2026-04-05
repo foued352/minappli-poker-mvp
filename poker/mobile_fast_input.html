@@ -93,12 +93,12 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.55);
     }
 
-    /* P6 — HERO: remplissage plein, immédiatement lisible */
+    /* V6 — HERO: discret mais identifiable */
     .pos-btn.hero {
-      background: rgba(255,210,0,0.22);
-      border-color: rgba(255,210,0,0.80);
-      color: rgba(255,210,0,0.98);
-      box-shadow: 0 0 14px rgba(255,210,0,0.15);
+      background: rgba(255,210,0,0.14);
+      border-color: rgba(255,210,0,0.55);
+      color: rgba(255,210,0,0.88);
+      box-shadow: none;
     }
     /* P6 — VILLAIN */
     .pos-btn.villain {
@@ -114,7 +114,7 @@
     /* ══ CENTER ZONE ══ */
     #center-zone {
       position: relative; z-index: 6;
-      width: 74%;
+      width: 70%;
       display: flex; flex-direction: column;
       align-items: center; gap: 8px;
       padding: 16px 0 92px;
@@ -250,8 +250,9 @@
     }
 
     /* ══ RESULT ZONE ══ */
-    /* V5 — action roi : marges généreuses, hauteur fixe = zéro mouvement */
+    /* V6 — position: relative pour idle-hint absolu, hauteur fixe = zéro mouvement */
     #result-zone {
+      position: relative;
       display: flex; flex-direction: column;
       align-items: center; gap: 2px; text-align: center;
       height: 96px; overflow: visible; justify-content: center; cursor: pointer;
@@ -265,8 +266,13 @@
       letter-spacing: 0.04em; line-height: 1;
     }
     #result-reason, #result-tap-hint { display: none !important; }
-    /* idle-hint : supprimé visuellement — le grid parle seul */
-    #idle-hint { font-size: 0; height: 0; overflow: hidden; margin: 0; padding: 0; }
+    /* V6 — idle-hint absolu, aucun impact layout */
+    #idle-hint {
+      position: absolute;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
+      color: rgba(255,255,255,0.30);
+      pointer-events: none; white-space: nowrap;
+    }
     /* V5 — range-hint : respiration claire avant le grid */
     #range-hint {
       font-size: 11px; font-weight: 600;
@@ -345,7 +351,7 @@
       <div id="result-zone">
         <div id="actions-row" style="display:none;"></div>
         <div id="result-reason" style="display:none;"></div>
-        <div id="idle-hint">Choisissez une carte</div>
+        <div id="idle-hint">Choisis tes cartes</div>
         <div id="result-tap-hint" style="display:none;">tap pour rejouer</div>
       </div>
 
@@ -436,19 +442,27 @@ SLOT_ORDER.forEach((slot, i) => {
 const GAME_ORDER = ["BTN","SB","BB","UTG","HJ","CO"];
 
 function applyPositions() {
-  const _raw    = localStorage.getItem("minappli.poker.layout.builder.v1");
-  const _layout = JSON.parse(_raw);
-  ["UTG","HJ","CO","BTN","SB","BB"].forEach(p => {
-    const s   = _layout.seats[p];
-    const btn = document.getElementById("pos-" + p);
-    btn.style.left      = s.x + "%";
-    btn.style.top       = s.y + "%";
+  // Slots physiques dans l'ordre : hero-slot en [0], puis sens horaire
+  // SB = bas-gauche = slot héro, BTN = droite = slot 5
+  const phys = [
+    LAYOUT.seats.SB,
+    LAYOUT.seats.BB,
+    LAYOUT.seats.UTG,
+    LAYOUT.seats.HJ,
+    LAYOUT.seats.CO,
+    LAYOUT.seats.BTN,
+  ];
+  const heroIdx = GAME_ORDER.indexOf(heroPos);
+  POSITIONS.forEach(p => {
+    const rotIdx = (GAME_ORDER.indexOf(p) - heroIdx + 6) % 6;
+    const slot   = phys[rotIdx];
+    const btn    = document.getElementById("pos-" + p);
+    btn.style.left      = slot.x + "%";
+    btn.style.top       = slot.y + "%";
     btn.style.right     = "";
     btn.style.bottom    = "";
     btn.style.transform = "translate(-50%, -50%)";
   });
-
-  // Dealer button: tangent haut-droit du BTN réel
   requestAnimationFrame(placeDealerBtn);
 }
 
@@ -648,9 +662,8 @@ function onRankTap(rank) {
     handStep = "picked1";
     setCard(EL.card1, "up", rank); EL.card1.classList.add("sel");
     EL.suitedRow.classList.add("hidden");
+    EL.idleHint.style.display = "none";
     highlightRanks();
-    EL.idleHint.textContent = "Choisissez la 2ème carte";
-    EL.idleHint.style.display = "";
     return;
   }
 
@@ -671,7 +684,6 @@ function onRankTap(rank) {
     canonicalizeDisplay();
     applySuitedVisibility();
     highlightRanks();
-    EL.idleHint.style.display = "none";
     recompute();
     return;
   }
@@ -682,7 +694,6 @@ function onRankTap(rank) {
     canonicalizeDisplay();
     applySuitedVisibility();
     highlightRanks();
-    EL.idleHint.style.display = "none";
     recompute();
     return;
   }
@@ -695,9 +706,8 @@ function onRankTap(rank) {
     rank1 = rank; rank2 = null; resetSuited();
     handStep = "picked1";
     setCard(EL.card1, "up", rank); EL.card1.classList.add("sel");
+    EL.idleHint.style.display = "none";
     highlightRanks();
-    EL.idleHint.textContent = "Choisissez la 2ème carte";
-    EL.idleHint.style.display = "";
   }
 }
 
@@ -723,12 +733,12 @@ function applySuitedVisibility() {
 /* ── CARD TAP ── */
 function onCard1Tap() {
   if (handStep === "picked1") {
-    // Cancel card1
     rank1 = null;
     setCard(EL.card1, "down", null);
     highlightRanks();
     handStep = "idle";
-    EL.idleHint.textContent = "Choisissez une carte";
+    EL.idleHint.textContent = "Choisis tes cartes";
+    EL.idleHint.style.display = "";
     return;
   }
   if (handStep === "done" || handStep === "editing2") {
@@ -738,8 +748,6 @@ function onCard1Tap() {
     hideResult();
     highlightRanks();
     handStep = "editing1";
-    EL.idleHint.textContent = "Choisissez la 1ère carte";
-    EL.idleHint.style.display = "";
   }
 }
 
@@ -751,8 +759,6 @@ function onCard2Tap() {
     hideResult();
     highlightRanks();
     handStep = "editing2";
-    EL.idleHint.textContent = "Choisissez la 2ème carte";
-    EL.idleHint.style.display = "";
   }
 }
 
@@ -857,17 +863,15 @@ function resetHand() {
   EL.suitedRow.classList.add("hidden");
   resetSuited();
   hideResult();
-  if (heroPos !== null) {
-    EL.idleHint.textContent = "Choisissez une carte";
-    EL.idleHint.style.display = "";
-  }
+  EL.idleHint.textContent = "Choisis tes cartes";
+  EL.idleHint.style.display = "";
 }
 
 function hideResult() {
   EL.actionsRow.style.display   = "none";
   EL.resultReason.style.display = "none";
   EL.tapHint.style.display      = "none";
-  EL.idleHint.style.display     = "";
+  EL.idleHint.style.display     = "none";
   EL.rangeHint.textContent      = "";
   EL.centerZone.classList.remove("decided");
 }
