@@ -116,8 +116,8 @@
       position: relative; z-index: 6;
       width: 74%;
       display: flex; flex-direction: column;
-      align-items: center; gap: 10px;
-      padding: 20px 0 80px;
+      align-items: center; gap: 8px;
+      padding: 16px 0 92px;
     }
 
     /* Context line — secondaire, ne concurrence pas le grid */
@@ -128,7 +128,7 @@
     }
     #ctx-line.prompt {
       font-size: 10px; font-weight: 600; letter-spacing: 0.10em;
-      color: rgba(255,255,255,0.18); text-transform: uppercase;
+      color: rgba(255,255,255,0.28); text-transform: uppercase;
     }
 
     /* ══ CARDS ══ */
@@ -148,7 +148,7 @@
       background: linear-gradient(150deg, #8a0000 0%, #6a0000 55%, #550000 100%);
       border: 1.5px solid rgba(255,255,255,0.18);
       box-shadow: 0 4px 10px rgba(0,0,0,0.55);
-      opacity: 0.50;
+      opacity: 0.40;
     }
     .card[data-state="down"]::before {
       content: ""; position: absolute; inset: 5px;
@@ -200,6 +200,7 @@
     #rank-grid {
       display: flex; flex-wrap: wrap; gap: 6px;
       justify-content: center; width: 100%;
+      margin-top: 8px;
     }
     .rank-btn {
       /* à 74% de 420px : (311px - 36px) / 7 ≈ 39px par bouton */
@@ -249,12 +250,12 @@
     }
 
     /* ══ RESULT ZONE ══ */
-    /* P3 — action plus isolée : marges verticales pour respirer */
+    /* V5 — action roi : marges généreuses, hauteur fixe = zéro mouvement */
     #result-zone {
       display: flex; flex-direction: column;
       align-items: center; gap: 2px; text-align: center;
       height: 96px; overflow: visible; justify-content: center; cursor: pointer;
-      margin-top: 4px; margin-bottom: 4px;
+      margin-top: 8px; margin-bottom: 8px;
     }
     #actions-row {
       display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap;
@@ -266,13 +267,13 @@
     #result-reason, #result-tap-hint { display: none !important; }
     /* idle-hint : supprimé visuellement — le grid parle seul */
     #idle-hint { font-size: 0; height: 0; overflow: hidden; margin: 0; padding: 0; }
-    /* V4 — range-hint : séparation visuelle avant le grid */
+    /* V5 — range-hint : respiration claire avant le grid */
     #range-hint {
       font-size: 11px; font-weight: 600;
       color: rgba(255,255,255,0.55); letter-spacing: 0.04em;
       text-align: center;
       height: 18px; overflow: hidden; white-space: nowrap;
-      margin-top: 8px;
+      margin-top: 16px;
     }
 
     @keyframes pop-in {
@@ -302,11 +303,6 @@
 <div id="app">
 
   <div id="stack-bar"></div>
-
-  <!-- MARQUEUR TEMPORAIRE — retirer après validation -->
-  <div style="position:fixed;top:0;left:0;right:0;z-index:9999;background:#e84040;color:#fff;font-size:11px;font-weight:900;text-align:center;letter-spacing:0.12em;padding:3px 0;pointer-events:none;">
-    FLOW V2 — P5/P6/P7/P8/P10
-  </div>
 
   <div id="table-scene">
 
