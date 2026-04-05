@@ -107,46 +107,49 @@
       color: #ff6040;
       box-shadow: 0 0 12px rgba(255,60,40,0.18);
     }
-    /* P6 — autres positions: réduit opacity pour laisser hero lisible */
-    .pos-btn.dim { opacity: 0.35; }
+    /* positions non actives : quasi-invisibles, décoratif pur */
+    .pos-btn.dim { opacity: 0.18; }
     .pos-btn { transition: background 0.12s, border-color 0.12s, color 0.12s, box-shadow 0.12s, opacity 0.12s; }
 
     /* ══ CENTER ZONE ══ */
     #center-zone {
       position: relative; z-index: 6;
-      width: 68%;
+      /* élargi pour que les rank-btns aient ~47px — tap immédiat */
+      width: 86%;
       display: flex; flex-direction: column;
-      align-items: center; gap: 14px;
-      /* P10 — safe zone basse : espace pour les boutons de position */
-      padding: 28px 0 52px;
+      align-items: center; gap: 10px;
+      padding: 20px 0 80px;
     }
 
-    /* Context line */
+    /* Context line — secondaire, ne concurrence pas le grid */
     #ctx-line {
-      font-size: 14px; font-weight: 700;
-      color: rgba(255,255,255,0.68); letter-spacing: 0.06em;
+      font-size: 11px; font-weight: 700;
+      color: rgba(255,255,255,0.45); letter-spacing: 0.06em;
       text-align: center; white-space: nowrap;
     }
     #ctx-line.prompt {
-      font-size: 11px; font-weight: 600; letter-spacing: 0.10em;
-      color: rgba(255,255,255,0.22); text-transform: uppercase;
+      font-size: 10px; font-weight: 600; letter-spacing: 0.10em;
+      color: rgba(255,255,255,0.18); text-transform: uppercase;
     }
 
     /* ══ CARDS ══ */
     #cards-row {
-      display: flex; gap: 12px; align-items: flex-end; justify-content: center;
+      display: flex; gap: 10px; align-items: flex-end; justify-content: center;
       perspective: 600px;
     }
+    /* P2 — cartes légèrement réduites : action reste le point focal */
     .card {
-      width: 80px; height: 112px; border-radius: 9px;
+      width: 64px; height: 90px; border-radius: 8px;
       position: relative; display: flex; align-items: center; justify-content: center;
       user-select: none; cursor: pointer; touch-action: manipulation;
     }
     .card[data-state="up"]:active { transform: scale(0.91); }
+    /* cartes fermées : visuellement passives — le grid est l'entrée principale */
     .card[data-state="down"] {
       background: linear-gradient(150deg, #8a0000 0%, #6a0000 55%, #550000 100%);
       border: 1.5px solid rgba(255,255,255,0.18);
-      box-shadow: 0 6px 16px rgba(0,0,0,0.65);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.55);
+      opacity: 0.50;
     }
     .card[data-state="down"]::before {
       content: ""; position: absolute; inset: 5px;
@@ -163,6 +166,7 @@
       background: #f4f5f7;
       border: 1px solid rgba(200,210,230,0.45);
       box-shadow: 0 6px 16px rgba(0,0,0,0.55);
+      opacity: 1;  /* overrides face-down opacity */
     }
     .card[data-state="up"].sel {
       border: 2px solid rgba(255,210,0,0.80);
@@ -176,7 +180,7 @@
     .card.flipping { animation: card-flip 0.16s ease-out; }
 
     .card[data-state="up"] .card-rank-center {
-      font-size: 38px; font-weight: 900; color: #1a1f2e; line-height: 1;
+      font-size: 30px; font-weight: 900; color: #1a1f2e; line-height: 1;
     }
     /* P5 — coin de carte : rang + suit sur 2 lignes */
     .card[data-state="up"] .card-corner-tl {
@@ -190,27 +194,28 @@
       color: #1a1f2e; line-height: 1;
       transform: rotate(180deg);
     }
-    .c-rank { font-size: 12px; font-weight: 800; line-height: 1; }
-    .c-suit  { font-size: 9px;  font-weight: 700; line-height: 1; }
+    .c-rank { font-size: 10px; font-weight: 800; line-height: 1; }
+    .c-suit  { font-size: 7px;  font-weight: 700; line-height: 1; }
 
-    /* ══ RANK GRID ══ */
+    /* ══ RANK GRID — élément dominant, tap immédiat ══ */
     #rank-grid {
-      display: flex; flex-wrap: wrap; gap: 5px;
+      display: flex; flex-wrap: wrap; gap: 6px;
       justify-content: center; width: 100%;
     }
     .rank-btn {
-      width: calc((100% - 30px) / 7);
-      aspect-ratio: 1; border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(255,255,255,0.07);
-      color: rgba(255,255,255,0.62);
-      font-size: clamp(11px, 3.4vw, 15px); font-weight: 800;
+      /* à 86% de 420px : (361px - 36px) / 7 ≈ 46px par bouton */
+      width: calc((100% - 36px) / 7);
+      aspect-ratio: 1; border-radius: 9px;
+      border: 1px solid rgba(255,255,255,0.28);
+      background: rgba(255,255,255,0.13);
+      color: rgba(255,255,255,0.88);
+      font-size: clamp(14px, 4.2vw, 18px); font-weight: 800;
       cursor: pointer; touch-action: manipulation;
       display: flex; align-items: center; justify-content: center;
       user-select: none;
       transition: background 0.07s, transform 0.07s, border-color 0.07s, color 0.07s;
     }
-    .rank-btn:active { transform: scale(0.84); color: rgba(255,255,255,0.88); }
+    .rank-btn:active { transform: scale(0.82); color: #fff; background: rgba(255,255,255,0.22); }
 
     .rank-btn.sel-1 {
       background: rgba(255,210,0,0.90) !important;
@@ -245,10 +250,12 @@
     }
 
     /* ══ RESULT ZONE ══ */
+    /* P3 — action plus isolée : marges verticales pour respirer */
     #result-zone {
       display: flex; flex-direction: column;
       align-items: center; gap: 2px; text-align: center;
       height: 96px; overflow: visible; justify-content: center; cursor: pointer;
+      margin-top: 4px; margin-bottom: 4px;
     }
     #actions-row {
       display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap;
@@ -258,12 +265,15 @@
       letter-spacing: 0.04em; line-height: 1;
     }
     #result-reason, #result-tap-hint { display: none !important; }
-    /* P2 — hauteur fixe : aucun mouvement de layout quand le texte apparaît */
+    /* idle-hint : supprimé visuellement — le grid parle seul */
+    #idle-hint { font-size: 0; height: 0; overflow: hidden; margin: 0; padding: 0; }
+    /* P6 — range-hint : hauteur fixe + meilleure lisibilité */
     #range-hint {
-      font-size: 11.5px; font-weight: 600;
-      color: rgba(255,255,255,0.52); letter-spacing: 0.05em;
+      font-size: 11px; font-weight: 600;
+      color: rgba(255,255,255,0.55); letter-spacing: 0.04em;
       text-align: center;
-      height: 16px; overflow: hidden; white-space: nowrap;
+      height: 18px; overflow: hidden; white-space: nowrap;
+      margin-top: 2px;
     }
 
     @keyframes pop-in {
@@ -315,8 +325,13 @@
 
     <div id="center-zone">
 
+      <!-- contexte léger -->
       <div id="ctx-line" class="prompt">Choisissez votre position</div>
 
+      <!-- INPUT PRINCIPAL : visible en premier, tap immédiat -->
+      <div id="rank-grid"></div>
+
+      <!-- confirmation : cartes sélectionnées -->
       <div id="cards-row">
         <div class="card" id="card1" data-state="down">
           <span class="card-corner-tl"><span class="c-rank"></span><span class="c-suit"></span></span>
@@ -334,6 +349,7 @@
         <button id="btn-suited">OFF</button>
       </div>
 
+      <!-- OUTPUT : action + range-hint -->
       <div id="result-zone">
         <div id="actions-row" style="display:none;"></div>
         <div id="result-reason" style="display:none;"></div>
@@ -342,8 +358,6 @@
       </div>
 
       <div id="range-hint"></div>
-
-      <div id="rank-grid"></div>
 
     </div>
   </div>
@@ -386,11 +400,12 @@ const RANKS     = ["A","K","Q","J","T","9","8","7","6","5","4","3","2"];
 // SLOTS : géométrie pure, indépendante des positions poker
 // Coordonnées calquées sur winamax_blue_overlay.png
 const SLOTS = {
-  lower_left:  { x: "17.0%", y: "78.0%" },
+  /* P1+P7 — hero descend, top monte → libère zone grid + rééquilibre table */
+  lower_left:  { x: "17.0%", y: "87.5%" },
   mid_left:    { x: "13.8%", y: "39.5%" },
-  upper_left:  { x: "15.0%", y: "24.5%" },
-  top:         { x: "50.5%", y: "13.8%" },
-  upper_right: { x: "82.8%", y: "25.0%" },
+  upper_left:  { x: "15.0%", y: "22.0%" },
+  top:         { x: "50.5%", y:  "9.0%" },
+  upper_right: { x: "82.8%", y: "22.0%" },
   mid_right:   { x: "83.5%", y: "40.5%" },
 };
 
