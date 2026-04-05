@@ -1025,28 +1025,6 @@ function initCalibration() {
 
 window.addEventListener("DOMContentLoaded", () => { init(); initCalibration(); });
 </script>
-<script>
-const DEFAULT_LAYOUT = {
-  table: { cx: 50, cy: 48, rx: 27, ry: 22, stroke: 3 },
-  seats: {
-    UTG: { x: 26, y: 20, r: 28 },
-    HJ:  { x: 50, y: 14, r: 28 },
-    CO:  { x: 74, y: 20, r: 28 },
-    BTN: { x: 82, y: 50, r: 28 },
-    SB:  { x: 60, y: 82, r: 28 },
-    BB:  { x: 40, y: 82, r: 28 }
-  }
-};
-
-const LAYOUT = (() => {
-  try {
-    const raw = localStorage.getItem("minappli.poker.layout.builder.v1");
-    return raw ? JSON.parse(raw) : DEFAULT_LAYOUT;
-  } catch {
-    return DEFAULT_LAYOUT;
-  }
-})();
-</script>
 </body>
 </html>
 
