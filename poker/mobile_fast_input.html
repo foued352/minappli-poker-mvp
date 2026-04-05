@@ -440,15 +440,11 @@ SLOT_ORDER.forEach((slot, i) => {
 const GAME_ORDER = ["BTN","SB","BB","UTG","HJ","CO"];
 
 function applyPositions() {
-  // heroIdx défaut = 3 (UTG) → layout naturel Winamax : UTG bas-gauche, BTN haut
-  const heroIdx = heroPos ? GAME_ORDER.indexOf(heroPos) : 3;
-
   POSITIONS.forEach(p => {
-    const rotIdx = (GAME_ORDER.indexOf(p) - heroIdx + 6) % 6;
-    const coords = SLOTS[SLOT_ORDER[rotIdx]];
-    const btn    = document.getElementById("pos-" + p);
-    btn.style.left      = coords.x;
-    btn.style.top       = coords.y;
+    const s   = LAYOUT.seats[p];
+    const btn = document.getElementById("pos-" + p);
+    btn.style.left      = s.x + "%";
+    btn.style.top       = s.y + "%";
     btn.style.right     = "";
     btn.style.bottom    = "";
     btn.style.transform = "translate(-50%, -50%)";
