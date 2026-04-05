@@ -114,8 +114,7 @@
     /* ══ CENTER ZONE ══ */
     #center-zone {
       position: relative; z-index: 6;
-      /* élargi pour que les rank-btns aient ~47px — tap immédiat */
-      width: 86%;
+      width: 74%;
       display: flex; flex-direction: column;
       align-items: center; gap: 10px;
       padding: 20px 0 80px;
@@ -137,9 +136,9 @@
       display: flex; gap: 10px; align-items: flex-end; justify-content: center;
       perspective: 600px;
     }
-    /* P2 — cartes légèrement réduites : action reste le point focal */
+    /* V4 — cartes importantes mais secondaires */
     .card {
-      width: 64px; height: 90px; border-radius: 8px;
+      width: 72px; height: 100px; border-radius: 8px;
       position: relative; display: flex; align-items: center; justify-content: center;
       user-select: none; cursor: pointer; touch-action: manipulation;
     }
@@ -180,7 +179,7 @@
     .card.flipping { animation: card-flip 0.16s ease-out; }
 
     .card[data-state="up"] .card-rank-center {
-      font-size: 30px; font-weight: 900; color: #1a1f2e; line-height: 1;
+      font-size: 34px; font-weight: 900; color: #1a1f2e; line-height: 1;
     }
     /* P5 — coin de carte : rang + suit sur 2 lignes */
     .card[data-state="up"] .card-corner-tl {
@@ -197,19 +196,19 @@
     .c-rank { font-size: 10px; font-weight: 800; line-height: 1; }
     .c-suit  { font-size: 7px;  font-weight: 700; line-height: 1; }
 
-    /* ══ RANK GRID — élément dominant, tap immédiat ══ */
+    /* ══ RANK GRID — outil secondaire, en bas ══ */
     #rank-grid {
       display: flex; flex-wrap: wrap; gap: 6px;
       justify-content: center; width: 100%;
     }
     .rank-btn {
-      /* à 86% de 420px : (361px - 36px) / 7 ≈ 46px par bouton */
+      /* à 74% de 420px : (311px - 36px) / 7 ≈ 39px par bouton */
       width: calc((100% - 36px) / 7);
       aspect-ratio: 1; border-radius: 9px;
-      border: 1px solid rgba(255,255,255,0.28);
-      background: rgba(255,255,255,0.13);
-      color: rgba(255,255,255,0.88);
-      font-size: clamp(14px, 4.2vw, 18px); font-weight: 800;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.09);
+      color: rgba(255,255,255,0.72);
+      font-size: clamp(12px, 3.6vw, 16px); font-weight: 800;
       cursor: pointer; touch-action: manipulation;
       display: flex; align-items: center; justify-content: center;
       user-select: none;
@@ -267,13 +266,13 @@
     #result-reason, #result-tap-hint { display: none !important; }
     /* idle-hint : supprimé visuellement — le grid parle seul */
     #idle-hint { font-size: 0; height: 0; overflow: hidden; margin: 0; padding: 0; }
-    /* P6 — range-hint : hauteur fixe + meilleure lisibilité */
+    /* V4 — range-hint : séparation visuelle avant le grid */
     #range-hint {
       font-size: 11px; font-weight: 600;
       color: rgba(255,255,255,0.55); letter-spacing: 0.04em;
       text-align: center;
       height: 18px; overflow: hidden; white-space: nowrap;
-      margin-top: 2px;
+      margin-top: 8px;
     }
 
     @keyframes pop-in {
@@ -328,9 +327,6 @@
       <!-- contexte léger -->
       <div id="ctx-line" class="prompt">Choisissez votre position</div>
 
-      <!-- INPUT PRINCIPAL : visible en premier, tap immédiat -->
-      <div id="rank-grid"></div>
-
       <!-- confirmation : cartes sélectionnées -->
       <div id="cards-row">
         <div class="card" id="card1" data-state="down">
@@ -349,7 +345,7 @@
         <button id="btn-suited">OFF</button>
       </div>
 
-      <!-- OUTPUT : action + range-hint -->
+      <!-- OUTPUT : action dominant -->
       <div id="result-zone">
         <div id="actions-row" style="display:none;"></div>
         <div id="result-reason" style="display:none;"></div>
@@ -358,6 +354,9 @@
       </div>
 
       <div id="range-hint"></div>
+
+      <!-- INPUT SECONDAIRE : outil de sélection, en bas -->
+      <div id="rank-grid"></div>
 
     </div>
   </div>
