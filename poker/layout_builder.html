@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Layout Builder — Poker</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0d1117; color: #e6edf3;
+      display: flex; height: 100vh; overflow: hidden;
+    }
+
+    /* ── CANVAS ── */
+    #canvas-wrap {
+      flex-shrink: 0;
+      padding: 16px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    #svg-canvas {
+      display: block;
+      background: #050a0e;
+      border: 1px solid #21262d;
+      border-radius: 8px;
+      user-select: none;
+      touch-action: none;
+    }
+    #canvas-hint {
+      margin-top: 8px;
+      font-size: 10px; color: #484f58; letter-spacing: 0.06em; text-align: center;
+    }
+
+    /* ── CONTROLS ── */
+    #controls {
+      flex: 1; min-width: 220px; max-width: 320px;
+      overflow-y: auto; padding: 16px;
+    }
+
+    h3 {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: #8b949e;
+      margin: 14px 0 6px;
+    }
+    h3:first-child { margin-top: 0; }
+
+    .row {
+      display: flex; align-items: center; gap: 5px;
+      margin-bottom: 5px;
+    }
+    .lbl {
+      font-size: 10px; font-weight: 700; color: #8b949e;
+      width: 16px; text-align: right; flex-shrink: 0;
+    }
+    .seat-lbl {
+      font-size: 12px; font-weight: 900;
+      width: 36px; flex-shrink: 0;
+    }
+    input[type=number] {
+      width: 56px; padding: 3px 5px;
+      background: #161b22; border: 1px solid #30363d;
+      color: #e6edf3; border-radius: 4px;
+      font-size: 11px; font-family: monospace;
+      -moz-appearance: textfield;
+    }
+    input[type=number]:focus { outline: none; border-color: #58a6ff; background: #1c2230; }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { opacity: 0.4; }
+
+    hr { border: none; border-top: 1px solid #21262d; margin: 12px 0; }
+
+    .btn-row { display: flex; gap: 6px; flex-wrap: wrap; }
+    .btn {
+      padding: 6px 11px; border-radius: 5px;
+      border: 1px solid #30363d; background: #21262d;
+      color: #e6edf3; font-size: 11px; font-weight: 700;
+      cursor: pointer; user-select: none; white-space: nowrap;
+    }
+    .btn:hover { background: #30363d; }
+    .btn.ok { background: #1a7f37; border-color: #238636; color: #fff; }
+    .btn.ok:hover { background: #238636; }
+    .btn.danger { background: transparent; border-color: #6e3535; color: #ff6b6b; }
+    .btn.danger:hover { background: #2a1515; }
+
+    #json-out {
+      width: 100%; height: 130px;
+      background: #0d1117; border: 1px solid #30363d;
+      color: #79c0ff; font-size: 10px; font-family: monospace;
+      border-radius: 4px; padding: 8px; resize: vertical;
+      margin-top: 6px; line-height: 1.4;
+    }
+    #json-out:focus { outline: none; border-color: #58a6ff; }
+    #copy-feedback { font-size: 11px; color: #56d364; height: 16px; margin-top: 4px; }
+
+    #selected-info {
+      font-size: 10px; color: #8b949e; height: 14px; margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="canvas-wrap">
+  <svg id="svg-canvas" width="330" height="580" viewBox="0 0 330 580"></svg>
+  <div id="canvas-hint">Drag seats · Drag center handle to move table · Drag edge handles to resize</div>
+  <div id="selected-info"></div>
+</div>
+
+<div id="controls">
+
+  <h3>Table</h3>
+  <div class="row">
+    <span class="lbl">cx</span><input type="number" id="t-cx" step="0.5" min="5" max="95">
+    <span class="lbl">cy</span><input type="number" id="t-cy" step="0.5" min="5" max="95">
+  </div>
+  <div class="row">
+    <span class="lbl">rx</span><input type="number" id="t-rx" step="0.5" min="5" max="60">
+    <span class="lbl">ry</span><input type="number" id="t-ry" step="0.5" min="5" max="60">
+  </div>
+
+  <h3>Positions</h3>
+  <div id="seats-panel"></div>
+
+  <hr>
+
+  <h3>Export / Import</h3>
+  <div class="btn-row">
+    <button class="btn ok"     onclick="copyJSON()">Copier JSON</button>
+    <button class="btn"        onclick="loadJSON()">Charger JSON</button>
+    <button class="btn danger" onclick="resetToDefault()">Reset</button>
+  </div>
+  <textarea id="json-out" spellcheck="false" placeholder='Collez un JSON ici puis cliquez "Charger JSON"'></textarea>
+  <div id="copy-feedback"></div>
+
+</div>
+
+<script>
+"use strict";
+
+/* ── CONSTANTS ── */
+const SVG_W = 330, SVG_H = 580;
+const SEATS = ["UTG","HJ","CO","BTN","SB","BB"];
+const COLORS = {
+  UTG: "#e8b55e",
+  HJ:  "#c0d860",
+  CO:  "#60d8c0",
+  BTN: "#58a6ff",
+  SB:  "#ffd700",
+  BB:  "#ff6040"
+};
+
+/* ── DEFAULT LAYOUT — matching current MVP slots ── */
+const DEFAULT = {
+  table: { cx: 50.5, cy: 49.0, rx: 41.5, ry: 37.0 },
+  seats: {
+    UTG: { x: 15.0, y: 22.0, r: 10.3 },
+    HJ:  { x: 50.5, y:  9.0, r: 10.3 },
+    CO:  { x: 82.8, y: 22.0, r: 10.3 },
+    BTN: { x: 83.5, y: 40.5, r: 10.3 },
+    SB:  { x: 17.0, y: 87.5, r: 10.3 },
+    BB:  { x: 13.8, y: 39.5, r: 10.3 },
+  }
+};
+
+/* ── STATE ── */
+function deepCopy(o) { return JSON.parse(JSON.stringify(o)); }
+
+let state = deepCopy(DEFAULT);
+try {
+  const saved = localStorage.getItem("poker_layout_v1");
+  if (saved) state = JSON.parse(saved);
+} catch(_) {}
+
+/* ── COORDINATE HELPERS ── */
+const toSVGx  = px => px / 100 * SVG_W;
+const toSVGy  = py => py / 100 * SVG_H;
+const toPctx  = sx => sx / SVG_W * 100;
+const toPcty  = sy => sy / SVG_H * 100;
+const rToSVG  = r  => r  / 100 * SVG_W;
+const round1  = v  => Math.round(v * 10) / 10;
+const clamp   = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+/* ── SVG ELEMENT FACTORY ── */
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, children) {
+  const e = document.createElementNS(NS, tag);
+  if (attrs) Object.entries(attrs).forEach(([k,v]) => e.setAttribute(k, v));
+  if (children) children.forEach(c => e.appendChild(c));
+  return e;
+}
+
+/* ── BUILD SVG ── */
+const svgEl = document.getElementById("svg-canvas");
+
+function buildSVG() {
+  svgEl.innerHTML = "";
+
+  const t  = state.table;
+  const cx = toSVGx(t.cx), cy = toSVGy(t.cy);
+  const rx = rToSVG(t.rx), ry = t.ry / 100 * SVG_H;
+
+  /* defs — felt gradient */
+  const grad = el("radialGradient", { id:"felt", cx:"50%", cy:"52%", r:"60%" });
+  [["0%","#1e3d28"],["55%","#122416"],["100%","#0a1810"]].forEach(([off,col]) => {
+    grad.appendChild(el("stop", { offset:off, "stop-color":col }));
+  });
+  svgEl.appendChild(el("defs", {}, [grad]));
+
+  /* table felt */
+  svgEl.appendChild(el("ellipse", {
+    cx, cy, rx, ry,
+    fill: "url(#felt)",
+    stroke: "rgba(190,205,190,0.30)", "stroke-width": "2"
+  }));
+
+  /* table center drag handle */
+  svgEl.appendChild(el("ellipse", {
+    cx, cy,
+    rx: Math.min(rx * 0.25, 18),
+    ry: Math.min(ry * 0.25, 18),
+    fill: "rgba(255,255,255,0.05)",
+    stroke: "rgba(255,255,255,0.18)", "stroke-width": "1",
+    "stroke-dasharray": "3 3",
+    style: "cursor:move",
+    "data-drag": "table"
+  }));
+
+  /* table rx handle — right edge */
+  svgEl.appendChild(el("circle", {
+    cx: cx + rx, cy, r: "5",
+    fill: "rgba(255,255,255,0.18)",
+    stroke: "rgba(255,255,255,0.45)", "stroke-width": "1",
+    style: "cursor:ew-resize",
+    "data-drag": "table-rx"
+  }));
+
+  /* table ry handle — bottom edge */
+  svgEl.appendChild(el("circle", {
+    cx, cy: cy + ry, r: "5",
+    fill: "rgba(255,255,255,0.18)",
+    stroke: "rgba(255,255,255,0.45)", "stroke-width": "1",
+    style: "cursor:ns-resize",
+    "data-drag": "table-ry"
+  }));
+
+  /* seats */
+  SEATS.forEach(name => {
+    const s  = state.seats[name];
+    const sx = toSVGx(s.x), sy = toSVGy(s.y);
+    const sr = rToSVG(s.r);
+    const col = COLORS[name];
+
+    const g = el("g", {
+      style: "cursor:grab",
+      "data-drag": "seat",
+      "data-seat": name
+    });
+
+    g.appendChild(el("circle", {
+      cx: sx, cy: sy, r: sr,
+      fill: col + "22",
+      stroke: col, "stroke-width": "2"
+    }));
+    g.appendChild(el("text", {
+      x: sx, y: sy,
+      "text-anchor": "middle",
+      "dominant-baseline": "middle",
+      fill: col,
+      "font-size": "11", "font-weight": "900",
+      "font-family": "system-ui",
+      "pointer-events": "none"
+    }));
+    g.lastChild.textContent = name;
+
+    svgEl.appendChild(g);
+  });
+}
+
+/* ── DRAG STATE ── */
+let drag = null;
+
+svgEl.addEventListener("mousedown", e => {
+  const target = e.target.closest("[data-drag]");
+  if (!target) return;
+  e.preventDefault();
+
+  const pt = svgPoint(e);
+  const type = target.dataset.drag;
+
+  if (type === "seat") {
+    const name = target.dataset.seat;
+    drag = {
+      type: "seat", seat: name,
+      origin: pt,
+      start: { x: state.seats[name].x, y: state.seats[name].y }
+    };
+  } else if (type === "table") {
+    drag = {
+      type: "table",
+      origin: pt,
+      start: { cx: state.table.cx, cy: state.table.cy }
+    };
+  } else if (type === "table-rx") {
+    drag = { type: "table-rx", origin: pt, start: { rx: state.table.rx } };
+  } else if (type === "table-ry") {
+    drag = { type: "table-ry", origin: pt, start: { ry: state.table.ry } };
+  }
+});
+
+document.addEventListener("mousemove", e => {
+  if (!drag) return;
+  const pt = svgPoint(e);
+  const dx = toPctx(pt.x - drag.origin.x);
+  const dy = toPcty(pt.y - drag.origin.y);
+
+  if (drag.type === "seat") {
+    state.seats[drag.seat].x = clamp(round1(drag.start.x + dx), 0, 100);
+    state.seats[drag.seat].y = clamp(round1(drag.start.y + dy), 0, 100);
+    showInfo(`${drag.seat}  x=${state.seats[drag.seat].x}  y=${state.seats[drag.seat].y}`);
+  } else if (drag.type === "table") {
+    state.table.cx = clamp(round1(drag.start.cx + dx), 5, 95);
+    state.table.cy = clamp(round1(drag.start.cy + dy), 5, 95);
+  } else if (drag.type === "table-rx") {
+    state.table.rx = clamp(round1(drag.start.rx + dx), 5, 60);
+  } else if (drag.type === "table-ry") {
+    const dyRy = toPcty(pt.y - drag.origin.y);
+    state.table.ry = clamp(round1(drag.start.ry + dyRy), 5, 60);
+  }
+
+  buildSVG();
+  syncInputs();
+  refreshJSON();
+});
+
+document.addEventListener("mouseup", () => {
+  if (drag) { drag = null; save(); showInfo(""); }
+});
+
+/* Touch support */
+svgEl.addEventListener("touchstart", e => {
+  const t = e.touches[0];
+  const me = new MouseEvent("mousedown", { clientX: t.clientX, clientY: t.clientY });
+  svgEl.dispatchEvent(me);
+}, { passive: false });
+
+document.addEventListener("touchmove", e => {
+  e.preventDefault();
+  const t = e.touches[0];
+  document.dispatchEvent(new MouseEvent("mousemove", { clientX: t.clientX, clientY: t.clientY }));
+}, { passive: false });
+
+document.addEventListener("touchend", () => {
+  document.dispatchEvent(new MouseEvent("mouseup"));
+});
+
+function svgPoint(e) {
+  const rect = svgEl.getBoundingClientRect();
+  return {
+    x: (e.clientX - rect.left) * (SVG_W / rect.width),
+    y: (e.clientY - rect.top)  * (SVG_H / rect.height)
+  };
+}
+
+/* ── INPUTS ── */
+function initInputs() {
+  /* table */
+  ["cx","cy","rx","ry"].forEach(k => {
+    const inp = document.getElementById(`t-${k}`);
+    inp.addEventListener("input", () => {
+      const v = parseFloat(inp.value);
+      if (!isNaN(v)) { state.table[k] = v; buildSVG(); refreshJSON(); }
+    });
+    inp.addEventListener("change", save);
+  });
+
+  /* seats — create panel */
+  const panel = document.getElementById("seats-panel");
+  SEATS.forEach(name => {
+    const col = COLORS[name];
+    const row = document.createElement("div");
+    row.className = "row";
+    row.innerHTML = `
+      <span class="seat-lbl" style="color:${col}">${name}</span>
+      <span class="lbl">x</span><input type="number" id="s-${name}-x" step="0.5" min="0" max="100">
+      <span class="lbl">y</span><input type="number" id="s-${name}-y" step="0.5" min="0" max="100">
+      <span class="lbl">r</span><input type="number" id="s-${name}-r" step="0.5" min="3" max="20">
+    `;
+    panel.appendChild(row);
+
+    ["x","y","r"].forEach(k => {
+      const inp = document.getElementById(`s-${name}-${k}`);
+      inp.addEventListener("input", () => {
+        const v = parseFloat(inp.value);
+        if (!isNaN(v)) { state.seats[name][k] = v; buildSVG(); refreshJSON(); }
+      });
+      inp.addEventListener("change", save);
+    });
+  });
+}
+
+function syncInputs() {
+  ["cx","cy","rx","ry"].forEach(k => {
+    const el = document.getElementById(`t-${k}`);
+    if (el && document.activeElement !== el) el.value = round1(state.table[k]);
+  });
+  SEATS.forEach(name => {
+    ["x","y","r"].forEach(k => {
+      const el = document.getElementById(`s-${name}-${k}`);
+      if (el && document.activeElement !== el) el.value = round1(state.seats[name][k]);
+    });
+  });
+}
+
+/* ── JSON ── */
+function buildJSON() {
+  const out = { table: {}, seats: {} };
+  ["cx","cy","rx","ry"].forEach(k => out.table[k] = round1(state.table[k]));
+  SEATS.forEach(n => {
+    out.seats[n] = {
+      x: round1(state.seats[n].x),
+      y: round1(state.seats[n].y),
+      r: round1(state.seats[n].r)
+    };
+  });
+  return out;
+}
+
+function refreshJSON() {
+  document.getElementById("json-out").value = JSON.stringify(buildJSON(), null, 2);
+}
+
+function copyJSON() {
+  refreshJSON();
+  const txt = document.getElementById("json-out").value;
+  navigator.clipboard.writeText(txt).then(() => {
+    const fb = document.getElementById("copy-feedback");
+    fb.textContent = "JSON copié dans le presse-papier";
+    setTimeout(() => fb.textContent = "", 2000);
+  }).catch(() => {
+    document.getElementById("json-out").select();
+    document.execCommand("copy");
+  });
+}
+
+function loadJSON() {
+  const txt = document.getElementById("json-out").value.trim();
+  try {
+    const parsed = JSON.parse(txt);
+    if (!parsed.table || !parsed.seats) throw new Error("Structure invalide");
+    state = deepCopy(parsed);
+    buildSVG();
+    syncInputs();
+    refreshJSON();
+    save();
+    showInfo("JSON chargé");
+    setTimeout(() => showInfo(""), 1500);
+  } catch(err) {
+    alert("JSON invalide : " + err.message);
+  }
+}
+
+function resetToDefault() {
+  if (!confirm("Réinitialiser le layout aux valeurs par défaut ?")) return;
+  state = deepCopy(DEFAULT);
+  buildSVG();
+  syncInputs();
+  refreshJSON();
+  save();
+}
+
+/* ── PERSISTENCE ── */
+function save() {
+  try { localStorage.setItem("poker_layout_v1", JSON.stringify(state)); } catch(_) {}
+}
+
+/* ── UI HELPERS ── */
+function showInfo(msg) {
+  document.getElementById("selected-info").textContent = msg;
+}
+
+/* ── INIT ── */
+initInputs();
+buildSVG();
+syncInputs();
+refreshJSON();
+</script>
+</body>
+</html>
