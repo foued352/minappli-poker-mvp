@@ -93,11 +93,11 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.55);
     }
 
-    /* V6 — HERO: discret mais identifiable */
+    /* V7 — HERO: repère minimal, regard revient au centre */
     .pos-btn.hero {
-      background: rgba(255,210,0,0.14);
-      border-color: rgba(255,210,0,0.55);
-      color: rgba(255,210,0,0.88);
+      background: rgba(255,210,0,0.10);
+      border-color: rgba(255,210,0,0.45);
+      color: rgba(255,210,0,0.78);
       box-shadow: none;
     }
     /* P6 — VILLAIN */
@@ -196,26 +196,25 @@
     .c-rank { font-size: 10px; font-weight: 800; line-height: 1; }
     .c-suit  { font-size: 7px;  font-weight: 700; line-height: 1; }
 
-    /* ══ RANK GRID — outil secondaire, en bas ══ */
+    /* ══ RANK GRID — V7 : tactile + premium ══ */
     #rank-grid {
-      display: flex; flex-wrap: wrap; gap: 6px;
+      display: flex; flex-wrap: wrap; gap: 5px;
       justify-content: center; width: 100%;
       margin-top: 8px;
     }
     .rank-btn {
-      /* à 74% de 420px : (311px - 36px) / 7 ≈ 39px par bouton */
-      width: calc((100% - 36px) / 7);
-      aspect-ratio: 1; border-radius: 9px;
-      border: 1px solid rgba(255,255,255,0.18);
+      width: calc((100% - 30px) / 7);
+      aspect-ratio: 1; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.22);
       background: rgba(255,255,255,0.09);
       color: rgba(255,255,255,0.72);
       font-size: clamp(12px, 3.6vw, 16px); font-weight: 800;
       cursor: pointer; touch-action: manipulation;
       display: flex; align-items: center; justify-content: center;
       user-select: none;
-      transition: background 0.07s, transform 0.07s, border-color 0.07s, color 0.07s;
+      transition: background 0.06s, transform 0.06s, border-color 0.06s, color 0.06s;
     }
-    .rank-btn:active { transform: scale(0.82); color: #fff; background: rgba(255,255,255,0.22); }
+    .rank-btn:active { transform: scale(0.94); color: rgba(255,255,255,0.96); background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.38); }
 
     .rank-btn.sel-1 {
       background: rgba(255,210,0,0.90) !important;
@@ -250,13 +249,20 @@
     }
 
     /* ══ RESULT ZONE ══ */
-    /* V6 — position: relative pour idle-hint absolu, hauteur fixe = zéro mouvement */
+    /* V7 — glow radial derrière l'action + hauteur fixe */
     #result-zone {
       position: relative;
       display: flex; flex-direction: column;
       align-items: center; gap: 2px; text-align: center;
       height: 96px; overflow: visible; justify-content: center; cursor: pointer;
       margin-top: 8px; margin-bottom: 8px;
+    }
+    #result-zone::before {
+      content: "";
+      position: absolute; inset: -28px -40px;
+      background: radial-gradient(ellipse 70% 55% at 50% 50%,
+        rgba(255,255,255,0.035) 0%, transparent 70%);
+      pointer-events: none; z-index: -1;
     }
     #actions-row {
       display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap;
@@ -266,27 +272,36 @@
       letter-spacing: 0.04em; line-height: 1;
     }
     #result-reason, #result-tap-hint { display: none !important; }
-    /* V6 — idle-hint absolu, aucun impact layout */
+    /* V7 — idle-hint absolu, lisible, aucun impact layout */
     #idle-hint {
       position: absolute;
-      font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
-      color: rgba(255,255,255,0.30);
+      font-size: 12px; font-weight: 600; letter-spacing: 0.06em;
+      color: rgba(255,255,255,0.42);
       pointer-events: none; white-space: nowrap;
     }
-    /* V5 — range-hint : respiration claire avant le grid */
+    /* V7 — range-hint */
     #range-hint {
       font-size: 11px; font-weight: 600;
-      color: rgba(255,255,255,0.55); letter-spacing: 0.04em;
+      color: rgba(255,255,255,0.58); letter-spacing: 0.04em;
       text-align: center;
       height: 18px; overflow: hidden; white-space: nowrap;
       margin-top: 16px;
     }
-
-    @keyframes pop-in {
-      from { transform: scale(0.78); opacity: 0; }
-      to   { transform: scale(1);    opacity: 1; }
+    /* V7 — AXE 2 : crédibilité produit */
+    #trust-label {
+      font-size: 9px; font-weight: 600; letter-spacing: 0.14em;
+      color: rgba(255,255,255,0.18); text-transform: uppercase;
+      text-align: center; height: 14px; line-height: 14px;
+      white-space: nowrap; overflow: hidden;
     }
-    .pop-in { animation: pop-in 0.16s cubic-bezier(0.28, 1.7, 0.58, 1); }
+
+    /* V7 — AXE 1 : impact décision — overshoot subtil, micro-dopamine */
+    @keyframes pop-in {
+      0%   { transform: scale(0.88); opacity: 0; }
+      62%  { transform: scale(1.05); opacity: 1; }
+      100% { transform: scale(1.00); opacity: 1; }
+    }
+    .pop-in { animation: pop-in 0.20s cubic-bezier(0.34, 1.56, 0.64, 1); }
 
     /* ══ CALIBRATION MODE ══ */
     /* cal-mode : overlay + rail uniquement, labels masqués */
@@ -356,6 +371,7 @@
       </div>
 
       <div id="range-hint"></div>
+      <div id="trust-label">Range optimisée MTT 6-max</div>
 
       <!-- INPUT SECONDAIRE : outil de sélection, en bas -->
       <div id="rank-grid"></div>
