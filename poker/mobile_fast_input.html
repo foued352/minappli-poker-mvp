@@ -440,8 +440,10 @@ SLOT_ORDER.forEach((slot, i) => {
 const GAME_ORDER = ["BTN","SB","BB","UTG","HJ","CO"];
 
 function applyPositions() {
-  POSITIONS.forEach(p => {
-    const s   = LAYOUT.seats[p];
+  const _raw    = localStorage.getItem("minappli.poker.layout.builder.v1");
+  const _layout = JSON.parse(_raw);
+  ["UTG","HJ","CO","BTN","SB","BB"].forEach(p => {
+    const s   = _layout.seats[p];
     const btn = document.getElementById("pos-" + p);
     btn.style.left      = s.x + "%";
     btn.style.top       = s.y + "%";
