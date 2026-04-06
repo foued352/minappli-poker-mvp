@@ -19,19 +19,19 @@
       width: 100%; height: 100%;
       max-width: 420px; margin: 0 auto;
       display: flex; flex-direction: column;
-      padding-top: 30px;
+      padding-top: 12px;
     }
 
     /* ══ STACK BAR ══ */
     #stack-bar {
       flex-shrink: 0;
       display: flex; gap: 6px; justify-content: center; align-items: center;
-      padding: 7px 16px;
+      padding: 5px 14px;
       background: rgba(0,0,0,0.45);
       border-bottom: 1px solid rgba(255,255,255,0.05);
     }
     .stack-btn {
-      padding: 4px 13px; border-radius: 8px;
+      padding: 3px 11px; border-radius: 8px;
       border: 1px solid rgba(255,255,255,0.12); background: transparent;
       color: rgba(255,255,255,0.38); font-size: 11px; font-weight: 700;
       cursor: pointer; user-select: none; letter-spacing: 0.04em;
@@ -93,11 +93,11 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.55);
     }
 
-    /* V7 — HERO: repère minimal, regard revient au centre */
+    /* V8 — HERO: identifiable, non dominant */
     .pos-btn.hero {
-      background: rgba(255,210,0,0.10);
-      border-color: rgba(255,210,0,0.45);
-      color: rgba(255,210,0,0.78);
+      background: rgba(255,210,0,0.12);
+      border-color: rgba(255,210,0,0.48);
+      color: rgba(255,210,0,0.82);
       box-shadow: none;
     }
     /* P6 — VILLAIN */
@@ -117,7 +117,7 @@
       width: 70%;
       display: flex; flex-direction: column;
       align-items: center; gap: 8px;
-      padding: 16px 0 92px;
+      padding: 16px 0 96px;
     }
 
     /* Context line — secondaire, ne concurrence pas le grid */
@@ -287,10 +287,10 @@
       height: 18px; overflow: hidden; white-space: nowrap;
       margin-top: 16px;
     }
-    /* V7 — AXE 2 : crédibilité produit */
+    /* V8 — trust-label : crédibilité lisible */
     #trust-label {
       font-size: 9px; font-weight: 600; letter-spacing: 0.14em;
-      color: rgba(255,255,255,0.18); text-transform: uppercase;
+      color: rgba(255,255,255,0.22); text-transform: uppercase;
       text-align: center; height: 14px; line-height: 14px;
       white-space: nowrap; overflow: hidden;
     }
@@ -418,12 +418,12 @@ const RANKS     = ["A","K","Q","J","T","9","8","7","6","5","4","3","2"];
 const DEFAULT_LAYOUT = {
   table: { cx: 50.5, cy: 49.0, rx: 41.5, ry: 37.0 },
   seats: {
-    SB:  { x: 17.0, y: 87.5 },
-    BB:  { x: 13.8, y: 39.5 },
-    UTG: { x: 15.0, y: 22.0 },
-    HJ:  { x: 50.5, y:  9.0 },
-    CO:  { x: 82.8, y: 22.0 },
-    BTN: { x: 83.5, y: 40.5 },
+    SB:  { x: 11.5, y: 89.0 },  // hero slot — coin bas-gauche
+    BB:  { x: 13.5, y: 40.0 },
+    UTG: { x: 14.5, y: 21.0 },
+    HJ:  { x: 50.5, y:  5.5 },  // top — le plus haut possible
+    CO:  { x: 83.0, y: 21.0 },  // symétrique UTG
+    BTN: { x: 84.5, y: 40.0 },  // symétrique BB
   }
 };
 let LAYOUT = DEFAULT_LAYOUT;
