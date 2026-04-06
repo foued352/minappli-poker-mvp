@@ -1039,6 +1039,30 @@ function initCalibration() {
 
 window.addEventListener("DOMContentLoaded", () => { init(); initCalibration(); });
 </script>
+<script>
+(function(){
+  const KEY = "minappli.poker.layout.builder.v1";
+  const raw = localStorage.getItem(KEY);
+  if(!raw) return;
+
+  try {
+    const parsed = JSON.parse(raw);
+    const data = parsed.byId || parsed;
+
+    Object.entries(data).forEach(([pos, coords]) => {
+      const el = document.querySelector('[data-pos="' + pos + '"]');
+      if(!el) return;
+      if(coords.x != null) el.style.left = coords.x + "%";
+      if(coords.y != null) el.style.top  = coords.y + "%";
+    });
+
+    console.log("LAYOUT APPLIED");
+  } catch(e) {
+    console.warn("LAYOUT ERROR", e);
+  }
+})();
+</script>
 </body>
 </html>
+
 
