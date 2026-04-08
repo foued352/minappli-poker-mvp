@@ -697,6 +697,15 @@ function updateMode() {
   }
 }
 
+function buildCtxText() {
+  // free  : "POSITION • STACK"
+  // premium : "POSITION vs POSITION • STACK"
+  if (APP_MODE === "free") return heroPos + " • " + activeStack;
+  let t = heroPos;
+  if (activeMode === "vsopen" && activeOpener) t += " vs " + activeOpener;
+  return t + " • " + activeStack;
+}
+
 function updateCtxLine() {
   if (heroPos === null) {
     EL.ctxLine.className = "prompt";
@@ -704,10 +713,7 @@ function updateCtxLine() {
     return;
   }
   EL.ctxLine.className = "";
-  let t = heroPos;
-  if (activeMode === "vsopen" && activeOpener) t += " vs " + activeOpener;
-  t += "  •  " + activeStack;
-  EL.ctxLine.textContent = t;
+  EL.ctxLine.textContent = buildCtxText();
 }
 
 function updatePosHighlights() {
