@@ -19,26 +19,39 @@
       width: 100%; height: 100%;
       max-width: 420px; margin: 0 auto;
       display: flex; flex-direction: column;
-      padding-top: 12px;
+      padding-top: 8px;
     }
 
-    /* ══ STACK BAR ══ */
+    /* ══ CTX-LINE — label de situation discret, au-dessus des cartes ══ */
+    #ctx-line {
+      font-size: 11px; font-weight: 600;
+      color: rgba(255,255,255,0.72); letter-spacing: 0.06em;
+      text-align: center; white-space: nowrap;
+      pointer-events: none;
+    }
+    #ctx-line.prompt {
+      color: rgba(255,255,255,0.28); text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    /* ══ STACK BAR — intégré au flow, juste au-dessus du sélecteur ══ */
     #stack-bar {
       flex-shrink: 0;
-      display: flex; gap: 6px; justify-content: center; align-items: center;
-      padding: 5px 14px;
-      background: rgba(0,0,0,0.45);
-      border-bottom: 1px solid rgba(255,255,255,0.05);
+      display: flex; flex-wrap: wrap; gap: 3px 4px;
+      justify-content: center; align-items: center;
+      padding: 5px 0 4px;
+      background: transparent;
+      border-top: 1px solid rgba(255,255,255,0.07);
     }
     .stack-btn {
-      padding: 3px 11px; border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.12); background: transparent;
-      color: rgba(255,255,255,0.38); font-size: 11px; font-weight: 700;
-      cursor: pointer; user-select: none; letter-spacing: 0.04em;
+      padding: 2px 7px; border-radius: 7px;
+      border: 1px solid rgba(255,255,255,0.18); background: transparent;
+      color: rgba(255,255,255,0.62); font-size: 10px; font-weight: 700;
+      cursor: pointer; user-select: none; letter-spacing: 0.03em;
       touch-action: manipulation;
       transition: all 0.08s;
     }
-    .stack-btn.active { background: rgba(255,255,255,0.14); color: rgba(255,255,255,0.90); border-color: rgba(255,255,255,0.28); }
+    .stack-btn.active { background: rgba(255,255,255,0.16); color: rgba(255,255,255,0.96); border-color: rgba(255,255,255,0.40); }
 
     /* ══ TABLE SCENE — fond sombre de la salle ══ */
     #table-scene {
@@ -93,12 +106,12 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.55);
     }
 
-    /* V8 — HERO: identifiable, non dominant */
+    /* V8 — HERO: identifiable, ancré visuellement */
     .pos-btn.hero {
-      background: rgba(255,210,0,0.12);
-      border-color: rgba(255,210,0,0.48);
-      color: rgba(255,210,0,0.82);
-      box-shadow: none;
+      background: rgba(255,210,0,0.22);
+      border-color: rgba(255,210,0,0.72);
+      color: rgba(255,210,0,1.0);
+      box-shadow: 0 0 16px rgba(255,210,0,0.22);
     }
     /* P6 — VILLAIN */
     .pos-btn.villain {
@@ -107,8 +120,8 @@
       color: #ff6040;
       box-shadow: 0 0 12px rgba(255,60,40,0.18);
     }
-    /* positions non actives : quasi-invisibles, décoratif pur */
-    .pos-btn.dim { opacity: 0.18; }
+    /* positions non actives : présence spatiale claire */
+    .pos-btn.dim { opacity: 0.78; }
     .pos-btn { transition: background 0.12s, border-color 0.12s, color 0.12s, box-shadow 0.12s, opacity 0.12s; }
 
     /* ══ CENTER ZONE ══ */
@@ -118,17 +131,6 @@
       display: flex; flex-direction: column;
       align-items: center; gap: 8px;
       padding: 16px 0 96px;
-    }
-
-    /* Context line — secondaire, ne concurrence pas le grid */
-    #ctx-line {
-      font-size: 11px; font-weight: 700;
-      color: rgba(255,255,255,0.45); letter-spacing: 0.06em;
-      text-align: center; white-space: nowrap;
-    }
-    #ctx-line.prompt {
-      font-size: 10px; font-weight: 600; letter-spacing: 0.10em;
-      color: rgba(255,255,255,0.28); text-transform: uppercase;
     }
 
     /* ══ CARDS ══ */
@@ -143,12 +145,12 @@
       user-select: none; cursor: pointer; touch-action: manipulation;
     }
     .card[data-state="up"]:active { transform: scale(0.91); }
-    /* cartes fermées : visuellement passives — le grid est l'entrée principale */
+    /* cartes fermées : présentes, invitantes */
     .card[data-state="down"] {
       background: linear-gradient(150deg, #8a0000 0%, #6a0000 55%, #550000 100%);
-      border: 1.5px solid rgba(255,255,255,0.18);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.55);
-      opacity: 0.40;
+      border: 1.5px solid rgba(255,255,255,0.28);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.65);
+      opacity: 0.72;
     }
     .card[data-state="down"]::before {
       content: ""; position: absolute; inset: 5px;
@@ -196,7 +198,7 @@
     .c-rank { font-size: 10px; font-weight: 800; line-height: 1; }
     .c-suit  { font-size: 7px;  font-weight: 700; line-height: 1; }
 
-    /* ══ RANK GRID — V7 : tactile + premium ══ */
+    /* ══ RANK GRID — aspect carte à jouer ══ */
     #rank-grid {
       display: flex; flex-wrap: wrap; gap: 5px;
       justify-content: center; width: 100%;
@@ -204,48 +206,51 @@
     }
     .rank-btn {
       width: calc((100% - 30px) / 7);
-      aspect-ratio: 1; border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.22);
-      background: rgba(255,255,255,0.09);
-      color: rgba(255,255,255,0.72);
-      font-size: clamp(12px, 3.6vw, 16px); font-weight: 800;
+      aspect-ratio: 0.72; border-radius: 7px;
+      border: 1px solid rgba(220,215,200,0.60);
+      background: #f5f0e8;
+      color: #1a1a2e;
+      font-size: clamp(12px, 3.6vw, 15px); font-weight: 900;
       cursor: pointer; touch-action: manipulation;
       display: flex; align-items: center; justify-content: center;
       user-select: none;
-      transition: background 0.06s, transform 0.06s, border-color 0.06s, color 0.06s;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.70);
+      transition: background 0.06s, transform 0.06s, opacity 0.06s;
     }
-    .rank-btn:active { transform: scale(0.94); color: rgba(255,255,255,0.96); background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.38); }
+    .rank-btn:active { transform: scale(0.93); background: #e5e0d8; }
 
     .rank-btn.sel-1 {
-      background: rgba(255,210,0,0.90) !important;
+      background: rgba(255,210,0,0.95) !important;
       color: #1a1200 !important;
       border-color: rgba(255,210,0,1) !important;
-      box-shadow: 0 0 14px rgba(255,210,0,0.28) !important;
+      box-shadow: 0 0 14px rgba(255,210,0,0.32) !important;
     }
     .rank-btn.sel-2 {
-      background: rgba(255,210,0,0.38) !important;
-      color: #fff5b0 !important;
-      border-color: rgba(255,210,0,0.72) !important;
+      background: rgba(255,210,0,0.72) !important;
+      color: #1a1200 !important;
+      border-color: rgba(255,210,0,0.90) !important;
     }
-    .decided #rank-grid .rank-btn { opacity: 0.32; }
+    .decided #rank-grid .rank-btn { opacity: 0.42; }
+    .decided #stack-bar { opacity: 0.40; }
+    .decided #trust-label { opacity: 0.25; }
 
     /* ══ SUITED TOGGLE ══ */
     #suited-row {
-      display: flex; justify-content: center; align-items: center; min-height: 34px;
+      display: flex; justify-content: center; align-items: center;
+      min-height: 28px; margin-top: -8px;
     }
     #suited-row.hidden { visibility: hidden; pointer-events: none; }
     #btn-suited {
-      padding: 6px 22px; border-radius: 9px;
-      border: 1.5px solid rgba(255,255,255,0.26);
-      background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.50);
-      font-size: 12px; font-weight: 800; letter-spacing: 0.10em;
-      min-width: 96px;
+      padding: 3px 14px; border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: transparent; color: rgba(255,255,255,0.45);
+      font-size: 11px; font-weight: 700; letter-spacing: 0.10em;
       cursor: pointer; user-select: none; touch-action: manipulation;
       transition: background 0.08s, color 0.08s, border-color 0.08s;
     }
     #btn-suited.suited {
-      background: rgba(255,255,255,0.20); color: #fff;
-      border-color: rgba(255,255,255,0.55);
+      background: rgba(255,255,255,0.10); color: rgba(255,255,255,0.88);
+      border-color: rgba(255,255,255,0.38);
     }
 
     /* ══ RESULT ZONE ══ */
@@ -254,14 +259,14 @@
       position: relative;
       display: flex; flex-direction: column;
       align-items: center; gap: 2px; text-align: center;
-      height: 96px; overflow: visible; justify-content: center; cursor: pointer;
-      margin-top: 8px; margin-bottom: 8px;
+      height: 112px; overflow: visible; justify-content: center; cursor: pointer;
+      margin-top: 0; margin-bottom: 0;
     }
     #result-zone::before {
       content: "";
       position: absolute; inset: -28px -40px;
       background: radial-gradient(ellipse 70% 55% at 50% 50%,
-        rgba(255,255,255,0.035) 0%, transparent 70%);
+        rgba(255,255,255,0.065) 0%, transparent 70%);
       pointer-events: none; z-index: -1;
     }
     #actions-row {
@@ -271,29 +276,38 @@
       font-size: clamp(56px, 18vw, 80px); font-weight: 900;
       letter-spacing: 0.04em; line-height: 1;
     }
+    /* FOLD — même taille que les autres actions, couleur suffit à différencier */
     #result-reason, #result-tap-hint { display: none !important; }
     /* V7 — idle-hint absolu, lisible, aucun impact layout */
     #idle-hint {
       position: absolute;
-      font-size: 12px; font-weight: 600; letter-spacing: 0.06em;
-      color: rgba(255,255,255,0.42);
+      font-size: 16px; font-weight: 700; letter-spacing: 0.06em;
+      color: rgba(255,255,255,0.72);
       pointer-events: none; white-space: nowrap;
     }
-    /* V7 — range-hint */
+    /* range-hint — max 2 lignes, pre-line pour le \n JS */
     #range-hint {
       font-size: 11px; font-weight: 600;
-      color: rgba(255,255,255,0.58); letter-spacing: 0.04em;
-      text-align: center;
-      height: 18px; overflow: hidden; white-space: nowrap;
-      margin-top: 16px;
+      color: rgba(255,255,255,0.65); letter-spacing: 0.04em;
+      text-align: center; line-height: 1.5;
+      white-space: pre-line;
+      margin-top: 2px;
     }
-    /* V8 — trust-label : crédibilité lisible */
+    /* V8 — trust-label : crédibilité visible */
     #trust-label {
-      font-size: 9px; font-weight: 600; letter-spacing: 0.14em;
-      color: rgba(255,255,255,0.22); text-transform: uppercase;
-      text-align: center; height: 14px; line-height: 14px;
+      font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.42); text-transform: uppercase;
+      text-align: center; height: 16px; line-height: 16px;
       white-space: nowrap; overflow: hidden;
     }
+
+    /* Invitation — cartes face-down respirent doucement */
+    @keyframes card-breathe {
+      0%, 100% { opacity: 0.72; }
+      50%       { opacity: 0.90; }
+    }
+    .card[data-state="down"] { animation: card-breathe 2.8s ease-in-out infinite; }
+    .card[data-state="up"]   { animation: none; }
 
     /* V7 — AXE 1 : impact décision — overshoot subtil, micro-dopamine */
     @keyframes pop-in {
@@ -323,8 +337,6 @@
 
 <div id="app">
 
-  <div id="stack-bar"></div>
-
   <div id="table-scene">
 
     <div id="poker-table"></div>
@@ -341,7 +353,7 @@
 
     <div id="center-zone">
 
-      <!-- contexte léger -->
+      <!-- CONTEXTE : label de situation, au-dessus des cartes -->
       <div id="ctx-line" class="prompt">Choisissez votre position</div>
 
       <!-- confirmation : cartes sélectionnées -->
@@ -358,6 +370,7 @@
         </div>
       </div>
 
+      <!-- SUITED : suite directe des cartes -->
       <div id="suited-row" class="hidden">
         <button id="btn-suited">OFF</button>
       </div>
@@ -366,15 +379,19 @@
       <div id="result-zone">
         <div id="actions-row" style="display:none;"></div>
         <div id="result-reason" style="display:none;"></div>
-        <div id="idle-hint">Choisis tes cartes</div>
+        <div id="idle-hint">Pick your hand</div>
         <div id="result-tap-hint" style="display:none;">tap pour rejouer</div>
       </div>
 
       <div id="range-hint"></div>
-      <div id="trust-label">Range optimisée MTT 6-max</div>
 
-      <!-- INPUT SECONDAIRE : outil de sélection, en bas -->
+      <!-- STACK : secondaire, hors du rail principal -->
+      <div id="stack-bar"></div>
+
+      <!-- INPUT PRINCIPAL : sélecteur de rang -->
       <div id="rank-grid"></div>
+
+      <div id="trust-label">Jennifear · MTT 6-max · 5–50bb</div>
 
     </div>
   </div>
@@ -391,6 +408,7 @@ for (const [stack, positions] of Object.entries(MFI_RANGES_RAW)) {
   RANGES[stack] = {};
   for (const [pos, buckets] of Object.entries(positions)) {
     RANGES[stack][pos] = {
+      push:     new Set(buckets.push     || []),
       open:     new Set(buckets.open     || []),
       call:     new Set(buckets.call     || []),
       threebet: new Set(buckets.threebet || []),
@@ -408,8 +426,26 @@ for (const [stack, positions] of Object.entries(MFI_VSOPEN_RAW)) {
   }
 }
 
+/* ── APP MODE ── */
+const APP_MODE   = "free";                          // "free" | "premium"
+const FREE_STACKS = ["20bb","25bb","40bb"];         // stacks visibles en free
+
 /* ── CONSTANTS ── */
-const STACKS    = ["20bb","25bb","40bb"];
+const STACKS           = ["5bb","10bb","15bb","20bb","25bb","30bb","40bb","50bb"];
+const PUSH_FOLD_STACKS = ["5bb","10bb","15bb"]; // push or fold only
+const HYBRID_STACK     = "20bb";                // open or push or fold
+
+/* Snap rule: actual bb → reference stack */
+function snapStack(bb) {
+  if (bb <=  7) return "5bb";
+  if (bb <= 12) return "10bb";
+  if (bb <= 17) return "15bb";
+  if (bb <= 22) return "20bb";
+  if (bb <= 27) return "25bb";
+  if (bb <= 35) return "30bb";
+  if (bb <= 45) return "40bb";
+  return "50bb";
+}
 const POSITIONS = ["UTG","HJ","CO","BTN","SB","BB"];
 const RANKS     = ["A","K","Q","J","T","9","8","7","6","5","4","3","2"];
 
@@ -429,7 +465,11 @@ const DEFAULT_LAYOUT = {
 let LAYOUT = DEFAULT_LAYOUT;
 try {
   const _saved = localStorage.getItem("minappli.poker.layout.builder.v1");
-  if (_saved) LAYOUT = JSON.parse(_saved);
+  if (_saved) {
+    const _parsed = JSON.parse(_saved);
+    // Garde uniquement la table (ellipse), ignore les seats (overridés par le builder)
+    LAYOUT = { table: _parsed.table || DEFAULT_LAYOUT.table, seats: DEFAULT_LAYOUT.seats };
+  }
 } catch(_) {}
 
 // Applique la table ellipse depuis LAYOUT.table
@@ -515,15 +555,17 @@ const MODE_ALLOWED = {
 };
 
 const ACTION_DISPLAY = {
-  FOLD:   { label: "FOLD",  color: "#8090b8" },
+  FOLD:   { label: "FOLD",  color: "#dce6f8" },
   CALL:   { label: "CALL",  color: "#f5a623" },
   OPEN:   { label: "OPEN",  color: "#22c55e" },
-  "3BET": { label: "3BET",  color: "#e84040" },
+  PUSH:   { label: "PUSH",  color: "#60a5fa" },
+  "3BET": { label: "3BET",  color: "#c84444" },
 };
 const REASON = {
   FOLD:   "Hors de la range",
   CALL:   "Main correcte dans ce spot",
   OPEN:   "Spot standard — première mise",
+  PUSH:   "Stack court — all-in direct",
   "3BET": "Main forte — pression maximale",
 };
 
@@ -577,7 +619,8 @@ function init() {
 
 /* ── STACK BAR ── */
 function buildStackBar() {
-  STACKS.forEach(s => {
+  const visibleStacks = APP_MODE === "free" ? FREE_STACKS : STACKS;
+  visibleStacks.forEach(s => {
     const b = document.createElement("button");
     b.className = "stack-btn" + (s === activeStack ? " active" : "");
     b.textContent = s;
@@ -585,7 +628,7 @@ function buildStackBar() {
       activeStack = s;
       EL.stackBar.querySelectorAll(".stack-btn").forEach(x =>
         x.classList.toggle("active", x.textContent === s));
-      /* P8 — mise à jour immédiate ctx-line + recalcul si main sélectionnée */
+      updateMode();
       updateCtxLine();
       if (handStep === "done") recompute();
     });
@@ -636,6 +679,12 @@ function onPosTap(pos) {
 
 function updateMode() {
   if (heroPos === null) { activeMode = "open"; activeOpener = null; return; }
+  // Push-fold stacks and 20bb: no vsopen mode
+  if (PUSH_FOLD_STACKS.includes(activeStack) || activeStack === HYBRID_STACK) {
+    activeMode = "open";
+    activeOpener = null;
+    return;
+  }
   const allowed = MODE_ALLOWED[heroPos] || ["open"];
   if (villainPos !== null
       && allowed.includes("vsopen")
@@ -753,7 +802,7 @@ function onCard1Tap() {
     setCard(EL.card1, "down", null);
     highlightRanks();
     handStep = "idle";
-    EL.idleHint.textContent = "Choisis tes cartes";
+    EL.idleHint.textContent = "Pick your hand";
     EL.idleHint.style.display = "";
     return;
   }
@@ -879,7 +928,7 @@ function resetHand() {
   EL.suitedRow.classList.add("hidden");
   resetSuited();
   hideResult();
-  EL.idleHint.textContent = "Choisis tes cartes";
+  EL.idleHint.textContent = "Pick your hand";
   EL.idleHint.style.display = "";
 }
 
@@ -964,6 +1013,22 @@ function handKey(r1, r2, isSuited) {
 }
 
 function getActions(key) {
+  // Push-fold stacks: PUSH or FOLD
+  if (PUSH_FOLD_STACKS.includes(activeStack)) {
+    const rng = RANGES[activeStack]?.[heroPos];
+    if (!rng) return ["FOLD"];
+    return rng.push.has(key) ? ["PUSH"] : ["FOLD"];
+  }
+  // 20bb hybrid: OPEN or PUSH or FOLD
+  if (activeStack === HYBRID_STACK) {
+    const rng = RANGES[activeStack]?.[heroPos];
+    if (!rng) return ["FOLD"];
+    const out = [];
+    if (rng.open.has(key)) out.push("OPEN");
+    if (rng.push.has(key)) out.push("PUSH");
+    return out.length ? out : ["FOLD"];
+  }
+  // Standard stacks: OPEN / CALL / 3BET / FOLD
   if (activeMode === "open") {
     const rng = RANGES[activeStack]?.[heroPos];
     if (!rng) return ["FOLD"];
@@ -986,14 +1051,15 @@ function recompute() {
   const [r1, r2] = normalizeRanks(rank1, rank2);
   const key      = handKey(rank1, rank2, suited);
   const actions  = getActions(key);
-  const PRIORITY = ["3BET","OPEN","CALL","FOLD"];
+  const PRIORITY = ["3BET","PUSH","OPEN","CALL","FOLD"];
   const main     = PRIORITY.find(p => actions.includes(p)) || "FOLD";
 
   EL.actionsRow.innerHTML = "";
   actions.forEach(a => {
     const d = ACTION_DISPLAY[a] || ACTION_DISPLAY.FOLD;
     const s = document.createElement("span");
-    s.className = "action-chip"; s.textContent = d.label; s.style.color = d.color;
+    s.className = "action-chip"; s.dataset.action = a;
+    s.textContent = d.label; s.style.color = d.color;
     EL.actionsRow.appendChild(s);
   });
 
@@ -1003,12 +1069,11 @@ function recompute() {
   EL.actionsRow.style.display   = "flex";
   EL.resultReason.style.display = "";
   EL.tapHint.style.display      = "";
+  EL.idleHint.style.display     = "none"; // garanti caché dans tous les flows
 
-  /* P7 — range-hint : résumé du spot entier (open pour RFI, call pour vs-open) */
-  const rngSet = activeMode === "open"
-    ? RANGES[activeStack]?.[heroPos]?.open
-    : VSOPEN[activeStack]?.[heroPos]?.call;
-  EL.rangeHint.textContent = rngSet ? buildRangeHint([...rngSet]) : "";
+  /* range-hint : hint local basé sur la main sélectionnée (toujours calculé, y compris FOLD) */
+  const _localHint = buildLocalHint(rank1, rank2, suited, main);
+  EL.rangeHint.textContent = _localHint;
 
   /* P5 — couleur des cartes */
   applyCardColors();
@@ -1017,6 +1082,116 @@ function recompute() {
   EL.actionsRow.classList.remove("pop-in");
   void EL.actionsRow.offsetWidth;
   EL.actionsRow.classList.add("pop-in");
+}
+
+/* ── LOCAL RANGE HINT ── */
+function buildLocalHint(r1, r2, isSuited) {
+  const i1 = RANKS.indexOf(r1), i2 = RANKS.indexOf(r2);
+  const hi     = i1 < i2 ? r1 : r2;
+  const lo     = i1 < i2 ? r2 : r1;
+  const isPair = (hi === lo);
+  const suffix = isPair ? null : (isSuited ? "s" : "o");
+  const hint   = (rng) => isPair ? localPairHint(hi, rng) : localHandHint(hi, lo, suffix, rng);
+
+  // Push-fold stacks: show push threshold only
+  if (PUSH_FOLD_STACKS.includes(activeStack)) {
+    const pushRng = RANGES[activeStack]?.[heroPos]?.push;
+    if (!pushRng) return "";
+    const h = hint(pushRng);
+    return h ? "Push: " + h : "";
+  }
+
+  // 20bb hybrid: show open threshold + push threshold
+  if (activeStack === HYBRID_STACK) {
+    const openRng = RANGES[activeStack]?.[heroPos]?.open;
+    const pushRng = RANGES[activeStack]?.[heroPos]?.push;
+    const lines = [];
+    if (openRng) { const h = hint(openRng); if (h) lines.push("Open: " + h); }
+    if (pushRng) { const h = hint(pushRng); if (h) lines.push("Push: " + h); }
+    return lines.join("\n");
+  }
+
+  // Standard stacks: open/call + 3bet threshold
+  let openRng, threebetRng, openLabel;
+  if (activeMode === "open") {
+    openRng     = RANGES[activeStack]?.[heroPos]?.open;
+    threebetRng = RANGES[activeStack]?.[heroPos]?.threebet;
+    openLabel   = "Open";
+  } else {
+    openRng     = VSOPEN[activeStack]?.[heroPos]?.call;
+    threebetRng = VSOPEN[activeStack]?.[heroPos]?.threebet;
+    openLabel   = "Call";
+  }
+
+  let line1 = "", line2 = "";
+  if (openRng)     { const h = hint(openRng);     if (h) line1 = openLabel + ": " + h; }
+  if (threebetRng) { const h = hint(threebetRng); if (h) line2 = "3Bet: " + h; }
+
+  if (line1 && line2) return line1 + "\n" + line2;
+  return line1 || line2;
+}
+
+function localPairHint(rank, rng) {
+  // Collecter toutes les paires en range (fonctionne même si rank n'est pas en range)
+  const inRng = [];
+  for (let i = 0; i < RANKS.length; i++) {
+    if (rng.has(RANKS[i] + RANKS[i])) inRng.push(i);
+  }
+  if (inRng.length === 0) return "";
+
+  // Construire les runs contigus
+  const runs = [];
+  let s = inRng[0];
+  for (let i = 1; i <= inRng.length; i++) {
+    if (i === inRng.length || inRng[i] !== inRng[i - 1] + 1) {
+      runs.push([s, inRng[i - 1]]);
+      if (i < inRng.length) s = inRng[i];
+    }
+  }
+
+  // Choisir le run le plus pertinent : celui qui contient rank, sinon le plus proche
+  const rankIdx = RANKS.indexOf(rank);
+  let best = runs[0];
+  for (const r of runs) {
+    if (rankIdx >= r[0] && rankIdx <= r[1]) { best = r; break; }
+  }
+
+  const [top, bot] = best; // top = index le plus bas = paire la plus forte
+  if (top === bot) return RANKS[top] + RANKS[top];
+  if (top === 0)   return RANKS[bot] + RANKS[bot] + "+";                          // 77+
+  return RANKS[bot] + RANKS[bot] + "\u2013" + RANKS[top] + RANKS[top];           // 22–99
+}
+
+function localHandHint(hi, lo, suffix, rng) {
+  const hiIdx = RANKS.indexOf(hi);
+  const loIdx = RANKS.indexOf(lo);
+
+  // Collecter tous les kickers en range pour ce hi + suffix
+  const inRng = [];
+  for (let i = hiIdx + 1; i < RANKS.length; i++) {
+    if (rng.has(hi + RANKS[i] + suffix)) inRng.push(i);
+  }
+  if (inRng.length === 0) return "";
+
+  // Construire les runs continus (même logique que localPairHint)
+  const runs = [];
+  let s = inRng[0];
+  for (let i = 1; i <= inRng.length; i++) {
+    if (i === inRng.length || inRng[i] !== inRng[i - 1] + 1) {
+      runs.push([s, inRng[i - 1]]);
+      if (i < inRng.length) s = inRng[i];
+    }
+  }
+
+  // Choisir le run le plus pertinent : celui qui contient loIdx, sinon le premier
+  let best = runs[0];
+  for (const r of runs) {
+    if (loIdx >= r[0] && loIdx <= r[1]) { best = r; break; }
+  }
+
+  const [top, bot] = best; // top = kicker le plus fort (index bas), bot = kicker le plus faible
+  if (top === bot) return hi + RANKS[top] + suffix;   // une seule main, pas de +
+  return hi + RANKS[bot] + suffix + "+";              // seuil+
 }
 
 /* ── CALIBRATION MODE ── */
@@ -1040,27 +1215,7 @@ function initCalibration() {
 window.addEventListener("DOMContentLoaded", () => { init(); initCalibration(); });
 </script>
 <script>
-(function(){
-  const KEY = "minappli.poker.layout.builder.v1";
-  const raw = localStorage.getItem(KEY);
-  if(!raw) return;
-
-  try {
-    const parsed = JSON.parse(raw);
-    const data = parsed.byId || parsed;
-
-    Object.entries(data).forEach(([pos, coords]) => {
-      const el = document.querySelector('[data-pos="' + pos + '"]');
-      if(!el) return;
-      if(coords.x != null) el.style.left = coords.x + "%";
-      if(coords.y != null) el.style.top  = coords.y + "%";
-    });
-
-    console.log("LAYOUT APPLIED");
-  } catch(e) {
-    console.warn("LAYOUT ERROR", e);
-  }
-})();
+/* LAYOUT OVERRIDE NEUTRALISÉ — seats pilotés uniquement par DEFAULT_LAYOUT */
 </script>
 </body>
 </html>
